@@ -1,0 +1,65 @@
+Aegis -- The Scripting Language Agnostic WM
+-------------------------------------------
+
+We intend to create the first window manager that is configurable by any of a
+number of scripting languages.
+
+
+First things First
+------------------
+
+First and foremost is quality code which is well thought out and well documented.
+Aegis will live or die by the quality of its code.  If you don't believe it,
+then feel free to read the source code for Waimea or Kahakai.  Second, there is
+no hurry to get code out the door.  Lets take our time and create a solid
+product.
+
+
+Project Direction:
+------------------
+
+We intend to go where no wm has gone before.  Here is how we plan to do it.
+
+  - Aegis will support multiple scripting languages.
+  - Aegis will make it relatively easy to create new language bindings.
+    - Swig is a nice tool, but there are languages that swig does not support,
+      and swig suffers all the shortcomings of other code generators.
+    - Aegis' support for scripting languages will not be dependent on swig.
+      Swig will be useful, but not necesary.
+  - Aegis will remain usable even if no scripting language extensions are
+    loaded.  Though this will undoubtedly result is lost functionality.
+  - Not all scripting languages have the same capabilities.  This creates two
+    problems.
+      1) We don't want to cripple a language due to least common denominator
+         problems.
+      2) We don't want to leave a lesser language in the dust.
+    This will require striking a fine balance between the needs of less powerful
+    languages and the capabilities of the most powerful.  We want things to
+    remain as balanced as possible, realizing that each language has strengths
+    and weaknesses.  This may not be possible at all, nor desirable to control,
+    we'll see.
+  - Aegis will look good.  :)
+  - Aegis' configuration will be powerful, but it will be well organized so that
+    a user doesn't have to wade though large docs/man pages to make sense of the
+    configuration.
+  - Aegis will be written as OO as possible.
+  - Aegis will be modular.  If someone hates COBOL with a passion, they can
+    install and use Aegis without requiring the COBOL language extensions.  :)
+  - Language extension modules will be loadable without the need for user
+    intervention.
+  - Aegis will provide an abstraction layer between the language and the aegis
+    core, so aegis may be extended with a language, yet the core will have no 
+    idea that it was.
+  - Aegis will release early, release often.
+  - Aegis configuration files are considered to be unstable until the 1.0
+    release, at which time they will be stable, and if changes to the config
+    files are required in future versions, a conversion utility will be provided
+    if at all possible.  Major changes will be concentrated around point
+    releases.
+  - I am sure there are more, but I can't think of them, and lets keep this list
+    short, so it will fit in our minds as we are coding.  (suggestions are
+    welcome)
+
+
+Written by:  Michael Brailsford
+- vim: tw=80 sw=2 ts=2 et nowrap

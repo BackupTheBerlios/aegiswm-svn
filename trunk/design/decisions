@@ -1,0 +1,102 @@
+This file started out as a place to document design decisions, and it has since
+turned into a macro overview of the architecture of Aegis.
+
+Designing a window manager.
+---------------------------
+This is some complex stuff.  I don't fully understand how X operates in all
+conditions (and I doubt any single person does).  Deciding the best way
+to implement a system this complex in advance without coding some of it
+is fruitless.  I am going to start implementing this.  I have the system
+architecture that I want, the host of methods and data is, quite frankly,
+unknown at this time.  Case in point, this document in its previous version
+was embarrassingly out of date in almost no time.
+
+Modular design.
+---------------
+At this point saying that Aegis is modular is technically true.  However, there
+is not yet a well defined interface for these separate modules.  We have thus
+far used static libraries (wave your hands and say 'modules') as a tools to
+partition source code into logical parts.  We have AWidgets in libawidget, event
+system code in libevsubsys, logging functionality in liblogger, and actions in
+libaction.  Of these AWidgets, Logger, and evsubsys have the most well defined
+interfaces, but nothing formal.
+
+This is a good thing.  It reduces the amount of understanding that a developer
+needs to begin to make useful contributions, and it minimizes the impact of a
+change in one place affecting another unrelated piece of code.  In addition it
+organizes code into areas of general functionality, and it reduces file clutter
+in the window manager.  I am not sure formalizing the module interfaces will
+yield much benefit.  That said, don't be a module-nazi, too much of a good thing
+is a bad thing.
+
+ibawidgets
+-----------
+This is a very nice widget library.  The main idea is to create a widget
+template, and then generate that widget template.  This makes it easy to create
+identical window after identical window from the same template, while
+maintaining a high degree of customisability.
+
+libevsubsys
+-----------
+This is the interface to the X Windows Event system.  All event handlers
+register themselves with the event subsystem.  The event subsystem will then
+route all events to the proper event handlers.  So, in recap, grab an instance
+of the event subsystem, register event handlers with it and voila! with no more
+effort than that you will be able to handle events from X.
+
+libactions
+----------
+This is how we abstract any kind of action that should be executed in response
+to any event in Aegis.  This is a key abstraction which provides the flexibility
+to hide any details of the action from Aegis.  This is one way how we plan to
+provide scripting language support in Aegis.  Simply make a RubyAction class,
+and have it do what needs to be done to execute Ruby code in C++, and then
+register that RubyAction with the event subsystem, and you have just enabled
+Ruby scripting abilities to Aegis.  Of course this abstraction also handles
+SystemActions, SignalActions, or any other *Action you can think of.
+
+liblogger
+---------
+This is not a critical module in Aegis, it does, however provide support for
+logging.  It also allows control of the logging level for the entire system from
+a single point of control.  It is pretty crude, but it works.
+
+src/ directory
+--------------
+This is where the "core" of the wm resides.  The core, other than being a bad
+movie, is where we glue together all the other pieces of the wm to make a single
+coherent window manager.  From time to time, it will be necessary to pare down
+this directory and shuffle logical units of functionality into separate modules
+(once again wave your hands, but this time say 'static library').
+
+Possible logical units of functionality.
+----------------------------------------
+libwmcompat - This would provide all the functionality necessary to provide Aegis
+	with EWMH and ICCM compatibility.
+libconfig - This would provide configuration utilities.
+libext - This would provide that extension capabilities of Aegis (re: scripting
+	languages).
+libmenu - This would provide all menu functionality (this one is a stretch).
+libtaskbar - Provide all taskbar functionality (this is a stretch also).
+
+
+What is a Widget?
+-----------------
+A Widget is, quite simply a doodad, doohickey, thingamabob.  Widget is short for
+WIndow GaDGET.  It is a thing that goes in a window (computer version of a
+window, not the MS version, nor that hardware store type).  A widget is a
+button, a scrollbar, a titlebar, heck the window itself is a widget.  A widget
+is something which has a graphical visualization thatthe user can see.  A widget
+also has a set of actions that it can perform in response to user input, be it a
+double click, key press, or any other way that a user might interact with
+something on the screen.
+
+AWidgets...
+-----------
+AWidget is short for A Widget. :D  No, AWidget is really short for Aegis
+Widget.  It is the nifty little widget library hyriand wrote.  When hyriand
+originally wrote libawidget, it did not contain the code to respond to user
+events.  They would respond to the X Events that they needed to display and
+update themselves.  To simplify their usage, AWidgets now track 3 things, these
+are:  Children AWidgets, AEffects, and Actions.  The Actions describe how the
+AWidget will respond to user input.

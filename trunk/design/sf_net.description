@@ -1,0 +1,38 @@
+Aegis -- The Scripting Language Agnostic WM
+-------------------------------------------
+
+We intend to create the first window manager that is configurable by any of a
+number of scripting languages.  While there a two window managers that already
+support scripting language support, sawfish/lisp, and kahakai/python, no other
+wm has succesfully supported scripting with more than one language.  Aegis is a
+project that was started by several developers that had been working on the Kahakai
+window manager, and who felt that further work on that wm was severly hampered
+by the poor code base.  We decided that a restart was the best way to acheive
+the goals that we had set for kahakai but were unable to acheive with kahakai
+code.  We forked aewm++, which is a very minimal C++ wm, and began work on
+Aegis.
+
+We intend to go where no wm has gone before.  Here is a taste of what we plan to
+do:
+  - Aegis will support multiple scripting languages.
+  - Aegis will make it relatively easy to create new language bindings.
+    - Swig is a nice tool, but there are languages that swig does not support,
+      and swig suffers all the shortcomings of other code generators.
+    - Aegis' support for scripting languages will not be dependent on swig.
+      Swig will be useful, but not necesary.
+  - Aegis will remain usable even if no scripting language extensions are
+    loaded.  Though this will undoubtedly result in reduced functionality.
+  - Aegis' configuration will be powerful, but it will be well organized so that
+    a user doesn't have to wade though large docs/man pages to make sense of the
+    configuration.
+  - Aegis will be written using OOAD.
+  - Aegis will be modular.  If someone hates COBOL with a passion, they can
+    install and use Aegis without requiring the COBOL language extensions.  :)
+  - Language extension modules will be loadable without the need for user
+    intervention.
+  - Aegis will provide an abstraction layer between the language and the aegis
+    core, so aegis may be extended with a language, yet the core will have no 
+    idea that it was.
+  - Aegis will support a flexible mechanism for reading configuration resources,
+    allowing Aegis to read configration from more than just files, including but
+    not limited to, databases, network connections, pipes, etc...

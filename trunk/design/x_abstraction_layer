@@ -1,0 +1,19 @@
+What?
+-----
+X drawing primitives suck.  At least it'd be easier if we wrote wrappers around
+the primitive X drawing functions that we use, and did things like create
+functions for drawing widgets and what not that X does not support.  There are
+more advantages than just this, if we have an X abstraction layer, and the
+lisencing issues surrounding XFree86 4.4 don't get resolved, we only have to
+change this stuff to move to Y Windows, or XOrg.  Furthermore, we can also use
+this to use something like Cairo in the future, or XCB.
+
+The general idea
+----------------
+It begins with the AegisEvent wrapper around an XEvent.  All code within the
+Aegis WM will not deal directly with XEvents, they will deal with AegisEvents.
+XEvent is a C union.  This maps well to polymorphism in C++.  There will
+actually be a whole slew of AegisEvent classes.  They may not necesarily
+correspond 1:1 with the structs in the XEvent union.  (I need to look at some
+design patterns to see which pattern fits best here, I know there is at least 
+one...It modifies the behavior of an object.)
