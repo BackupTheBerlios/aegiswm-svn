@@ -1,0 +1,26 @@
+
+file /usr/lib/scons/SCons/Environment.py,line 1019:
+	Configure( confdir = .sconf_temp )
+
+scons: `.sconf_temp/conftest_0.c' is up to date.
+scons: `.sconf_temp/conftest_0.o' is up to date.
+scons: `.sconf_temp/conftest_1.c' is up to date.
+scons: `.sconf_temp/conftest_1.o' is up to date.
+scons: `.sconf_temp/conftest_2.c' is up to date.
+scons: `.sconf_temp/conftest_2.o' is up to date.
+scons: `.sconf_temp/conftest_3.c' is up to date.
+scons: `.sconf_temp/conftest_3.o' is up to date.
+scons: `.sconf_temp/conftest_4.c' is up to date.
+scons: `.sconf_temp/conftest_4.o' is up to date.
+Checking for C header file X11/extensions/shape.h... scons: `.sconf_temp/conftest_5.c' is up to date.
+scons: `.sconf_temp/conftest_5.o' is up to date.
+yes
+Checking for C function setenv()... scons: `.sconf_temp/conftest_6.c' is up to date.
+scons: `.sconf_temp/conftest_6' is up to date.
+yes
+Checking for main() in C library X11... scons: `.sconf_temp/conftest_7.c' is up to date.
+scons: `.sconf_temp/conftest_7' is up to date.
+yes
+Checking for main() in C library Xext... scons: `.sconf_temp/conftest_8.c' is up to date.
+scons: `.sconf_temp/conftest_8' is up to date.
+yes
