@@ -155,6 +155,7 @@ void log_emerg(char * fmt, ...) {
 class Client;
 
 /// This is the enum of all Atoms that we care about.
+//{{{
 enum AtomIDs {
 	XA_WM_CLASS = 0,
 	XA_WM_HINTS,
@@ -166,6 +167,7 @@ enum AtomIDs {
 	WM_CLIENT_MACHINE,
 	XA_WM_COMMAND,
 };
+//}}}
 
 
 /// This is the main Aegis class.
@@ -197,6 +199,9 @@ class Aegis {
 
 		/// Run the event loop
 		void run();
+
+		/// Unparent all client windows and close down.
+		void quit();
 
 		/// Intern the Atoms we care about.
 		void internAtoms();

@@ -9,6 +9,7 @@
 #include "client.h"
 
 using std::map;
+using std::pair;
 using std::vector;
 
 //makes this available to the error handler
@@ -133,6 +134,18 @@ void Aegis::run() {
 				break;
 		}
 	}
+}
+//}}}
+//{{{
+void Aegis::quit() {
+	ClientMap::iterator iter, end = clients.end();
+
+	for(iter = clients.begin(); iter != end; iter++) {
+		std::pair<Window, Client *> par = (*iter);
+		Window win = (par.second)->unparent();
+		XMapWindow(dpy, win);
+	}
+	XCloseDisplay(dpy);
 }
 //}}}
 //{{{
@@ -286,7 +299,7 @@ void Aegis::handleMapRequest(XEvent * xev) {
 	Client * c = new Client(dpy, this, xmr.window);
 
 	clients.print();
-	clients[xmr.window] = c;
+	clients[c->window()] = c;
 	clients.print();
 
 	log_debug("Leaving handleMapRequest()\n");
@@ -296,17 +309,26 @@ void Aegis::handleMapRequest(XEvent * xev) {
 void Aegis::handleUnmapNotify(XEvent * xev) {
 	log_debug("Entering handleUnmapNotify(Xevent * ev)\n");
 	XUnmapEvent umap = xev->xunmap;
-	Client * c = clients.getClient(umap.window);
+	Client * c;
+	Window win;
 
-	if(c) {
-		clients.print();
-		c->unmap();
-		delete c;
-		c = NULL;
-		clients.erase(umap.window);
-		clients.print();
+	if(clients.exists(umap.window)) {
+		c = clients[umap.window];
+	}
+	else if(clients.exists(umap.event)) {
+		c = clients[umap.event];
+	}
+	else {
+		goto exit;  //goto has its place...
 	}
 
+	win = c->window();
+	c->unmap();
+	delete c;
+	c = NULL;
+	clients.erase(win);
+
+exit:
 	log_debug("Leaving handleUnmapNotify()\n");
 }
 //}}}
@@ -358,6 +380,17 @@ void Aegis::handleButtonPress(XEvent * xev) {
 	else {
 		//handle button presses on the root window
 		log_debug("No client clicked, acting on root window click\n");
+		switch(xbp.button) {
+			case 1:
+				break;
+			case 2:
+				break;
+			case 3:
+				log_debug("Quitting...");
+				quit();
+				exit(EXIT_SUCCESS);
+				break;
+		}
 	}
 	log_debug("Leaving handleButtonPress()\n");
 }
@@ -387,6 +420,8 @@ void Aegis::handleMotionNotify(XEvent * ev) {
 	}
 	else {
 		log_debug("There is no client with window id %i\n", (int)xmov.window);
+		log_debug("There is no client with a subwindow id %i\n", (int)xmov.subwindow);
+		clients.print();
 	}
 	log_debug("Leaving handleMotionNotify()\n");
 }

@@ -25,6 +25,9 @@ class ClientMap : public std::map<Window, Client *> {
 		/// the map if the key does not exist.
 		virtual Client * getClient(Window key);
 
+		/// Returns true if the key exists in the map.
+		virtual bool exists(Window key);
+
 		void print();
 };
 #endif

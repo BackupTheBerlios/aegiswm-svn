@@ -51,12 +51,12 @@ Client::Client(Display * dpy, Aegis * aegis, Window window) : state() {
 	adopted = window;
 
 	//set some window attributes
-	pattr.do_not_propagate_mask = ButtonPressMask|ButtonReleaseMask|ButtonMotionMask;
+	//pattr.do_not_propagate_mask = ButtonPressMask|ButtonReleaseMask|ButtonMotionMask;
 	pattr.override_redirect=False;
 	pattr.event_mask = ButtonMotionMask       | SubstructureRedirectMask | 
-		SubstructureNotifyMask | ButtonPressMask          | 
-		ButtonReleaseMask      | ExposureMask             | 
-		EnterWindowMask        | LeaveWindowMask;
+					   SubstructureNotifyMask | ButtonPressMask          | 
+					   ButtonReleaseMask      | ExposureMask             | 
+					   EnterWindowMask        | LeaveWindowMask;
 
 	//get the window's name
 	getXWindowName();
@@ -69,7 +69,7 @@ Client::Client(Display * dpy, Aegis * aegis, Window window) : state() {
 	//make an outer frame big enough for the titlebar and the window we will reparent.
 	id = XCreateWindow(dpy, aegis->rootWindow(), state.x, state.y, state.w, state.h + 15, 0,
 			CopyFromParent, CopyFromParent, DefaultVisual(dpy, aegis->getScreen()),
-			CWOverrideRedirect | CWDontPropagate | CWBackPixel | CWBorderPixel | CWEventMask, 
+			CWOverrideRedirect | /*CWDontPropagate |*/ CWBackPixel | CWBorderPixel | CWEventMask, 
 			&pattr);
 
 	///make the titlebar.
@@ -176,5 +176,12 @@ void Client::raise() {
 	XRaiseWindow(dpy, id);
 	XSetInputFocus(dpy, id, RevertToNone, CurrentTime);
 	log_info("Done raising %s window", state.name);
+}
+//}}}
+//{{{
+Window Client::unparent() {
+	log_info("Unparenting %i window", (int)adopted);
+	XReparentWindow(dpy, adopted, wm->rootWindow(), state.x, state.y);
+	return adopted;
 }
 //}}}

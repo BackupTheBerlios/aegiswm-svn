@@ -150,10 +150,6 @@ class Client {
 		/// Destroy this Client and all its resources.
 		~Client();
 
-		/// This returns the Window ID of the window that we adopted when this Client object was
-		/// created.
-		inline Window getAdoptedWindowID() { return adopted; }
-
 		/// This returns a list (ok, really a vector) of all the windows that make up this Client
 		/// object.
 		std::vector<Window> getWindowList();
@@ -167,9 +163,19 @@ class Client {
 		/// Unmap this client and all its subwindows.
 		void unmap();
 
-		/// Returns the top level window for this Client object.
-		inline Window getTopLevel() { return id; }
+		/// Take the child window that was passed in the constructor and reparent to the root
+		/// window.  This undoes that portion of the constructor.  This does not deallocate any
+		/// memory.
+		Window unparent();
 
+		////////////////////////////////////////////////////////////////////////////////////
+		////                These are the trivial accessor functions                    ////
+		////////////////////////////////////////////////////////////////////////////////////
+		/// This returns the Window ID of the window that we adopted when this Client object was
+		/// created.
+		inline Window getAdoptedWindowID() { return adopted; }
+		/// This returns the window ID of this client.
+		inline Window window() { return id; }
 		/// Returns the name of the Window.
 		inline char * getName() { return state.name; }
 };

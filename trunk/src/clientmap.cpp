@@ -34,6 +34,16 @@ Client * ClientMap::getClient(Window key) {
 //}}}
 
 //{{{
+bool ClientMap::exists(Window key) {
+	bool rv = true;
+
+	if(this->find(key) == this->end())
+		rv = false;
+
+	return rv;
+}
+//}}}
+//{{{
 void ClientMap::print() {
 	ClientMap::iterator iter, end = this->end();
 	log_info("ClientMap = {");
