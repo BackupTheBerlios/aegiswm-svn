@@ -21,12 +21,37 @@
 /// @mainpage
 /// This is the documentation for AegisWM.
 
+/// This struct represents a single (x,y) point.
+//{{{
+struct point {
+	int x;  ///< The x coordinate of the point
+	int y;  ///< The y coordinate of the point
+
+	/// Create a point with coordinates (x, y).
+	//{{{
+	point(int x = 0, int y = 0) {
+		this->x = x;
+		this->y = y;
+	}
+	//}}}
+
+	/// Set the point to be (x, y).
+	//{{{
+	inline void set(int x, int y) {
+		this->x = x;
+		this->y = y;
+	}
+	//}}}
+};
+//}}}
+
 /// This struct tracks the internal state of Aegis.  It tracks things such as if we can move a
 /// window.  This allows us to enforce a state machine view of certain events.  For example, we
 /// cannot move a window unless a button is currently pressed, we move that window until the button
 /// is unpressed.  That fits well into a state transition model.
 struct AegisState {
 	bool button_down; ///< Is a button currently pressed?
+	point ppos;  ///< This is pointer position as of the last XButtonPressEvent.
 };
 
 #ifdef __GNUC__
@@ -144,6 +169,7 @@ enum AtomIDs {
 
 
 /// This is the main Aegis class.
+//{{{
 class Aegis {
 	protected:
 		Display * dpy;     ///< Our Display.
@@ -160,6 +186,8 @@ class Aegis {
 		/// This discards all superflous events on the window specified, and with the given
 		/// event_type.  It returns the number of events of type event_type it skipped.
 		int compressEvent(Window win, int event_type, XEvent * ev);
+
+		AegisState aestate;
 	public:
 		/// Construct the Aegis window manager.
 		Aegis();
@@ -199,7 +227,11 @@ class Aegis {
 		/// Returns the Window ID of the root window.
 		inline Window rootWindow() { return root; }
 
+		/// Get a pointer to the AegisState struct.
+		inline AegisState * getState() { return &aestate; }
+
 		/// Returns the Screen.
 		inline int getScreen() { return scr; }
 };
+//}}}
 #endif

@@ -52,7 +52,7 @@ static char * event_names[LASTEvent] = {
 //}}}
 
 //{{{
-Aegis::Aegis() : clients(), atoms() {
+Aegis::Aegis() : clients(), atoms(), aestate() {
 	XSetWindowAttributes sattr;
 
 	dpy = XOpenDisplay(getenv("DISPLAY"));
@@ -133,15 +133,106 @@ void Aegis::run() {
 //}}}
 //{{{
 void Aegis::internAtoms() {
-	atoms[XA_WM_CLASS]              = XInternAtom(dpy, "XA_WM_CLASS", False);
-	atoms[XA_WM_HINTS]              = XInternAtom(dpy, "XA_WM_HINTS", False);
-	atoms[XA_WM_ICON_NAME]          = XInternAtom(dpy, "XA_WM_ICON_NAME", False);
-	atoms[XA_WM_NAME]               = XInternAtom(dpy, "XA_WM_NAME", False);
-	atoms[XA_WM_NORMAL_HINTS]       = XInternAtom(dpy, "XA_WM_NORMAL_HINTS", False);
-	atoms[XA_WM_TRANSIENT_FOR_HINT] = XInternAtom(dpy, "XA_WM_TRANSIENT_FOR_HINT", False);
-	atoms[XA_WM_ZOOM_HINTS]         = XInternAtom(dpy, "XA_WM_ZOOM_HINTS", False);
-	atoms[WM_CLIENT_MACHINE]        = XInternAtom(dpy, "WM_CLIENT_MACHINE", False);
-	atoms[XA_WM_COMMAND]            = XInternAtom(dpy, "XA_WM_COMMAND", False);
+	atoms[XA_WM_CLASS]                        = XInternAtom(dpy, "XA_WM_CLASS", false);
+	atoms[XA_WM_HINTS]                        = XInternAtom(dpy, "XA_WM_HINTS", false);
+	atoms[XA_WM_ICON_NAME]                    = XInternAtom(dpy, "XA_WM_ICON_NAME", false);
+	atoms[XA_WM_NAME]                         = XInternAtom(dpy, "XA_WM_NAME", false);
+	atoms[XA_WM_NORMAL_HINTS]                 = XInternAtom(dpy, "XA_WM_NORMAL_HINTS", false);
+	atoms[XA_WM_TRANSIENT_FOR_HINT]           = XInternAtom(dpy, "XA_WM_TRANSIENT_FOR_HINT", false);
+	atoms[XA_WM_ZOOM_HINTS]                   = XInternAtom(dpy, "XA_WM_ZOOM_HINTS", false);
+	atoms[WM_CLIENT_MACHINE]                  = XInternAtom(dpy, "WM_CLIENT_MACHINE", false);
+	atoms[XA_WM_COMMAND]                      = XInternAtom(dpy, "XA_WM_COMMAND", false);
+
+	//These are the rest of the atoms that we will eventually support  {{{
+#if 0
+	atoms[UTF8_STRING]                        = XInternAtom(display, "UTF8_STRING", false);
+	atoms[WM_PROTOCOLS]                       = XInternAtom(display, "WM_PROTOCOLS", false);
+	atoms[WM_DELETE_WINDOW]                   = XInternAtom(display, "WM_DELETE_WINDOW", false);
+	atoms[WM_TAKE_FOCUS]                      = XInternAtom(display, "WM_TAKE_FOCUS", false);
+	atoms[WM_STATE]                           = XInternAtom(display, "WM_STATE", false);
+	atoms[WM_CHANGE_STATE]                    = XInternAtom(display, "WM_CHANGE_STATE", false);
+	atoms[_MOTIF_WM_HINTS]                    = XInternAtom(display, "_MOTIF_WM_HINTS", false);
+	atoms[_NET_SUPPORTED]                     = XInternAtom(display, "_NET_SUPPORTED", false);
+	atoms[_NET_SUPPORTING_WM_CHECK]           = XInternAtom(display, "_NET_SUPPORTING_WM_CHECK", false);
+	atoms[_NET_CLIENT_LIST]                   = XInternAtom(display, "_NET_CLIENT_LIST", false);
+	atoms[_NET_CLIENT_LIST_STACKING]          = XInternAtom(display, "_NET_CLIENT_LIST_STACKING", false);
+	atoms[_NET_ACTIVE_WINDOW]                 = XInternAtom(display, "_NET_ACTIVE_WINDOW", false);
+	atoms[_NET_DESKTOP_VIEWPORT]              = XInternAtom(display, "_NET_DESKTOP_VIEWPORT", false);
+	atoms[_NET_DESKTOP_GEOMETRY]              = XInternAtom(display, "_NET_DESKTOP_GEOMETRY", false);
+	atoms[_NET_CURRENT_DESKTOP]               = XInternAtom(display, "_NET_CURRENT_DESKTOP", false);
+	atoms[_NET_NUMBER_OF_DESKTOPS]            = XInternAtom(display, "_NET_NUMBER_OF_DESKTOPS", false);
+	atoms[_NET_DESKTOP_NAMES]                 = XInternAtom(display, "_NET_DESKTOP_NAMES", false);
+	atoms[_NET_WORKAREA]                      = XInternAtom(display, "_NET_WORKAREA", false);
+	atoms[_NET_WM_DESKTOP]                    = XInternAtom(display, "_NET_WM_DESKTOP", false);
+	atoms[_NET_WM_NAME]                       = XInternAtom(display, "_NET_WM_NAME", false);
+	atoms[_NET_WM_VISIBLE_NAME]               = XInternAtom(display, "_NET_WM_VISIBLE_NAME", false);
+	atoms[_NET_WM_STRUT]                      = XInternAtom(display, "_NET_WM_STRUT", false);
+	atoms[_NET_WM_STRUT_PARTIAL]              = XInternAtom(display, "_NET_WM_STRUT_PARTIAL", false);
+	atoms[_NET_WM_PID]                        = XInternAtom(display, "_NET_WM_PID", false);
+	atoms[_NET_WM_USER_TIME]                  = XInternAtom(display, "_NET_WM_USER_TIME", false);
+	atoms[_NET_WM_STATE]                      = XInternAtom(display, "_NET_WM_STATE", false);
+	atoms[_NET_WM_STATE_STICKY]               = XInternAtom(display, "_NET_WM_STATE_STICKY", false);
+	atoms[_NET_WM_STATE_SHADED]               = XInternAtom(display, "_NET_WM_STATE_SHADED", false);
+	atoms[_NET_WM_STATE_HIDDEN]               = XInternAtom(display, "_NET_WM_STATE_HIDDEN", false);
+	atoms[_NET_WM_STATE_MAXIMIZED_VERT]       = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_VERT", false);
+	atoms[_NET_WM_STATE_MAXIMIZED_HORZ]       = XInternAtom(display, "_NET_WM_STATE_MAXIMIZED_HORZ", false);
+	atoms[_NET_WM_STATE_ABOVE]                = XInternAtom(display, "_NET_WM_STATE_ABOVE", false);
+	atoms[_NET_WM_STATE_BELOW]                = XInternAtom(display, "_NET_WM_STATE_BELOW", false);
+	atoms[_NET_WM_STATE_STAYS_ON_TOP]         = XInternAtom(display, "_NET_WM_STATE_STAYS_ON_TOP", false);
+	atoms[_NET_WM_STATE_STAYS_AT_BOTTOM]      = XInternAtom(display, "_NET_WM_STATE_STAYS_AT_BOTTOM", false);
+	atoms[_NET_WM_STATE_FULLSCREEN]           = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", false);
+	atoms[_NET_WM_STATE_SKIP_TASKBAR]         = XInternAtom(display, "_NET_WM_STATE_SKIP_TASKBAR", false);
+	atoms[_NET_WM_ALLOWED_ACTIONS]            = XInternAtom(display, "_NET_WM_ALLOWED_ACTIONS", false);
+	atoms[_NET_WM_ACTION_MOVE]                = XInternAtom(display, "_NET_WM_ACTION_MOVE", false);
+	atoms[_NET_WM_ACTION_RESIZE]              = XInternAtom(display, "_NET_WM_ACTION_RESIZE", false);
+	atoms[_NET_WM_ACTION_MINIMIZE]            = XInternAtom(display, "_NET_WM_ACTION_MINIMIZE", false);
+	atoms[_NET_WM_ACTION_SHADE]               = XInternAtom(display, "_NET_WM_ACTION_SHADE", false);
+	atoms[_NET_WM_ACTION_STICK]               = XInternAtom(display, "_NET_WM_ACTION_STICK", false);
+	atoms[_NET_WM_ACTION_MAXIMIZE_HORZ]       = XInternAtom(display, "_NET_WM_ACTION_MAXIMIZE_HORZ", false);
+	atoms[_NET_WM_ACTION_MAXIMIZE_VERT]       = XInternAtom(display, "_NET_WM_ACTION_MAXIMIZE_VERT", false);
+	atoms[_NET_WM_ACTION_FULLSCREEN]          = XInternAtom(display, "_NET_WM_ACTION_FULLSCREEN", false);
+	atoms[_NET_WM_ACTION_CHANGE_DESKTOP]      = XInternAtom(display, "_NET_WM_ACTION_CHANGE_DESKTOP", false);
+	atoms[_NET_WM_ACTION_CLOSE]               = XInternAtom(display, "_NET_WM_ACTION_CLOSE", false);
+	atoms[_NET_WM_WINDOW_TYPE]                = XInternAtom(display, "_NET_WM_WINDOW_TYPE", false);
+	atoms[_NET_WM_WINDOW_TYPE_DESKTOP]        = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DESKTOP", false);
+	atoms[_NET_WM_WINDOW_TYPE_DOCK]           = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", false);
+	atoms[_NET_WM_WINDOW_TYPE_TOOLBAR]        = XInternAtom(display, "_NET_WM_WINDOW_TYPE_TOOLBAR", false);
+	atoms[_NET_WM_WINDOW_TYPE_MENU]           = XInternAtom(display, "_NET_WM_WINDOW_TYPE_MENU", false);
+	atoms[_NET_WM_WINDOW_TYPE_SPLASH]         = XInternAtom(display, "_NET_WM_WINDOW_TYPE_SPLASH", false);
+	atoms[_NET_WM_WINDOW_TYPE_NORMAL]         = XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", false);
+	atoms[_NET_WM_WINDOW_TYPE_DIALOG]         = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DIALOG", false);
+	atoms[_NET_WM_WINDOW_TYPE_UTILITY]        = XInternAtom(display, "_NET_WM_WINDOW_TYPE_UTILITY", false);
+	atoms[_NET_CLOSE_WINDOW]                  = XInternAtom(display, "_NET_CLOSE_WINDOW", false);
+	atoms[_NET_MOVERESIZE_WINDOW]             = XInternAtom(display, "_NET_MOVERESIZE_WINDOW", false);
+	atoms[_NET_WM_MOVERESIZE]                 = XInternAtom(display, "_NET_WM_MOVERESIZE", false);
+	atoms[_NET_WM_ICON]                       = XInternAtom(display, "_NET_WM_ICON", false);
+	atoms[_NET_WM_ICON_IMAGE]                 = XInternAtom(display, "_NET_WM_ICON_IMAGE", false);
+	atoms[_NET_WM_ICON_SVG]                   = XInternAtom(display, "_NET_WM_ICON_SVG", false);
+	atoms[_AEGIS_NET_WM_STATE_DECOR]          = XInternAtom(display, "_AEGIS_NET_WM_STATE_DECOR", false);
+	atoms[_AEGIS_NET_WM_STATE_DECOR_TITLE]    = XInternAtom(display, "_AEGIS_NET_WM_STATE_DECOR_TITLE", false);
+	atoms[_AEGIS_NET_WM_STATE_DECOR_BORDER]   = XInternAtom(display, "_AEGIS_NET_WM_STATE_DECOR_BORDER", false);
+	atoms[_AEGIS_NET_WM_STATE_DECOR_HANDLES]  = XInternAtom(display, "_AEGIS_NET_WM_STATE_DECOR_HANDLES", false);
+	atoms[_AEGIS_NET_MAXIMIZED_RESTORE]       = XInternAtom(display, "_AEGIS_NET_MAXIMIZED_RESTORE", false);
+	atoms[_AEGIS_NET_VIRTUAL_POS]             = XInternAtom(display, "_AEGIS_NET_VIRTUAL_POS", false);
+	atoms[_AEGIS_NET_WM_DESKTOP_MASK]         = XInternAtom(display, "_AEGIS_NET_WM_DESKTOP_MASK", false);
+	atoms[_AEGIS_NET_WM_MERGED_TO]            = XInternAtom(display, "_AEGIS_NET_WM_MERGED_TO", false);
+	atoms[_AEGIS_NET_WM_MERGED_TYPE]          = XInternAtom(display, "_AEGIS_NET_WM_MERGED_TYPE", false);
+	atoms[_AEGIS_NET_WM_MERGE_ORDER]          = XInternAtom(display, "_AEGIS_NET_WM_MERGE_ORDER", false);
+	atoms[_AEGIS_NET_WM_MERGE_ATFRONT]        = XInternAtom(display, "_AEGIS_NET_WM_MERGE_ATFRONT", false);
+	atoms[_AEGIS_NET_RESTART]                 = XInternAtom(display, "_AEGIS_NET_RESTART", false);
+	atoms[_AEGIS_NET_SHUTDOWN]                = XInternAtom(display, "_AEGIS_NET_SHUTDOWN", false);
+	atoms[XdndAware]                          = XInternAtom(display, "XdndAware", false);
+	atoms[XdndEnter]                          = XInternAtom(display, "XdndEnter", false);
+	atoms[XdndLeave]                          = XInternAtom(display, "XdndLeave", false);
+	atoms[_KDE_NET_SYSTEM_TRAY_WINDOWS]       = XInternAtom(display, "_KDE_NET_SYSTEM_TRAY_WINDOWS", false);
+	atoms[_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR] = XInternAtom(display, "_KDE_NET_WM_SYSTEM_TRAY_WINDOW_FOR", false);
+	atoms[_XROOTPMAP_ID]                      = XInternAtom(display, "_XROOTPMAP_ID", false);
+	atoms[_AEGIS_NET_EVENT_NOTIFY]            = XInternAtom(display, "_AEGIS_NET_EVENT_NOTIFY", false);
+	atoms[_AEGIS_NET_DOCKAPP_HOLDER]          = XInternAtom(display, "_AEGIS_NET_DOCKAPP_HOLDER", false);
+	atoms[_AEGIS_NET_DOCKAPP_PRIO]            = XInternAtom(display, "_AEGIS_NET_DOCKAPP_PRIO", false);
+	atoms[_AEGIS_NET_CFG]                     = XInternAtom(display, "_AEGIS_NET_CFG", false);
+#endif
+	//}}}
 }
 //}}}
 //{{{
@@ -242,6 +333,8 @@ void Aegis::handleButtonPress(XEvent * xev) {
 	log_debug("xev->window == %i\n", (int)xbp.window);
 	log_debug("xev->button == %i\n", (int)xbp.button);
 	log_debug("xev->state  == %i\n", (int)xbp.state);
+	log_debug("(x, y) == (%i, %i)\n", (int)xbp.x_root, (int)xbp.y_root);
+	aestate.ppos.set(xbp.x_root, xbp.y_root);
 
 	if(c) {
 		switch(xbp.button) {
@@ -256,6 +349,7 @@ void Aegis::handleButtonPress(XEvent * xev) {
 	}
 	else {
 		//handle button presses on the root window
+		log_debug("No client clicked, acting on root window click\n");
 	}
 	log_debug("Leaving handleButtonPress()\n");
 }
@@ -278,6 +372,10 @@ void Aegis::handleMotionNotify(XEvent * ev) {
 	if(c) {
 		log_debug("Moving window %i to (%i, %i)\n", (int)xmov.window, xmov.x_root, xmov.y_root);
 		c->moveTo(xmov.x_root, xmov.y_root);
+
+		//Update the position of the cursor
+		aestate.ppos.x = xmov.x_root;
+		aestate.ppos.y = xmov.y_root;
 	}
 	else {
 		log_debug("There is no client with window id %i\n", (int)xmov.window);
@@ -303,10 +401,12 @@ int Aegis::compressEvent(Window win, int event_type, XEvent * ev) {
 int main(int argc, char ** argv) {
 	//set up logging
 	openlog("aegiswm", LOG_CONS, LOG_USER);
+	log_info("********** Starting AegisWM **********\n");
 
 	Aegis aegis;
 	aegis.run();
 
+	log_info("********** Shutting Down AegisWM **********\n");
 	closelog();
 }
 //}}}

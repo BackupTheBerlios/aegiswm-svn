@@ -134,7 +134,31 @@ vector<Window> Client::getWindowList() {
 //}}}
 //{{{
 void Client::moveTo(int x, int y) {
-	XMoveWindow(dpy, id, x, y);
+	log_debug("Entering Client::moveTo(%i, %i)", x, y);
+	int curx, cury;
+	int dx, dy;
+	AegisState * wmstate = wm->getState();
+
+	//get the current x and y coordinates of the top left corner of the window relative to the root
+	//window
+	curx = state.x;
+	cury = state.y;
+	//get the number of pixels to move.  This is the difference between the x,y passed in and the
+	//previous known position of the cursor
+	dx = x - wmstate->ppos.x;
+	dy = y - wmstate->ppos.y;
+
+	log_info("curx = %i, cury = %i", curx, cury);
+	log_info("dx = %i, dy = %i", dx, dy);
+
+	//move the window
+	XMoveWindow(dpy, id, curx + dx, cury + dy);
+
+	//update our window state
+	state.x += dx;;
+	state.y += dy;;
+
+	log_debug("Leaving Client::moveTo()");
 }
 //}}}
 //{{{
@@ -149,6 +173,7 @@ void Client::unmap() {
 void Client::raise() {
 	log_info("Raising %s window", state.name);
 	XRaiseWindow(dpy, id);
+	XSetInputFocus(dpy, id, RevertToNone, CurrentTime);
 	log_info("Done raising %s window", state.name);
 }
 //}}}
