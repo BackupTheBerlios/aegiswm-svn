@@ -128,10 +128,9 @@ resources.o: resources.cpp ../config.h /usr/X11R6/include/X11/Xlib.h \
   /usr/lib/gcc-lib/i686-pc-linux-gnu/3.3.4/include/g++-v3/istream \
   /usr/lib/gcc-lib/i686-pc-linux-gnu/3.3.4/include/g++-v3/bits/istream.tcc \
   refcounted.h screen.h /usr/X11R6/include/X11/extensions/Xinerama.h \
-  dockapp.h aegis_regex.h /usr/include/regex.h style.h \
-  /usr/include/cairo.h /usr/include/cairo-features.h \
-  /usr/include/pixman.h /usr/include/stdint.h \
-  /usr/X11R6/include/X11/extensions/Xrender.h \
+  dockapp.h ae_regex.h /usr/include/regex.h style.h /usr/include/cairo.h \
+  /usr/include/cairo-features.h /usr/include/pixman.h \
+  /usr/include/stdint.h /usr/X11R6/include/X11/extensions/Xrender.h \
   /usr/X11R6/include/X11/extensions/render.h \
   /usr/X11R6/include/X11/Xutil.h /usr/include/fontconfig/fontconfig.h \
   /usr/include/ft2build.h \
@@ -333,7 +332,7 @@ refcounted.h :
 screen.h :
 /usr/X11R6/include/X11/extensions/Xinerama.h :
 dockapp.h :
-aegis_regex.h :
+ae_regex.h :
 /usr/include/regex.h :
 style.h :
 /usr/include/cairo.h :

@@ -42,9 +42,9 @@ class StyleRegex;
 
 #define MAX_SUBWIN_LEVEL 16
 
-class WaScreen;
+class AegisScreen;
 class ShapeInfo;
-class WaFrameWindow;
+class AegisFrameWindow;
 class SubWindowObject;
 class FrameSubWindowObject;
 class RootWindowObject;
@@ -65,7 +65,7 @@ class StyleBuffer {
 
 class DWindowObject : public AWindowObject {
 	public:
-		DWindowObject(WaScreen *, Window, int, WaStringMap *, char *);
+		DWindowObject(AegisScreen *, Window, int, AegisStringMap *, char *);
 		virtual ~DWindowObject(void);
 
 		void updateSubwindows(void);
@@ -79,7 +79,7 @@ class DWindowObject : public AWindowObject {
 		virtual void styleUpdate(bool, bool);
 		virtual void currentPositionAndSize(int *, int *,
 				unsigned int *, unsigned int *) = 0;
-		virtual WaSurface *getBgInfo(DWindowObject **, int *, int *) = 0;
+		virtual AegisSurface *getBgInfo(DWindowObject **, int *, int *) = 0;
 		virtual void evalWhatToRender(bool, bool, bool *, bool *, bool *) = 0;
 		virtual void startRender(void) {}
 		virtual void endRender(Pixmap) {}
@@ -125,7 +125,7 @@ class SubWindowObject : public DWindowObject {
 		void currentPositionAndSize(int *, int *,
 				unsigned int *, unsigned int *);
 		void evalWhatToRender(bool, bool, bool *, bool *, bool *);
-		WaSurface *getBgInfo(DWindowObject **, int *, int *);
+		AegisSurface *getBgInfo(DWindowObject **, int *, int *);
 
 		DWindowObject *parent;
 		SubwinInfo *sub_info;
@@ -143,9 +143,9 @@ class FrameSubWindowObject : public SubWindowObject {
 		void currentPositionAndSize(int *, int *,
 				unsigned int *, unsigned int *);
 		void evalWhatToRender(bool, bool, bool *, bool *, bool *);
-		WaSurface *getBgInfo(DWindowObject **, int *, int *);
+		AegisSurface *getBgInfo(DWindowObject **, int *, int *);
 
-		WaFrameWindow *frame;
+		AegisFrameWindow *frame;
 		int last_x, last_y, current_x, current_y;
 
 #ifdef    SHAPE
@@ -159,13 +159,13 @@ class FrameSubWindowObject : public SubWindowObject {
 
 class RootWindowObject : public DWindowObject {
 	public:
-		RootWindowObject(WaScreen *, Window, int, WaStringMap *, char *);
+		RootWindowObject(AegisScreen *, Window, int, AegisStringMap *, char *);
 		virtual ~RootWindowObject(void);
 
 		void currentPositionAndSize(int *, int *,
 				unsigned int *, unsigned int *);
 		void evalWhatToRender(bool, bool, bool *, bool *, bool *);
-		WaSurface *getBgInfo(DWindowObject **, int *, int *);
+		AegisSurface *getBgInfo(DWindowObject **, int *, int *);
 
 #ifdef    THREAD
 		pthread_mutex_t __win__render_mutex;
@@ -176,7 +176,7 @@ class RootWindowObject : public DWindowObject {
 
 };
 
-#include "aegis_regex.h"
+#include "ae_regex.h"
 #include "screen.h"
 
 typedef enum {
@@ -197,7 +197,7 @@ class SubwinInfo : public RefCounted<SubwinInfo> {
 
 class Style : public RenderGroup {
 	public:
-		Style(WaScreen *, char *);
+		Style(AegisScreen *, char *);
 		~Style(void);
 
 		void clear(void);
@@ -222,7 +222,7 @@ class StyleRegex : public WindowRegex {
 	public:
 		StyleRegex(int s, char *wr) : WindowRegex(s, wr) { style = NULL; }
 
-		inline Style *match(WaStringMap *m, int s, char *w = NULL) {
+		inline Style *match(AegisStringMap *m, int s, char *w = NULL) {
 			if (((WindowRegex *) this)->match(m, s, w))
 				return (Style *) style->ref();
 			else

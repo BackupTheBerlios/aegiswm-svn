@@ -29,9 +29,9 @@ extern "C" {
 
 #include "dockapp.h"
 
-DockappHandler::DockappHandler(WaScreen *scrn, char *_name) :
+DockappHandler::DockappHandler(AegisScreen *scrn, char *_name) :
 	RootWindowObject(scrn, 0, DockHandlerType,
-			new WaStringMap(WindowIDName, _name), "frame") {
+			new AegisStringMap(WindowIDName, _name), "frame") {
 		XSetWindowAttributes attrib_set;
 
 		hidden = true;
@@ -41,7 +41,7 @@ DockappHandler::DockappHandler(WaScreen *scrn, char *_name) :
 		height = 0;
 		desktop_mask = (1L << 16) - 1;
 		inworkspace = false;
-		name = WA_STRDUP(_name);
+		name = AE_STRDUP(_name);
 
 		int create_mask = CWOverrideRedirect | CWEventMask | CWColormap;
 
@@ -125,11 +125,11 @@ void DockappHandler::update(void) {
 			break;
 	}
 
-	top_spacing = WA_ROUND_U(_top_spacing);
-	bottom_spacing = WA_ROUND_U(_bottom_spacing);
-	left_spacing = WA_ROUND_U(_left_spacing);
-	right_spacing = WA_ROUND_U(_right_spacing);
-	grid_spacing = WA_ROUND_U(_grid_spacing);
+	top_spacing = AE_ROUND_U(_top_spacing);
+	bottom_spacing = AE_ROUND_U(_bottom_spacing);
+	left_spacing = AE_ROUND_U(_left_spacing);
+	right_spacing = AE_ROUND_U(_right_spacing);
+	grid_spacing = AE_ROUND_U(_grid_spacing);
 
 	list<Dockapp *>::iterator it = dockapp_list.begin();
 	for (; it != dockapp_list.end(); ++it) {
@@ -249,7 +249,7 @@ void DockappHandler::styleUpdate(bool pos_change, bool size_change) {
 		pushRenderEvent();
 }
 
-Dockapp::Dockapp(WaScreen *_ws, Window _id) :
+Dockapp::Dockapp(AegisScreen *_ws, Window _id) :
 	AWindowObject(NULL, _id, DockAppType, NULL, "client") {
 		char *host, *wclass, *wclassname;
 		int status, n;
@@ -258,10 +258,10 @@ Dockapp::Dockapp(WaScreen *_ws, Window _id) :
 		XSetWindowAttributes attrib_set;
 		XWindowAttributes attrib;
 
-		name = WA_STRDUP("");
-		wclass = WA_STRDUP("");
-		wclassname = WA_STRDUP("");
-		host = WA_STRDUP("");
+		name = AE_STRDUP("");
+		wclass = AE_STRDUP("");
+		wclassname = AE_STRDUP("");
+		host = AE_STRDUP("");
 		dh = NULL;
 		client_id = _id;
 		deleted = false;
@@ -306,7 +306,7 @@ Dockapp::Dockapp(WaScreen *_ws, Window _id) :
 
 		if (status) {
 			if (text_prop.encoding == XA_STRING)
-				name = wa_locale_to_utf8((char *) text_prop.value);
+				name = ae_locale_to_utf8((char *) text_prop.value);
 			else {
 
 #ifndef   X_HAVE_UTF8_STRING
@@ -315,7 +315,7 @@ Dockapp::Dockapp(WaScreen *_ws, Window _id) :
 
 				Xutf8TextPropertyToTextList(ws->display, &text_prop, &cl, &n);
 				if (cl) {
-					name = WA_STRDUP(cl[0]);
+					name = AE_STRDUP(cl[0]);
 					XFreeStringList(cl);
 				}
 			}
@@ -327,7 +327,7 @@ Dockapp::Dockapp(WaScreen *_ws, Window _id) :
 
 		if (status) {
 			if (text_prop.encoding == XA_STRING)
-				host = wa_locale_to_utf8((char *) text_prop.value);
+				host = ae_locale_to_utf8((char *) text_prop.value);
 			else {
 
 #ifndef   X_HAVE_UTF8_STRING
@@ -336,7 +336,7 @@ Dockapp::Dockapp(WaScreen *_ws, Window _id) :
 
 				Xutf8TextPropertyToTextList(ws->display, &text_prop, &cl, &n);
 				if (cl) {
-					host = WA_STRDUP(cl[0]);
+					host = AE_STRDUP(cl[0]);
 					XFreeStringList(cl);
 				}
 			}
@@ -349,11 +349,11 @@ Dockapp::Dockapp(WaScreen *_ws, Window _id) :
 
 		if (status) {
 			if (classhint->res_class) {
-				wclass = wa_locale_to_utf8((char *) classhint->res_class);
+				wclass = ae_locale_to_utf8((char *) classhint->res_class);
 				XFree(classhint->res_class);
 			}
 			if (classhint->res_name) {
-				wclassname = wa_locale_to_utf8((char *) classhint->res_name);
+				wclassname = ae_locale_to_utf8((char *) classhint->res_name);
 				XFree(classhint->res_name);
 			}
 		}
@@ -362,7 +362,7 @@ Dockapp::Dockapp(WaScreen *_ws, Window _id) :
 		char window_id_str[32];
 		snprintf(window_id_str, 32, "0x%lx", client_id);
 
-		WaStringMap *sm = new WaStringMap();
+		AegisStringMap *sm = new AegisStringMap();
 		sm->add(WindowIDName, name);
 		sm->add(WindowIDClassName, wclassname);
 		sm->add(WindowIDClass, wclass);

@@ -1,29 +1,29 @@
 /* Event.cc
-
-   Copyright © 2003 David Reveman.
-
-   This file is part of Aegis.
-
-   Aegis is free software; you can redistribute it and/or modify it under
-   the terms of the GNU General Public License as published by the Free
-   Software Foundation; either version 2, or (at your option) any later
-   version.
-
-   Aegis is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or
-   FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-   for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with Aegis; see the file COPYING. If not, write to the Free
-   Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA. */
+ *
+ * Copyright © 2003 David Reveman.
+ *
+ * This file is part of Aegis.
+ *
+ * Aegis is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free
+ * Software Foundation; either version 2, or (at your option) any later
+ * version.
+ *
+ * Aegis is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Aegis; see the file COPYING. If not, write to the Free
+ * Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+ * 02111-1307, USA. 
+ */
 
 #ifdef    HAVE_CONFIG_H
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-extern "C" {
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
@@ -64,13 +64,12 @@ extern "C" {
 #  include <signal.h>
 #endif // HAVE_SIGNAL_H
 
-}
-
 #include "event.h"
 #include "timer.h"
 #include "action.h"
 #include "window.h"
 
+//{{{
 EventHandler::EventHandler(Aegis *wa) {
 	aegis = wa;
 	focused = last_click_win = action_manager_window = None;
@@ -101,12 +100,14 @@ EventHandler::EventHandler(Aegis *wa) {
 
 	xfd = ConnectionNumber(aegis->display);
 }
-
+//}}}
+//{{{
 EventHandler::~EventHandler(void) {
 	moveresize_return_mask.clear();
 	menu_viewport_move_return_mask.clear();
 }
-
+//}}}
+//{{{
 void EventHandler::eventLoop(set<int> *return_mask, XEvent *event) {
 	fd_set rfds;
 
@@ -166,7 +167,8 @@ void EventHandler::eventLoop(set<int> *return_mask, XEvent *event) {
 		}
 	}
 }
-
+//}}}
+//{{{
 void EventHandler::handleEvent(XEvent *event) {
 	Window w;
 	int i, rx, ry;
@@ -247,7 +249,7 @@ void EventHandler::handleEvent(XEvent *event) {
 								 event->xbutton.x_root = rx;
 								 event->xbutton.y_root = ry;
 								 if (wo->type == WindowType) {
-									 WaWindow *ww = (WaWindow *) wo;
+									 AegisWindow *ww = (AegisWindow *) wo;
 									 ed.type = event->type;
 									 evAct(event, event->xmaprequest.window, &ed);
 									 if (! ww->mapped) {
@@ -280,7 +282,7 @@ void EventHandler::handleEvent(XEvent *event) {
 #ifdef    SHAPE
 						 if (event->type == aegis->shape_event) {
 							 XShapeEvent *e = (XShapeEvent *) event;
-							 WaWindow *ww = (WaWindow *)
+							 AegisWindow *ww = (AegisWindow *)
 								 aegis->findWin(e->window, WindowType);
 							 if (ww && aegis->shape)
 								 ww->shapeEvent();
@@ -291,7 +293,7 @@ void EventHandler::handleEvent(XEvent *event) {
 						 if (event->type == aegis->randr_event) {
 							 XRRScreenChangeNotifyEvent *e =
 								 (XRRScreenChangeNotifyEvent *) event;
-							 WaScreen *ws = (WaScreen *)
+							 AegisScreen *ws = (AegisScreen *)
 								 aegis->findWin(e->window, RootType);
 							 if (ws) {
 								 ws->width = e->width;
@@ -304,51 +306,52 @@ void EventHandler::handleEvent(XEvent *event) {
 						 break;
 	}
 }
-
+//}}}
+//{{{
 void EventHandler::evProperty(XPropertyEvent *e) {
-	WaWindow *ww;
+	AegisWindow *ww;
 
 	if (e->atom == XA_WM_NAME) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getXaName(ww);
 			ww->drawDecor();
 		}
 	}
 	else if (e->atom == XA_WM_CLASS) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getClassHint(ww);
 			ww->drawDecor();
 		}
 	}
 	else if (e->atom == aegis->net->net_wm_pid) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getWmPid(ww);
 			ww->drawDecor();
 		}
 	}
 	else if (e->atom == aegis->net->net_wm_user_time) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getWmUserTime(ww);
 		}
 	}
 	else if (e->atom == XA_WM_CLIENT_MACHINE) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getWMClientMachineHint(ww);
 			ww->drawDecor();
 		}
 	}
 	else if (e->atom == XA_WM_TRANSIENT_FOR) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getTransientForHint(ww);
 		}
 	}
 	else if (e->atom == XA_WM_HINTS) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getWMHints(ww);
 		}
 	}
 	else if (e->atom == XA_WM_NORMAL_HINTS) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			unsigned int w, h;
 			aegis->net->getWMNormalHints(ww);
 			ww->incSizeCheck(ww->attrib.width, ww->attrib.height, &w, &h);
@@ -360,45 +363,46 @@ void EventHandler::evProperty(XPropertyEvent *e) {
 		}
 	}
 	else if (e->atom == aegis->net->wm_protocols) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getWMProtocols(ww);
 		}
 	}
 	else if (e->atom == aegis->net->mwm_hints) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getMWMHints(ww);
 		}
 	}
 	else if (e->atom == aegis->net->net_wm_name) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			if (! aegis->net->getNetName(ww)) aegis->net->getXaName(ww);
 			ww->drawDecor();
 		}
 	}
 	else if (e->atom == aegis->net->net_wm_icon ||
 			e->atom == aegis->net->net_wm_icon_image) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getWmIconImage(ww);
 		}
 	}
 	else if (e->atom == aegis->net->net_wm_icon_svg) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 			aegis->net->getWmIconSvg(ww);
 		}
 	}
 	else if (e->atom == aegis->net->net_wm_strut) {
-		if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType)))
+		if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType)))
 			aegis->net->getWmStrut(ww);
 	}
 	else if (e->atom == aegis->net->xrootpmap_id) {
-		if (WaScreen *ws = (WaScreen *) aegis->findWin(e->window, RootType))
+		if (AegisScreen *ws = (AegisScreen *) aegis->findWin(e->window, RootType))
 			aegis->net->getXRootPMapId(ws);
 	}
 }
-
+//}}}
+//{{{
 void EventHandler::evFocus(XFocusChangeEvent *e) {
 	WindowObject *wo;
-	WaScreen *ws = NULL;
+	AegisScreen *ws = NULL;
 	EventDetail ed;
 	Window w;
 	int i, rx, ry;
@@ -408,7 +412,7 @@ void EventHandler::evFocus(XFocusChangeEvent *e) {
 		if ((wo = aegis->findWin(e->window,
 						WindowType | MenuItemType | RootType))) {
 			if (wo->type == RootType) {
-				ws = (WaScreen *) wo;
+				ws = (AegisScreen *) wo;
 				ws->focused = true;
 				aegis->net->setActiveWindow(ws, NULL);
 			}
@@ -418,7 +422,7 @@ void EventHandler::evFocus(XFocusChangeEvent *e) {
 				aegis->net->setActiveWindow(ws, NULL);
 			}
 			else if (wo->type == WindowType) {
-				WaWindow *wa = ((WaWindow *) wo);
+				AegisWindow *wa = ((AegisWindow *) wo);
 				wa->has_focus = true;
 				ws = wa->ws;
 				aegis->net->setActiveWindow(ws, wa);
@@ -438,7 +442,7 @@ void EventHandler::evFocus(XFocusChangeEvent *e) {
 		if ((wo = aegis->findWin(focused,
 						WindowType | MenuItemType | RootType))) {
 			if (wo->type == RootType) {
-				ws = (WaScreen *) wo;
+				ws = (AegisScreen *) wo;
 				ws->focused = false;
 			}
 			else if (wo->type == MenuItemType) {
@@ -448,7 +452,7 @@ void EventHandler::evFocus(XFocusChangeEvent *e) {
 				ws = ((MenuItem *) wo)->ws;
 			}
 			else if (wo->type == WindowType) {
-				WaWindow *wa = ((WaWindow *) wo);
+				AegisWindow *wa = ((AegisWindow *) wo);
 				wa->has_focus = false;
 				ws = wa->ws;
 			}
@@ -465,10 +469,11 @@ void EventHandler::evFocus(XFocusChangeEvent *e) {
 		focused = e->window;
 	}
 }
-
+//}}}
+//{{{
 void EventHandler::evConfigureRequest(XConfigureRequestEvent *e) {
 	WindowObject *wo;
-	WaWindow *ww;
+	AegisWindow *ww;
 	Dockapp *da;
 	XWindowChanges wc;
 
@@ -482,7 +487,7 @@ void EventHandler::evConfigureRequest(XConfigureRequestEvent *e) {
 
 	if ((wo = aegis->findWin(e->window, WindowType | DockAppType))) {
 		if (wo->type == WindowType) {
-			ww = (WaWindow *) wo;
+			ww = (AegisWindow *) wo;
 			if (e->value_mask & CWBorderWidth) ww->old_bw = e->border_width;
 			if (e->value_mask & (CWX | CWY)) {
 				if (e->value_mask & CWX) ww->attrib.x = e->x;
@@ -532,24 +537,26 @@ void EventHandler::evConfigureRequest(XConfigureRequestEvent *e) {
 	}
 	XConfigureWindow(e->display, e->window, e->value_mask, &wc);
 }
-
+//}}}
+//{{{
 void EventHandler::evColormap(XColormapEvent *e) {
 	XInstallColormap(e->display, e->colormap);
 }
-
+//}}}
+//{{{
 WindowObject *EventHandler::evMapRequest(XMapRequestEvent *e) {
 	XWindowAttributes attr;
 	WindowObject *wo = NULL;
-	WaScreen *ws = NULL;
+	AegisScreen *ws = NULL;
 	XWMHints *wm_hints = NULL;
-	WaWindow *ww = NULL;
+	AegisWindow *ww = NULL;
 
-	if ((ww = (WaWindow *) aegis->findWin(e->window, WindowType))) {
+	if ((ww = (AegisWindow *) aegis->findWin(e->window, WindowType))) {
 		if (ww->wstate & StateMinimizedMask) ww->unMinimize();
 	} else {
 		int status = 0;
 		int state = -1;
-		ws = (WaScreen *) aegis->findWin(e->parent, RootType);
+		ws = (AegisScreen *) aegis->findWin(e->parent, RootType);
 		status = XGetWindowAttributes(e->display, e->window, &attr);
 		if (! status) return NULL;
 
@@ -562,7 +569,7 @@ WindowObject *EventHandler::evMapRequest(XMapRequestEvent *e) {
 		}
 
 		if (! ws) {
-			ws = (WaScreen *) aegis->findWin(attr.root, RootType);
+			ws = (AegisScreen *) aegis->findWin(attr.root, RootType);
 			if (! ws) return NULL;
 		}
 
@@ -581,7 +588,7 @@ WindowObject *EventHandler::evMapRequest(XMapRequestEvent *e) {
 					Dockapp *d = new Dockapp(ws, e->window);
 					wo = d;
 				} else {
-					ww = new WaWindow(e->window, ws);
+					ww = new AegisWindow(e->window, ws);
 					ws->net->setClientList(ws);
 					ws->net->setClientListStacking(ws);
 					wo = ww;
@@ -591,7 +598,8 @@ WindowObject *EventHandler::evMapRequest(XMapRequestEvent *e) {
 	}
 	return wo;
 }
-
+//}}}
+//{{{
 void EventHandler::evUnmapDestroy(XEvent *e) {
 	DockappHandler *dh;
 	WindowObject *wo;
@@ -603,24 +611,24 @@ void EventHandler::evUnmapDestroy(XEvent *e) {
 					e->xreparent.window,
 					WindowType | DockAppType | SystrayType))) {
 		if (wo->type == WindowType) {
-			if (e->type == UnmapNotify && ((WaWindow *) wo)->pending_unmaps) {
-				((WaWindow *) wo)->pending_unmaps -= 1;
+			if (e->type == UnmapNotify && ((AegisWindow *) wo)->pending_unmaps) {
+				((AegisWindow *) wo)->pending_unmaps -= 1;
 				return;
 			}
 
-			((WaWindow *) wo)->deleted = false;
+			((AegisWindow *) wo)->deleted = false;
 			if (e->type == DestroyNotify)
-				((WaWindow *) wo)->deleted = true;
+				((AegisWindow *) wo)->deleted = true;
 			else if (e->type == ReparentNotify) {
-				if (e->xreparent.window != ((WaWindow *) wo)->id ||
-						e->xreparent.parent == ((WaWindow *) wo)->frame->id)
+				if (e->xreparent.window != ((AegisWindow *) wo)->id ||
+						e->xreparent.parent == ((AegisWindow *) wo)->frame->id)
 					return;
 				XEvent ev;
 				ev.xreparent = e->xreparent;
 				XPutBackEvent(aegis->display, &ev);
-				((WaWindow *) wo)->remap = true;
+				((AegisWindow *) wo)->remap = true;
 			}
-			delete ((WaWindow *) wo);
+			delete ((AegisWindow *) wo);
 		}
 		else if (wo->type == DockAppType) {
 			if (e->type == DestroyNotify)
@@ -640,14 +648,15 @@ void EventHandler::evUnmapDestroy(XEvent *e) {
 		}
 	}
 }
-
+//}}}
+//{{{
 void EventHandler::evClientMessage(XEvent *e, EventDetail *ed) {
 	Window w;
 	int i, rx, ry;
-	WaWindow *ww;
+	AegisWindow *ww;
 
 	if (e->xclient.message_type == aegis->net->net_active_window) {
-		if ((ww = (WaWindow *) aegis->findWin(e->xclient.window,
+		if ((ww = (AegisWindow *) aegis->findWin(e->xclient.window,
 						WindowType))) {
 			ww->raise();
 			aegis->focusNew(ww->id);
@@ -660,14 +669,14 @@ void EventHandler::evClientMessage(XEvent *e, EventDetail *ed) {
 		quit(EXIT_SUCCESS);
 	}
 	else if (e->xclient.message_type == aegis->net->net_wm_name) {
-		if ((ww = (WaWindow *) aegis->findWin(e->xclient.window,
+		if ((ww = (AegisWindow *) aegis->findWin(e->xclient.window,
 						WindowType))) {
 			aegis->net->getNetName(ww);
 			ww->drawDecor();
 		}
 	}
 	else if (e->xclient.message_type == aegis->net->wm_change_state) {
-		if ((ww = (WaWindow *) aegis->findWin(e->xclient.window,
+		if ((ww = (AegisWindow *) aegis->findWin(e->xclient.window,
 						WindowType))) {
 			if ((unsigned int) e->xclient.data.l[0] == IconicState)
 				ww->minimize();
@@ -678,7 +687,7 @@ void EventHandler::evClientMessage(XEvent *e, EventDetail *ed) {
 		}
 	}
 	else if (e->xclient.message_type == aegis->net->net_wm_desktop) {
-		if ((ww = (WaWindow *) aegis->findWin(e->xclient.window,
+		if ((ww = (AegisWindow *) aegis->findWin(e->xclient.window,
 						WindowType))) {
 			if ((unsigned int) e->xclient.data.l[0] == 0xffffffff ||
 					(unsigned int) e->xclient.data.l[0] == 0xfffffffe) {
@@ -703,7 +712,7 @@ void EventHandler::evClientMessage(XEvent *e, EventDetail *ed) {
 	}
 	else if (e->xclient.message_type ==
 			aegis->net->aegis_net_wm_desktop_mask) {
-		if ((ww = (WaWindow *) aegis->findWin(e->xclient.window,
+		if ((ww = (AegisWindow *) aegis->findWin(e->xclient.window,
 						WindowType))) {
 			if (e->xclient.data.l[0] <
 					((1L << ww->ws->config.desktops) - 1) &&
@@ -720,7 +729,7 @@ void EventHandler::evClientMessage(XEvent *e, EventDetail *ed) {
 		}
 	}
 	else if (e->xclient.message_type == aegis->net->net_wm_state) {
-		if ((ww = (WaWindow *) aegis->findWin(e->xclient.window,
+		if ((ww = (AegisWindow *) aegis->findWin(e->xclient.window,
 						WindowType))) {
 			bool max_done = false;
 			for (int i = 1; i < 3; i++) {
@@ -894,7 +903,7 @@ void EventHandler::evClientMessage(XEvent *e, EventDetail *ed) {
 			ed->type = LeaveNotify;
 		}
 
-		if (WaScreen *ws = (WaScreen *) aegis->findWin(e->xclient.window,
+		if (AegisScreen *ws = (AegisScreen *) aegis->findWin(e->xclient.window,
 					RootType)) {
 			XQueryPointer(ws->display, ws->id, &w, &w, &rx, &ry, &i, &i,
 					&(ed->x11mod));
@@ -909,21 +918,21 @@ void EventHandler::evClientMessage(XEvent *e, EventDetail *ed) {
 		evAct(e, e->xclient.window, ed);
 	}
 	else if (e->xclient.message_type == aegis->net->net_desktop_viewport) {
-		if (WaScreen *ws = (WaScreen *) aegis->findWin(e->xclient.window,
+		if (AegisScreen *ws = (AegisScreen *) aegis->findWin(e->xclient.window,
 					RootType))
 			ws->moveViewportTo(e->xclient.data.l[0], e->xclient.data.l[1]);
 	}
 	else if (e->xclient.message_type == aegis->net->net_close_window) {
-		if ((ww = (WaWindow *) aegis->findWin(e->xclient.window, WindowType)))
+		if ((ww = (AegisWindow *) aegis->findWin(e->xclient.window, WindowType)))
 			ww->close();
 	}
 	else if (e->xclient.message_type == aegis->net->net_current_desktop) {
-		if (WaScreen *ws = (WaScreen *) aegis->findWin(e->xclient.window,
+		if (AegisScreen *ws = (AegisScreen *) aegis->findWin(e->xclient.window,
 					RootType))
 			ws->goToDesktop(e->xclient.data.l[0]);
 	}
 	else if (e->xclient.message_type == aegis->net->net_moveresize_window) {
-		if ((ww = (WaWindow *) aegis->findWin(e->xclient.window,
+		if ((ww = (AegisWindow *) aegis->findWin(e->xclient.window,
 						WindowType))) {
 
 			char gravity = (char) e->xclient.data.l[0];
@@ -976,7 +985,7 @@ void EventHandler::evClientMessage(XEvent *e, EventDetail *ed) {
 		}
 	}
 	else if (e->xclient.message_type == aegis->net->net_wm_moveresize) {
-		if ((ww = (WaWindow *) aegis->findWin(e->xclient.window,
+		if ((ww = (AegisWindow *) aegis->findWin(e->xclient.window,
 						WindowType))) {
 			if (e->xclient.data.l[2] == _NET_WM_MOVERESIZE_MOVE ||
 					e->xclient.data.l[2] == _NET_WM_MOVERESIZE_MOVE_KEYBOARD)
@@ -1007,14 +1016,15 @@ void EventHandler::evClientMessage(XEvent *e, EventDetail *ed) {
 		}
 	}
 	else if (e->xclient.message_type == aegis->net->aegis_net_cfg) {
-		WaScreen *ws = (WaScreen *) aegis->findWin(e->xclient.window,
+		AegisScreen *ws = (AegisScreen *) aegis->findWin(e->xclient.window,
 				RootType);
 		if (ws)
 			aegis->net->getConfig(ws, e->xclient.data.l[0],
 					e->xclient.data.l[1], e->xclient.data.l[2]);
 	}
 }
-
+//}}}
+//{{{
 void EventHandler::evAct(XEvent *e, Window win, EventDetail *ed) {
 	AWindowObject *awo;
 
@@ -1042,7 +1052,7 @@ void EventHandler::evAct(XEvent *e, Window win, EventDetail *ed) {
 				ed->wamod |= StateTrueMask;
 		}
 
-		WaWindow *wawin = awo->getWindow();
+		AegisWindow *wawin = awo->getWindow();
 		if (wawin) ed->wamod |= wawin->wstate;
 
 		awo->ref();
@@ -1070,3 +1080,4 @@ void EventHandler::evAct(XEvent *e, Window win, EventDetail *ed) {
 		awo->unref();
 	}
 }
+//}}}

@@ -69,7 +69,7 @@ class Interrupt {
 
 		Window window;
 		int ident;
-		WaScreen *ws;
+		AegisScreen *ws;
 		struct timeval delay;
 		Action *action;
 		XEvent event;

@@ -60,7 +60,7 @@ extern "C" {
 #include "style.h"
 #include "window.h"
 
-WaScreen::WaScreen(Display *d, int scrn_number, Aegis *wa) :
+AegisScreen::AegisScreen(Display *d, int scrn_number, Aegis *aegis) :
 	RootWindowObject(NULL, 0, RootType, NULL, "root") {
 		Window ro, pa, *children;
 		int eventmask, dummy;
@@ -82,9 +82,9 @@ WaScreen::WaScreen(Display *d, int scrn_number, Aegis *wa) :
 		hdpi = ((double) width * 25.4) /
 			(double) DisplayWidthMM(display, screen_number);
 
-		aegis = wa;
+		aegis = aegis;
 		net = aegis->net;
-		rh = wa->rh;
+		rh = aegis->rh;
 		focused = true;
 		shutdown = dont_propagate_cfg_update = false;
 		bg_surface = NULL;
@@ -166,7 +166,7 @@ WaScreen::WaScreen(Display *d, int scrn_number, Aegis *wa) :
 		north = new ScreenEdge(this, "north", 0, 0, width, 2);
 		south = new ScreenEdge(this, "south", 0, height - 2, width, 2);
 
-		resetActionList(new WaStringMap(WindowIDName, "root"));
+		resetActionList(new AegisStringMap(WindowIDName, "root"));
 
 		net->setDesktopGeometry(this);
 		net->setNumberOfDesktops(this);
@@ -187,15 +187,15 @@ WaScreen::WaScreen(Display *d, int scrn_number, Aegis *wa) :
 			XWMHints *wm_hints = NULL;
 			int status = 0;
 			if (children[i] == None) continue;
-			wa_grab_server();
+			ae_grab_server();
 			if (validate_drawable(children[i])) {
 				status = XGetWindowAttributes(display, children[i], &attr);
 				wm_hints = XGetWMHints(display, children[i]);
 			} else {
-				wa_ungrab_server();
+				ae_ungrab_server();
 				continue;
 			}
-			wa_ungrab_server();
+			ae_ungrab_server();
 
 			if (wm_hints) {
 				if ((wm_hints->flags & IconWindowHint) &&
@@ -216,15 +216,15 @@ WaScreen::WaScreen(Display *d, int scrn_number, Aegis *wa) :
 			int state = -1;
 			int status = 0;
 			if (children[i] == None) continue;
-			wa_grab_server();
+			ae_grab_server();
 			if (validate_drawable(children[i])) {
 				status = XGetWindowAttributes(display, children[i], &attr);
 				wm_hints = XGetWMHints(display, children[i]);
 			} else {
-				wa_ungrab_server();
+				ae_ungrab_server();
 				continue;
 			}
-			wa_ungrab_server();
+			ae_ungrab_server();
 
 			if (wm_hints) {
 				if (wm_hints->flags & StateHint)
@@ -252,8 +252,8 @@ WaScreen::WaScreen(Display *d, int scrn_number, Aegis *wa) :
 						if (! d->dh) addDockapp(d, NULL);
 					} else if ((aegis->window_table.find(children[i])) ==
 							aegis->window_table.end()) {
-						WaWindow *newwin = new WaWindow(children[i], this);
-						if ((newwin = (WaWindow *)
+						AegisWindow *newwin = new AegisWindow(children[i], this);
+						if ((newwin = (AegisWindow *)
 									aegis->findWin(children[i], WindowType))) {
 							net->setState(newwin, newwin->state);
 							net->getMergedState(newwin);
@@ -280,8 +280,8 @@ WaScreen::WaScreen(Display *d, int scrn_number, Aegis *wa) :
 		net->setSupported(this);
 	}
 
-WaScreen::~WaScreen(void) {
-	WaFrameWindow *wf;
+AegisScreen::~AegisScreen(void) {
+	AegisFrameWindow *wf;
 	shutdown = true;
 	XSelectInput(display, id, NoEventMask);
 	net->deleteSupported(this);
@@ -289,23 +289,23 @@ WaScreen::~WaScreen(void) {
 
 	LISTDELITEMS(docks);
 
-	WaWindow **delstack = new WaWindow*[wawindow_list.size()];
+	AegisWindow **delstack = new AegisWindow*[wawindow_list.size()];
 	int stackp = 0;
 
 	list<Window>::reverse_iterator it = aab_stacking_list.rbegin();
 	for (; it != aab_stacking_list.rend(); ++it) {
-		wf = (WaFrameWindow *) aegis->findWin(*it, WindowFrameType);
-		if (wf) delstack[stackp++] = wf->wa;
+		wf = (AegisFrameWindow *) aegis->findWin(*it, WindowFrameType);
+		if (wf) delstack[stackp++] = wf->aegis;
 	}
 	it = stacking_list.rbegin();
 	for (; it != stacking_list.rend(); ++it) {
-		wf = (WaFrameWindow *) aegis->findWin(*it, WindowFrameType);
-		if (wf) delstack[stackp++] = wf->wa;
+		wf = (AegisFrameWindow *) aegis->findWin(*it, WindowFrameType);
+		if (wf) delstack[stackp++] = wf->aegis;
 	}
 	it = aot_stacking_list.rbegin();
 	for (; it != aot_stacking_list.rend(); ++it) {
-		wf = (WaFrameWindow *) aegis->findWin(*it, WindowFrameType);
-		if (wf) delstack[stackp++] = wf->wa;
+		wf = (AegisFrameWindow *) aegis->findWin(*it, WindowFrameType);
+		if (wf) delstack[stackp++] = wf->aegis;
 	}
 
 	for (int i = 0; i < stackp; i++)
@@ -328,7 +328,7 @@ WaScreen::~WaScreen(void) {
 	aegis->window_table.erase(id);
 }
 
-Visual *WaScreen::findARGBVisual(void) {
+Visual *AegisScreen::findARGBVisual(void) {
 	XVisualInfo *xvi;
 	XVisualInfo templ;
 	int nvi;
@@ -360,23 +360,23 @@ Visual *WaScreen::findARGBVisual(void) {
 }
 
 
-void WaScreen::propagateActionlistUpdate(ActionList *actionlist) {
+void AegisScreen::propagateActionlistUpdate(ActionList *actionlist) {
 	if (dont_propagate_cfg_update) return;
 
 	map<Window, WindowObject *>::iterator it = aegis->window_table.begin();
 	for (; it != aegis->window_table.end(); it++) {
 		if (((*it).second)->ws == this &&
 				((*it).second)->type == WindowType) {
-			WaWindow *wa = (WaWindow *) (*it).second;
-			ActionList *al = wa->actionlists[
-				STATE_FROM_MASK_AND_LIST(window_state_mask, wa->actionlists)];
+			AegisWindow *aegis = (AegisWindow *) (*it).second;
+			ActionList *al = aegis->actionlists[
+				STATE_FROM_MASK_AND_LIST(window_state_mask, aegis->actionlists)];
 			if (al == actionlist)
-				wa->updateGrabs();
+				aegis->updateGrabs();
 		}
 	}
 }
 
-void WaScreen::propagateStyleUpdate(Style *style) {
+void AegisScreen::propagateStyleUpdate(Style *style) {
 	if (dont_propagate_cfg_update) return;
 
 	map<Window, WindowObject *>::iterator it = aegis->window_table.begin();
@@ -388,7 +388,7 @@ void WaScreen::propagateStyleUpdate(Style *style) {
 	}
 }
 
-void WaScreen::forceRenderOfWindows(int typemask) {
+void AegisScreen::forceRenderOfWindows(int typemask) {
 	map<Window, WindowObject *>::iterator it = aegis->window_table.begin();
 	for (; it != aegis->window_table.end(); it++) {
 		if (((*it).second)->ws == this &&
@@ -400,7 +400,7 @@ void WaScreen::forceRenderOfWindows(int typemask) {
 	}
 }
 
-void WaScreen::clearAllCacheAndRedraw(void) {
+void AegisScreen::clearAllCacheAndRedraw(void) {
 	Tst<RenderGroup *>::iterator it = rendergroups.begin();
 	for (; it != rendergroups.end(); it++) {
 		(*it)->clearCache();
@@ -411,7 +411,7 @@ void WaScreen::clearAllCacheAndRedraw(void) {
 	}
 }
 
-void WaScreen::reload(void) {
+void AegisScreen::reload(void) {
 
 	RENDER_GET;
 
@@ -446,7 +446,7 @@ void WaScreen::reload(void) {
 		(*dock_it)->commonStyleUpdate();
 		(*dock_it)->update();
 	}
-	list<WaWindow *>::iterator win_it = wawindow_list.begin();
+	list<AegisWindow *>::iterator win_it = wawindow_list.begin();
 	for (; win_it != wawindow_list.end(); win_it++) {
 		(*win_it)->frame->resetStyle();
 		(*win_it)->frame->commonStyleUpdate();
@@ -460,15 +460,15 @@ void WaScreen::reload(void) {
 
 }
 
-void WaScreen::raiseTransientWindows(Window win, list<Window> *stacklist) {
-	WaFrameWindow *wf = (WaFrameWindow *)
+void AegisScreen::raiseTransientWindows(Window win, list<Window> *stacklist) {
+	AegisFrameWindow *wf = (AegisFrameWindow *)
 		aegis->findWin(win, WindowFrameType);
 	if (wf) {
-		WaWindow *ww = wf->wa;
+		AegisWindow *ww = wf->aegis;
 		if (! ww->transients.empty()) {
 			list<Window>::iterator tit = ww->transients.begin();
 			for (; tit != ww->transients.end();) {
-				WaWindow *wt = (WaWindow *)
+				AegisWindow *wt = (AegisWindow *)
 					aegis->findWin(*tit, WindowType);
 				if (wt) {
 					stacking_list.remove(wt->frame->id);
@@ -483,7 +483,7 @@ void WaScreen::raiseTransientWindows(Window win, list<Window> *stacklist) {
 	}
 }
 
-void WaScreen::raiseWindow(Window win, bool restack) {
+void AegisScreen::raiseWindow(Window win, bool restack) {
 	list<Window>::iterator it = aot_stacking_list.begin();
 	for (; it != aot_stacking_list.end(); ++it) {
 		if (*it == win) {
@@ -516,7 +516,7 @@ void WaScreen::raiseWindow(Window win, bool restack) {
 	}
 }
 
-void WaScreen::lowerWindow(Window win, bool restack) {
+void AegisScreen::lowerWindow(Window win, bool restack) {
 	list<Window>::iterator it = aot_stacking_list.begin();
 	for (; it != aot_stacking_list.end(); ++it) {
 		if (*it == win) {
@@ -546,7 +546,7 @@ void WaScreen::lowerWindow(Window win, bool restack) {
 	}
 }
 
-void WaScreen::restackWindows(void) {
+void AegisScreen::restackWindows(void) {
 	int i = 0;
 	Window *stack = new Window[4 + aot_stacking_list.size() +
 		stacking_list.size() +
@@ -569,91 +569,91 @@ void WaScreen::restackWindows(void) {
 	delete [] stack;
 }
 
-ActionList *WaScreen::getActionListNamed(char *name, bool warn) {
+ActionList *AegisScreen::getActionListNamed(char *name, bool warn) {
 	if (! name) return NULL;
 
 	Tst<ActionList *>::iterator it = actionlists.find(name);
 	if (it != actionlists.end()) return *it;
 
 	if (warn)
-		showWarningMessage(__FUNCTION__, "unknown actionlist=%s", name);
+		showAegisrningMessage(__FUNCTION__, "unknown actionlist=%s", name);
 
 	return NULL;
 }
 
-Style *WaScreen::getStyleNamed(char *name, bool warn) {
+Style *AegisScreen::getStyleNamed(char *name, bool warn) {
 	if (! name) return NULL;
 
 	Tst<Style *>::iterator it = styles.find(name);
 	if (it != styles.end()) return *it;
 
 	if (warn)
-		showWarningMessage(__FUNCTION__, "unknown style=%s", name);
+		showAegisrningMessage(__FUNCTION__, "unknown style=%s", name);
 
 	return NULL;
 }
 
-RenderGroup *WaScreen::getRenderGroupNamed(char *name, bool warn) {
+RenderGroup *AegisScreen::getRenderGroupNamed(char *name, bool warn) {
 	if (! name) return NULL;
 
 	Tst<RenderGroup *>::iterator it = rendergroups.find(name);
 	if (it != rendergroups.end()) return *it;
 
 	if (warn)
-		showWarningMessage(__FUNCTION__, "unknown group=%s", name);
+		showAegisrningMessage(__FUNCTION__, "unknown group=%s", name);
 
 	return NULL;
 }
 
-RenderOpPath *WaScreen::getPathNamed(char *name, bool warn) {
+RenderOpPath *AegisScreen::getPathNamed(char *name, bool warn) {
 	if (! name) return NULL;
 
 	Tst<RenderOpPath *>::iterator it = paths.find(name);
 	if (it != paths.end()) return *it;
 
 	if (warn)
-		showWarningMessage(__FUNCTION__, "unknown path=%s", name);
+		showAegisrningMessage(__FUNCTION__, "unknown path=%s", name);
 
 	return NULL;
 }
 
-RenderPattern *WaScreen::getPatternNamed(char *name, bool warn) {
+RenderPattern *AegisScreen::getPatternNamed(char *name, bool warn) {
 	if (! name) return NULL;
 
 	Tst<RenderPattern *>::iterator it = patterns.find(name);
 	if (it != patterns.end()) return *it;
 
 	if (warn)
-		showWarningMessage(__FUNCTION__, "unknown pattern=%s", name);
+		showAegisrningMessage(__FUNCTION__, "unknown pattern=%s", name);
 
 	return NULL;
 }
 
-RenderOpText *WaScreen::getTextNamed(char *name, bool warn) {
+RenderOpText *AegisScreen::getTextNamed(char *name, bool warn) {
 	if (! name) return NULL;
 
 	Tst<RenderOpText *>::iterator it = texts.find(name);
 	if (it != texts.end()) return *it;
 
 	if (warn)
-		showWarningMessage(__FUNCTION__, "unknown text-object=%s", name);
+		showAegisrningMessage(__FUNCTION__, "unknown text-object=%s", name);
 
 	return NULL;
 }
 
-Menu *WaScreen::getMenuNamed(char *name, bool warn) {
+Menu *AegisScreen::getMenuNamed(char *name, bool warn) {
 	if (! name) return NULL;
 
 	Tst<Menu *>::iterator it = menus.find(name);
 	if (it != menus.end()) return *it;
 
 	if (warn)
-		showWarningMessage(__FUNCTION__, "unknown menu=%s", name);
+		showAegisrningMessage(__FUNCTION__, "unknown menu=%s", name);
 
 	return NULL;
 }
 
-void WaScreen::updateWorkarea(void) {
+void AegisScreen::updateWorkarea(void) {
 	int old_x = current_desktop->workarea.x,
 		old_y = current_desktop->workarea.y;
 	unsigned int old_width = current_desktop->workarea.width,
@@ -669,7 +669,7 @@ void WaScreen::updateWorkarea(void) {
 				WindowType | DockHandlerType);
 		if (wo) {
 			if (wo->type == WindowType) {
-				if (! (((WaWindow *) wo)->desktop_mask &
+				if (! (((AegisWindow *) wo)->desktop_mask &
 							(1L << current_desktop->number)))
 					continue;
 			} else if (wo->type == DockHandlerType) {
@@ -701,28 +701,28 @@ void WaScreen::updateWorkarea(void) {
 			old_height != current_desktop->workarea.height) {
 		net->setWorkarea(this);
 
-		list<WaWindow *>::iterator wa_it = wawindow_list.begin();
-		for (; wa_it != wawindow_list.end(); ++wa_it) {
-			if (! ((*wa_it)->desktop_mask &
+		list<AegisWindow *>::iterator ae_it = wawindow_list.begin();
+		for (; ae_it != wawindow_list.end(); ++ae_it) {
+			if (! ((*ae_it)->desktop_mask &
 						(1L << current_desktop->number))) break;
-			if ((*wa_it)->wstate & StateMaximizedMask) {
-				(*wa_it)->wstate &= ~StateMaximizedMask;
-				res_x = (*wa_it)->restore_max.x;
-				res_y = (*wa_it)->restore_max.y;
-				res_w = (*wa_it)->restore_max.width;
-				res_h = (*wa_it)->restore_max.height;
-				(*wa_it)->_maximize((*wa_it)->restore_max.misc0,
-									(*wa_it)->restore_max.misc1);
-				(*wa_it)->restore_max.x = res_x;
-				(*wa_it)->restore_max.y = res_y;
-				(*wa_it)->restore_max.width = res_w;
-				(*wa_it)->restore_max.height = res_h;
+			if ((*ae_it)->wstate & StateMaximizedMask) {
+				(*ae_it)->wstate &= ~StateMaximizedMask;
+				res_x = (*ae_it)->restore_max.x;
+				res_y = (*ae_it)->restore_max.y;
+				res_w = (*ae_it)->restore_max.width;
+				res_h = (*ae_it)->restore_max.height;
+				(*ae_it)->_maximize((*ae_it)->restore_max.misc0,
+									(*ae_it)->restore_max.misc1);
+				(*ae_it)->restore_max.x = res_x;
+				(*ae_it)->restore_max.y = res_y;
+				(*ae_it)->restore_max.width = res_w;
+				(*ae_it)->restore_max.height = res_h;
 			}
 		}
 	}
 }
 
-void WaScreen::getWorkareaSize(int *x, int *y,
+void AegisScreen::getWorkareaSize(int *x, int *y,
 		unsigned int *w, unsigned int *h) {
 	*x = current_desktop->workarea.x;
 	*y = current_desktop->workarea.y;
@@ -766,7 +766,7 @@ void WaScreen::getWorkareaSize(int *x, int *y,
 
 }
 
-void WaScreen::moveViewportTo(int x, int y) {
+void AegisScreen::moveViewportTo(int x, int y) {
 	if ((int) v_x == x && (int) v_y == y) return;
 	if (x > v_xmax) x = v_xmax;
 	else if (x < 0) x = 0;
@@ -778,7 +778,7 @@ void WaScreen::moveViewportTo(int x, int y) {
 	current_desktop->v_x = v_x = x;
 	current_desktop->v_y = v_y = y;
 
-	list<WaWindow *>::iterator it = wawindow_list.begin();
+	list<AegisWindow *>::iterator it = wawindow_list.begin();
 	for (; it != wawindow_list.end(); ++it) {
 		if (! ((*it)->wstate & StateStickyMask)) {
 			int old_x = (*it)->attrib.x;
@@ -815,7 +815,7 @@ void WaScreen::moveViewportTo(int x, int y) {
 	net->setDesktopViewPort(this);
 }
 
-void WaScreen::moveViewport(int direction) {
+void AegisScreen::moveViewport(int direction) {
 	int vd;
 
 	switch (direction) {
@@ -853,7 +853,7 @@ void WaScreen::moveViewport(int direction) {
 	}
 }
 
-void WaScreen::viewportFixedMove(char *s) {
+void AegisScreen::viewportFixedMove(char *s) {
 	int x, y, mask;
 	unsigned int w = 0, h = 0;
 
@@ -865,7 +865,7 @@ void WaScreen::viewportFixedMove(char *s) {
 	moveViewportTo(x, y);
 }
 
-void WaScreen::viewportRelativeMove(char *s) {
+void AegisScreen::viewportRelativeMove(char *s) {
 	int x, y, mask;
 	unsigned int w = 0, h = 0;
 
@@ -875,13 +875,13 @@ void WaScreen::viewportRelativeMove(char *s) {
 	moveViewportTo(v_x + x, v_y + y);
 }
 
-void WaScreen::startViewportMove(void) {
+void AegisScreen::startViewportMove(void) {
 	XEvent event;
 	int px, py, i;
 	list<XEvent *> *maprequest_list;
 	Window w;
 	unsigned int ui;
-	list<WaWindow *>::iterator it;
+	list<AegisWindow *>::iterator it;
 
 	if (aegis->eh->move_resize != EndMoveResizeType) return;
 	aegis->eh->move_resize = MoveOpaqueType;
@@ -918,7 +918,7 @@ void WaScreen::startViewportMove(void) {
 								   current_desktop->v_x = v_x = x;
 								   current_desktop->v_y = v_y = y;
 
-								   list<WaWindow *>::iterator it = wawindow_list.begin();
+								   list<AegisWindow *>::iterator it = wawindow_list.begin();
 								   for (; it != wawindow_list.end(); ++it) {
 									   if (! ((*it)->wstate & StateStickyMask)) {
 										   int old_x = (*it)->attrib.x;
@@ -991,7 +991,7 @@ void WaScreen::startViewportMove(void) {
 	}
 }
 
-void WaScreen::taskSwitcher(void) {
+void AegisScreen::taskSwitcher(void) {
 	if (aegis->eh->move_resize != EndMoveResizeType) return;
 	if (wawindow_list.empty()) return;
 	if (! windowlist_menu) return;
@@ -1005,17 +1005,17 @@ void WaScreen::taskSwitcher(void) {
 	windowlist_menu->focusFirst();
 }
 
-void WaScreen::previousTask(void) {
+void AegisScreen::previousTask(void) {
 	if (aegis->eh->move_resize != EndMoveResizeType) return;
 	if (wawindow_list.size() < 2) return;
 
-	list<WaWindow *>::iterator it = wawindow_list.begin();
+	list<AegisWindow *>::iterator it = wawindow_list.begin();
 	it++;
 	(*it)->raise();
 	aegis->focusNew((*it)->id, true);
 }
 
-void WaScreen::nextTask(void) {
+void AegisScreen::nextTask(void) {
 	if (aegis->eh->move_resize != EndMoveResizeType) return;
 	if (wawindow_list.size() < 2) return;
 
@@ -1023,7 +1023,7 @@ void WaScreen::nextTask(void) {
 	aegis->focusNew(wawindow_list.back()->id, true);
 }
 
-void WaScreen::pointerFixedWarp(char *s) {
+void AegisScreen::pointerFixedAegisrp(char *s) {
 	int x, y, mask, i, o_x, o_y;
 	unsigned int ui, w, h;
 	Window dw;
@@ -1037,7 +1037,7 @@ void WaScreen::pointerFixedWarp(char *s) {
 	XWarpPointer(display, None, None, 0, 0, 0, 0, x, y);
 }
 
-void WaScreen::pointerRelativeWarp(char *s) {
+void AegisScreen::pointerRelativeAegisrp(char *s) {
 	int x, y, mask;
 	unsigned int w, h;
 
@@ -1045,7 +1045,7 @@ void WaScreen::pointerRelativeWarp(char *s) {
 	XWarpPointer(display, None, None, 0, 0, 0, 0, x, y);
 }
 
-void WaScreen::goToDesktop(unsigned int number) {
+void AegisScreen::goToDesktop(unsigned int number) {
 	list<Desktop *>::iterator dit = desktop_list.begin();
 	for (; dit != desktop_list.end(); dit++)
 		if ((unsigned int) (*dit)->number == number) break;
@@ -1064,7 +1064,7 @@ void WaScreen::goToDesktop(unsigned int number) {
 		current_desktop = (*dit);
 
 
-		list<WaWindow *>::iterator it = wawindow_list.begin();
+		list<AegisWindow *>::iterator it = wawindow_list.begin();
 		for (; it != wawindow_list.end(); ++it) {
 			if ((*it)->desktop_mask & (1L << current_desktop->number)) {
 				(*it)->show();
@@ -1094,32 +1094,32 @@ void WaScreen::goToDesktop(unsigned int number) {
 		aegis->focusRevertFrom(this, None);
 	} else
 		if (dit == desktop_list.end())
-			showWarningMessage(__FUNCTION__, "bad desktop id `%d', "
+			showAegisrningMessage(__FUNCTION__, "bad desktop id `%d', "
 					"desktop %d doesn't exist", number, number);
 }
 
-void WaScreen::nextDesktop(void) {
+void AegisScreen::nextDesktop(void) {
 	if (current_desktop->number + 1 == config.desktops)
 		goToDesktop(0);
 	else
 		goToDesktop(current_desktop->number + 1);
 }
 
-void WaScreen::previousDesktop(void) {
+void AegisScreen::previousDesktop(void) {
 	if (current_desktop->number == 0)
 		goToDesktop(config.desktops - 1);
 	else
 		goToDesktop(current_desktop->number - 1);
 }
 
-void WaScreen::findClosestWindow(int direction) {
-	WaWindow *closest = NULL;
+void AegisScreen::findClosestWindow(int direction) {
+	AegisWindow *closest = NULL;
 	Window w;
 	int i, origin_x, origin_y;
 	unsigned int ui;
 	int closest_diff_x = INT_MAX, closest_diff_y = INT_MAX;
 	XQueryPointer(display, id, &w, &w, &origin_x, &origin_y, &i, &i, &ui);
-	list<WaWindow *>::iterator it = wawindow_list.begin();
+	list<AegisWindow *>::iterator it = wawindow_list.begin();
 	for (; it != wawindow_list.end(); it++) {
 		if ((! (*it)->mapped) || (*it)->hidden ||
 				(! ((*it)->wstate & StateTasklistMask)))
@@ -1171,7 +1171,7 @@ void WaScreen::findClosestWindow(int direction) {
 	}
 }
 
-void WaScreen::addDockapp(Dockapp *dockapp, char *handlername) {
+void AegisScreen::addDockapp(Dockapp *dockapp, char *handlername) {
 	XSetWindowAttributes attrib_set;
 	DockappHandler *handler = NULL;
 
@@ -1187,7 +1187,7 @@ void WaScreen::addDockapp(Dockapp *dockapp, char *handlername) {
 		handlername = aegis->net->getDockappHandler(dockapp);
 
 	if (! handlername)
-		handlername = WA_STRDUP("default");
+		handlername = AE_STRDUP("default");
 
 	list<DockappHandler *>::iterator it = docks.begin();
 	for (; it != docks.end(); it++)
@@ -1228,7 +1228,7 @@ void WaScreen::addDockapp(Dockapp *dockapp, char *handlername) {
 }
 
 #ifdef    RANDR
-void WaScreen::rrUpdate(void) {
+void AegisScreen::rrUpdate(void) {
 	vdpi = ((double) height * 25.4) /
 		(double) DisplayHeightMM(display, screen_number);
 	hdpi = ((double) width * 25.4) /
@@ -1254,9 +1254,9 @@ void WaScreen::rrUpdate(void) {
 }
 #endif // RANDR
 
-void WaScreen::smartName(WaWindow *ww) {
+void AegisScreen::smartName(AegisWindow *ww) {
 	int match = 0;
-	list<WaWindow *>::iterator it = wawindow_list_map_order.begin();
+	list<AegisWindow *>::iterator it = wawindow_list_map_order.begin();
 	for (; it != wawindow_list_map_order.end(); it++) {
 		if (*it == ww) continue;
 		if ((*it)->deleted) continue;
@@ -1290,11 +1290,11 @@ void WaScreen::smartName(WaWindow *ww) {
 	}
 }
 
-void WaScreen::smartNameRemove(WaWindow *ww) {
+void AegisScreen::smartNameRemove(AegisWindow *ww) {
 	int match = 1;
 	bool second = false;
-	WaWindow *fw = NULL;
-	list<WaWindow *>::iterator it = wawindow_list_map_order.begin();
+	AegisWindow *fw = NULL;
+	list<AegisWindow *>::iterator it = wawindow_list_map_order.begin();
 	for (; it != wawindow_list_map_order.end(); it++) {
 		if (*it == ww) continue;
 		if ((*it)->deleted) continue;
@@ -1339,7 +1339,7 @@ void WaScreen::smartNameRemove(WaWindow *ww) {
 	}
 }
 
-void WaScreen::readActionLists(void) {
+void AegisScreen::readActionLists(void) {
 	Parser *parser;
 
 	Tst<ActionList *>::iterator it = actionlists.begin();
@@ -1364,7 +1364,7 @@ void WaScreen::readActionLists(void) {
 	delete parser;
 }
 
-void WaScreen::readStyles(void) {
+void AegisScreen::readStyles(void) {
 	Parser *parser;
 
 	Tst<Style *>::iterator sit = styles.begin();
@@ -1405,7 +1405,7 @@ void WaScreen::readStyles(void) {
 	delete parser;
 }
 
-void WaScreen::readMenus(void) {
+void AegisScreen::readMenus(void) {
 	Parser *parser;
 
 	Tst<Menu *>::iterator it = menus.begin();
@@ -1424,7 +1424,7 @@ void WaScreen::readMenus(void) {
 	delete parser;
 }
 
-Pixmap WaScreen::getRootBgPixmap(Pixmap parent_pixmap,
+Pixmap AegisScreen::getRootBgPixmap(Pixmap parent_pixmap,
 		unsigned int parent_w,
 		unsigned int parent_h,
 		int x, int y,
@@ -1463,7 +1463,7 @@ Pixmap WaScreen::getRootBgPixmap(Pixmap parent_pixmap,
 	return pixmap;
 }
 
-unsigned char *WaScreen::getRootBgImage(unsigned char *parent_data,
+unsigned char *AegisScreen::getRootBgImage(unsigned char *parent_data,
 		unsigned int parent_w,
 		unsigned int parent_h,
 		int x, int y,
@@ -1484,9 +1484,9 @@ unsigned char *WaScreen::getRootBgImage(unsigned char *parent_data,
 					bg_surface->height, AllPlanes, ZPixmap);
 			bg_surface->data = new unsigned char[bg_surface->width *
 				bg_surface->height *
-				sizeof(WaPixel)];
+				sizeof(AegisPixel)];
 			memcpy(bg_surface->data, xim->data, bg_surface->width *
-					bg_surface->height * sizeof(WaPixel));
+					bg_surface->height * sizeof(AegisPixel));
 			XDestroyImage(xim);
 		}
 		src = bg_surface->data;
@@ -1501,26 +1501,26 @@ unsigned char *WaScreen::getRootBgImage(unsigned char *parent_data,
 			/* XXX: fix client side rendering support for tiled background
 			   pixmaps */
 			for (unsigned int _p = 0; _p < (w * h); _p++)
-				*(((WaPixel *) image) + _p) = 0xff000000;
+				*(((AegisPixel *) image) + _p) = 0xff000000;
 			return image;
 		} else {
 			dst = image;
-			src += y * src_w * sizeof(WaPixel) + x * sizeof(WaPixel);
+			src += y * src_w * sizeof(AegisPixel) + x * sizeof(AegisPixel);
 			for (unsigned int i = 0; i < h; i++) {
-				memcpy(dst, src, w * sizeof(WaPixel));
-				src += src_w * sizeof(WaPixel);
-				dst += w * sizeof(WaPixel);
+				memcpy(dst, src, w * sizeof(AegisPixel));
+				src += src_w * sizeof(AegisPixel);
+				dst += w * sizeof(AegisPixel);
 			}
 		}
 	} else {
 		for (unsigned int _p = 0; _p < (w * h); _p++)
-			*(((WaPixel *) image) + _p) = 0xff000000;
+			*(((AegisPixel *) image) + _p) = 0xff000000;
 	}
 
 	return image;
 }
 
-WaSurface *WaScreen::rgbaToWaSurface(unsigned char *rgba,
+AegisSurface *AegisScreen::rgbaToAegisSurface(unsigned char *rgba,
 		unsigned int width, unsigned int height) {
 	Pixmap pixmap = None;
 	cairo_surface_t *surface = NULL;
@@ -1531,12 +1531,12 @@ WaSurface *WaScreen::rgbaToWaSurface(unsigned char *rgba,
 		surface = cairo_surface_create_for_image((char *) rgba,
 				CAIRO_FORMAT_ARGB32,
 				width, height,
-				width * sizeof(WaPixel));
+				width * sizeof(AegisPixel));
 	} else {
 		pixmap = XCreatePixmap(display, id, width, height, 32);
 		XImage *image = XCreateImage(display, visual, 32, ZPixmap, 0,
 				(char *) rgba, width, height, 32,
-				width * sizeof(WaPixel));
+				width * sizeof(AegisPixel));
 		GC gc = XCreateGC(display, pixmap, 0, NULL);
 		XPutImage(display, pixmap, gc, image, 0, 0, 0, 0, width, height);
 		image->data = NULL;
@@ -1548,11 +1548,11 @@ WaSurface *WaScreen::rgbaToWaSurface(unsigned char *rgba,
 		delete [] rgba;
 	}
 
-	return (new WaSurface(display, surface, pixmap, None, data,
+	return (new AegisSurface(display, surface, pixmap, None, data,
 				width, height));
 }
 
-list<ActionRegex *> *WaScreen::getRegexActionList(char *named) {
+list<ActionRegex *> *AegisScreen::getRegexActionList(char *named) {
 	if (! strcasecmp(named, "window")) {
 		return &window_actionlists;
 	} else if (! strcasecmp(named, "menu")) {
@@ -1569,7 +1569,7 @@ list<ActionRegex *> *WaScreen::getRegexActionList(char *named) {
 		return NULL;
 }
 
-list<StyleRegex *> *WaScreen::getRegexStyleList(char *named) {
+list<StyleRegex *> *AegisScreen::getRegexStyleList(char *named) {
 	if (! strcasecmp(named, "window")) {
 		return &window_styles;
 	} else if (! strcasecmp(named, "menu")) {
@@ -1582,7 +1582,7 @@ list<StyleRegex *> *WaScreen::getRegexStyleList(char *named) {
 		return NULL;
 }
 
-void WaScreen::getRegexTargets(WindowRegex *wreg, long int typemask,
+void AegisScreen::getRegexTargets(WindowRegex *wreg, long int typemask,
 		bool mult, list<AWindowObject *> *list) {
 	map<Window, WindowObject *>::iterator it = aegis->window_table.begin();
 	for (; it != aegis->window_table.end(); it++) {
@@ -1598,7 +1598,7 @@ void WaScreen::getRegexTargets(WindowRegex *wreg, long int typemask,
 	}
 }
 
-void WaScreen::showMessage(char *command, bool command_dynamic,
+void AegisScreen::showMessage(char *command, bool command_dynamic,
 		const char *function, const char *msg,
 		va_list args) {
 	if (command) {
@@ -1629,7 +1629,7 @@ void WaScreen::showMessage(char *command, bool command_dynamic,
 	}
 }
 
-void WaScreen::showInfoMessage(const char *function, const char *msg, ...) {
+void AegisScreen::showInfoMessage(const char *function, const char *msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	showMessage(config.info_command, config.info_command_dynamic,
@@ -1637,7 +1637,7 @@ void WaScreen::showInfoMessage(const char *function, const char *msg, ...) {
 	va_end(args);
 }
 
-void WaScreen::showWarningMessage(const char *function, const char *msg, ...) {
+void AegisScreen::showAegisrningMessage(const char *function, const char *msg, ...) {
 	va_list args;
 	va_start(args, msg);
 	showMessage(config.warning_command, config.warning_command_dynamic,
@@ -1645,31 +1645,31 @@ void WaScreen::showWarningMessage(const char *function, const char *msg, ...) {
 	va_end(args);
 }
 
-int WaScreen::getSubwindowId(char *subwindowname) {
+int AegisScreen::getSubwindowId(char *subwindowname) {
 	int i = 0;
 	vector<char *>::iterator it = subwindow_names.begin();
 	for (; it != subwindow_names.end(); it++, i++)
 		if (! strcmp(subwindowname, *it))
 			return i;
 
-	subwindow_names.insert(subwindow_names.end(), WA_STRDUP(subwindowname));
+	subwindow_names.insert(subwindow_names.end(), AE_STRDUP(subwindowname));
 	return i;
 }
 
-char *WaScreen::getSubwindowName(int subid) {
+char *AegisScreen::getSubwindowName(int subid) {
 	return subwindow_names[subid];
 }
 
-void WaScreen::styleUpdate(bool, bool) {
+void AegisScreen::styleUpdate(bool, bool) {
 	pushRenderEvent();
 }
 
-void WaScreen::endRender(Pixmap pixmap) {
+void AegisScreen::endRender(Pixmap pixmap) {
 	if (pixmap)
 		aegis->net->setXRootPMapId(this, sb->surface);
 }
 
-void WaScreen::styleDiff(Style *s1, Style *s2,
+void AegisScreen::styleDiff(Style *s1, Style *s2,
 		bool *pos_change, bool *size_change) {
 	double x1, y1, x2, y2;
 	double w1, h1, w2, h2;
@@ -1718,7 +1718,7 @@ void WaScreen::styleDiff(Style *s1, Style *s2,
 		*size_change = true;
 }
 
-ScreenEdge::ScreenEdge(WaScreen *wascrn, char *name,
+ScreenEdge::ScreenEdge(AegisScreen *wascrn, char *name,
 		int x, int y, int width, int height) :
 	AWindowObject(NULL, 0, EdgeType, NULL, "edge") {
 		XSetWindowAttributes attrib_set;
@@ -1737,7 +1737,7 @@ ScreenEdge::ScreenEdge(WaScreen *wascrn, char *name,
 
 		ws->aegis->net->wXDNDMakeAwareness(id);
 
-		resetActionList(new WaStringMap(WindowIDName, name));
+		resetActionList(new AegisStringMap(WindowIDName, name));
 	}
 
 ScreenEdge::~ScreenEdge(void) {

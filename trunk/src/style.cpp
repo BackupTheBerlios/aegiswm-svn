@@ -64,7 +64,7 @@ extern "C" {
 
 #include "style.h"
 
-Style::Style(WaScreen *_ws, char *_name) : RenderGroup(_ws, _name) {
+Style::Style(AegisScreen *_ws, char *_name) : RenderGroup(_ws, _name) {
 	translucent = shaped = false;
 	focusable = false;
 	textops = NULL;
@@ -189,8 +189,8 @@ void Style::applyAttributes(Parser *parser, Tst<char *> *attr) {
 
 }
 
-DWindowObject::DWindowObject(WaScreen *_ws, Window _id, int _type,
-		WaStringMap *_sm, char *_name) :
+DWindowObject::DWindowObject(AegisScreen *_ws, Window _id, int _type,
+		AegisStringMap *_sm, char *_name) :
 	AWindowObject(_ws, _id, _type, _sm, _name) {
 		style = NULL;
 		sb = NULL;
@@ -367,7 +367,7 @@ void DWindowObject::updateSubwindows(void) {
 					if (((SubWindowObject *) ancestor)->sub_info->ident ==
 							(*subinfo_it)->ident) {
 						ancestor_failure = true;
-						ws->showWarningMessage(
+						ws->showAegisrningMessage(
 								__FUNCTION__, "could not create sub-window, an "
 								"ancestor had the same sub-window ID.");
 						break;
@@ -429,7 +429,7 @@ void DWindowObject::updateSubwindows(void) {
 	}
 
 	if (type == WindowFrameType && sb->style->subs) {
-		XLowerWindow(ws->display, ((WaFrameWindow *) this)->wa->id);
+		XLowerWindow(ws->display, ((AegisFrameWindow *) this)->aegis->id);
 	}
 }
 
@@ -456,7 +456,7 @@ void DWindowObject::initTextOpTable(void) {
 					sb->text_table =
 						new map<RenderOpText *, char *>;
 				sb->text_table->insert(
-						make_pair(*tit, WA_STRDUP("")));
+						make_pair(*tit, AE_STRDUP("")));
 			}
 		}
 	}
@@ -627,7 +627,7 @@ void DWindowObject::renderWindow(cairo_t *cr, bool from_bgparent) {
 		if (alpha || shape) {
 			int p_x, p_y;
 			DWindowObject *bgparent;
-			WaSurface *bgsurface = getBgInfo(&bgparent, &p_x, &p_y);
+			AegisSurface *bgsurface = getBgInfo(&bgparent, &p_x, &p_y);
 
 			if (! from_bgparent) {
 				DWIN_RENDER_SAFE_LOCK(bgparent);
@@ -642,7 +642,7 @@ void DWindowObject::renderWindow(cairo_t *cr, bool from_bgparent) {
 				root_surface =
 					cairo_surface_create_for_image((char *) root_data,
 							CAIRO_FORMAT_ARGB32,
-							w, h, w * sizeof(WaPixel));
+							w, h, w * sizeof(AegisPixel));
 			} else {
 				root_pixmap = ws->getRootBgPixmap(
 						(bgsurface)? bgsurface->pixmap: None,
@@ -682,11 +682,11 @@ void DWindowObject::renderWindow(cairo_t *cr, bool from_bgparent) {
 			cairo_surface_t *alpha_surface;
 			unsigned char *shape_data;
 			if (ws->aegis->client_side_rendering) {
-				shape_data = new unsigned char[w * h * sizeof(WaPixel)];
+				shape_data = new unsigned char[w * h * sizeof(AegisPixel)];
 				alpha_surface =
 					cairo_surface_create_for_image((char *) shape_data,
 							CAIRO_FORMAT_ARGB32,
-							w, h, w * sizeof(WaPixel));
+							w, h, w * sizeof(AegisPixel));
 			} else {
 				bitmap = XCreatePixmap(ws->display, ws->id, w, h, 1);
 				alpha_surface =
@@ -872,7 +872,7 @@ void DWindowObject::commonEvalWhatToRender(bool, bool, bool *render_texture,
 	}
 
 	if (sb->text_table) {
-		WaWindow *ww = getWindow();
+		AegisWindow *ww = getWindow();
 		MenuItem *mi = getMenuItem();
 		map<RenderOpText *, char *>::iterator tit = sb->text_table->begin();
 		for (; tit != sb->text_table->end(); tit++) {
@@ -936,7 +936,7 @@ SubWindowObject::SubWindowObject(DWindowObject *_parent, SubwinInfo *sinfo) :
 				strlen(name) + 2];
 			sprintf(window_name, "%s.%s", parent->window_name, name);
 		} else
-			window_name = WA_STRDUP(name);
+			window_name = AE_STRDUP(name);
 
 		XSetWindowAttributes attrib_set;
 		int create_mask = CWOverrideRedirect | CWEventMask | CWColormap;
@@ -996,10 +996,10 @@ void SubWindowObject::currentPositionAndSize(int *x, int *y,
 	style->calcPositionAndSize(parent->sb->width, parent->sb->height,
 			ws->hdpi, ws->vdpi, &nx, &ny, &nw, &nh);
 
-	*x = WA_ROUND(nx);
-	*y = WA_ROUND(ny);
-	*w = WA_ROUND_U(nw);
-	*h = WA_ROUND_U(nh);
+	*x = AE_ROUND(nx);
+	*y = AE_ROUND(ny);
+	*w = AE_ROUND_U(nw);
+	*h = AE_ROUND_U(nh);
 	if (*w == 0) *w = 1;
 	if (*h == 0) *h = 1;
 
@@ -1037,7 +1037,7 @@ void SubWindowObject::evalWhatToRender(bool, bool size_change,
 	}
 }
 
-WaSurface *SubWindowObject::getBgInfo(DWindowObject **dwo, int *x, int *y) {
+AegisSurface *SubWindowObject::getBgInfo(DWindowObject **dwo, int *x, int *y) {
 	*x = sb->x;
 	*y = sb->y;
 	*dwo = parent;
@@ -1048,7 +1048,7 @@ FrameSubWindowObject::FrameSubWindowObject(DWindowObject *_parent,
 		SubwinInfo *sinfo) :
 	SubWindowObject(_parent, sinfo) {
 		last_x = last_y = current_x = current_y = 0;
-		frame = (WaFrameWindow *) parent;
+		frame = (AegisFrameWindow *) parent;
 
 #ifdef    SHAPE
 		shapeinfo = new ShapeInfo(id);
@@ -1100,10 +1100,10 @@ void FrameSubWindowObject::currentPositionAndSize(int *x, int *y,
 	style->calcPositionAndSize(parent->sb->width, parent->sb->height,
 			ws->hdpi, ws->vdpi, &nx, &ny, &nw, &nh);
 
-	current_x = WA_ROUND(nx);
-	current_y = WA_ROUND(ny);
-	*w = WA_ROUND_U(nw);
-	*h = WA_ROUND_U(nh);
+	current_x = AE_ROUND(nx);
+	current_y = AE_ROUND(ny);
+	*w = AE_ROUND_U(nw);
+	*h = AE_ROUND_U(nh);
 	if (*w == 0) *w = 1;
 	if (*h == 0) *h = 1;
 
@@ -1148,7 +1148,7 @@ void FrameSubWindowObject::evalWhatToRender(bool, bool size_change,
 	}
 }
 
-WaSurface *FrameSubWindowObject::getBgInfo(DWindowObject **dwo,
+AegisSurface *FrameSubWindowObject::getBgInfo(DWindowObject **dwo,
 		int *x, int *y) {
 	*x = sb->x;
 	*y = sb->y;
@@ -1176,8 +1176,8 @@ void FrameSubWindowObject::unsetShape(void) {
 }
 #endif // SHAPE
 
-RootWindowObject::RootWindowObject(WaScreen *_ws, Window _id, int _type,
-		WaStringMap *sm, char *_wname) :
+RootWindowObject::RootWindowObject(AegisScreen *_ws, Window _id, int _type,
+		AegisStringMap *sm, char *_wname) :
 	DWindowObject(_ws, _id, _type, sm, _wname) {
 
 #ifdef    THREAD
@@ -1245,7 +1245,7 @@ void RootWindowObject::evalWhatToRender(bool, bool size_change,
 	}
 }
 
-WaSurface *RootWindowObject::getBgInfo(DWindowObject **dwo, int *x, int *y) {
+AegisSurface *RootWindowObject::getBgInfo(DWindowObject **dwo, int *x, int *y) {
 	*x = sb->x;
 	*y = sb->y;
 	*dwo = ws;

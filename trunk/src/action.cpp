@@ -51,7 +51,7 @@ Tst<long int>   *client_window_state_tst;
 Tst<int>        *event_tst;
 Tst<int>        *window_type_tst;
 
-WindowObject::WindowObject(WaScreen *_ws, Window win_id, int win_type) :
+WindowObject::WindowObject(AegisScreen *_ws, Window win_id, int win_type) :
 	RefCounted<WindowObject>(this) {
 		id = win_id;
 		type = win_type;
@@ -111,10 +111,10 @@ void WindowObject::setStacking(StackingType _stacking) {
 	stacking = _stacking;
 }
 
-ActionList::ActionList(WaScreen *_ws, char *_name) :
+ActionList::ActionList(AegisScreen *_ws, char *_name) :
 	RefCounted<ActionList>(this) {
 		ws = _ws;
-		name = WA_STRDUP(_name);
+		name = AE_STRDUP(_name);
 	}
 
 ActionList::~ActionList(void) {
@@ -229,7 +229,7 @@ void Action::applyAttributes(Parser *parser, Tst<char *> *attr) {
 
 				pointer.cursor = ws->aegis->cursor->getCursor(value);
 		} else
-			param = WA_STRDUP(value);
+			param = AE_STRDUP(value);
 	}
 
 	value = parser->attrGetString(attr, "event", NULL);
@@ -305,11 +305,11 @@ void Action::applyAttributes(Parser *parser, Tst<char *> *attr) {
 	replay = parser->attrGetBool(attr, "pass_through", false);
 }
 
-AWindowObject::AWindowObject(WaScreen *_ws, Window _id, int _type,
-		WaStringMap *sm, char *_window_name) :
+AWindowObject::AWindowObject(AegisScreen *_ws, Window _id, int _type,
+		AegisStringMap *sm, char *_window_name) :
 WindowObject(_ws, _id, _type) {
 	if (_window_name)
-		window_name = WA_STRDUP(_window_name);
+		window_name = AE_STRDUP(_window_name);
 	else
 		window_name = NULL;
 
@@ -332,7 +332,7 @@ AWindowObject::~AWindowObject(void) {
 	}
 }
 
-void AWindowObject::resetActionList(WaStringMap *sm) {
+void AWindowObject::resetActionList(AegisStringMap *sm) {
 	if (ids) ids->unref();
 	ids = NULL;
 
@@ -451,14 +451,14 @@ bool AWindowObject::handleEvent(XEvent *event, EventDetail *ed) {
 
 void AWindowObject::evalState(EventDetail *ed) {
 	DWindowObject *dwo = NULL;
-	WaWindow *wa = NULL;
+	AegisWindow *aegis = NULL;
 	int tmp_state = window_state_mask;
 	if (ed) {
 		switch (ed->type) {
 			case FocusIn:
 				if (type == WindowType) {
-					wa = (WaWindow *) this;
-					wa->frame->evalState(ed);
+					aegis = (AegisWindow *) this;
+					aegis->frame->evalState(ed);
 					tmp_state |= WIN_STATE_ACTIVE_MASK;
 				} else {
 					tmp_state |= WIN_STATE_ACTIVE_MASK;
@@ -474,22 +474,22 @@ void AWindowObject::evalState(EventDetail *ed) {
 				break;
 			case FocusOut:
 				if (type == WindowType) {
-					wa = (WaWindow *) this;
-					wa->frame->evalState(ed);
+					aegis = (AegisWindow *) this;
+					aegis->frame->evalState(ed);
 
 					bool merged_has_focus = false;
-					list<WaWindow *>::iterator it;
-					list<WaWindow *>::iterator it_end;
-					if (wa->master) {
-						it_end = wa->master->merged.end();
-						if (wa->master->id == ws->aegis->prefocus) {
+					list<AegisWindow *>::iterator it;
+					list<AegisWindow *>::iterator it_end;
+					if (aegis->master) {
+						it_end = aegis->master->merged.end();
+						if (aegis->master->id == ws->aegis->prefocus) {
 							merged_has_focus = true;
-							it = wa->master->merged.end();
+							it = aegis->master->merged.end();
 						} else
-							it = wa->master->merged.begin();
+							it = aegis->master->merged.begin();
 					} else {
-						it = wa->merged.begin();
-						it_end = wa->merged.end();
+						it = aegis->merged.begin();
+						it_end = aegis->merged.end();
 					}
 					for (; it != it_end; it++)
 						if ((*it)->id == ws->aegis->prefocus) {
@@ -498,9 +498,9 @@ void AWindowObject::evalState(EventDetail *ed) {
 						}
 
 					if (! merged_has_focus) {
-						wa->frame->evalState(ed);
-						if (wa->master)
-							wa->master->frame->evalState(ed);
+						aegis->frame->evalState(ed);
+						if (aegis->master)
+							aegis->master->frame->evalState(ed);
 					}
 					tmp_state &= ~WIN_STATE_ACTIVE_MASK;
 				} else if (type == MenuItemType) {
@@ -548,11 +548,11 @@ void AWindowObject::evalState(EventDetail *ed) {
 	}
 
 	ActionList *old_current_actionlist = NULL;
-	wa = NULL;
+	aegis = NULL;
 	if (type == WindowType) {
-		wa = (WaWindow *) this;
-		old_current_actionlist = wa->actionlists[
-			STATE_FROM_MASK_AND_LIST(window_state_mask, wa->actionlists)];
+		aegis = (AegisWindow *) this;
+		old_current_actionlist = aegis->actionlists[
+			STATE_FROM_MASK_AND_LIST(window_state_mask, aegis->actionlists)];
 	}
 
 	Style *old_current_style = NULL;
@@ -565,12 +565,12 @@ void AWindowObject::evalState(EventDetail *ed) {
 
 	window_state_mask = tmp_state;
 
-	if (wa) {
-		ActionList *new_current_actionlist = wa->actionlists[
-			STATE_FROM_MASK_AND_LIST(window_state_mask, wa->actionlists)];
+	if (aegis) {
+		ActionList *new_current_actionlist = aegis->actionlists[
+			STATE_FROM_MASK_AND_LIST(window_state_mask, aegis->actionlists)];
 
 		if (new_current_actionlist != old_current_actionlist)
-			wa->updateGrabs();
+			aegis->updateGrabs();
 	}
 
 	if (dwo) {
@@ -598,22 +598,22 @@ void AWindowObject::evalState(EventDetail *ed) {
 	}
 }
 
-WaWindow *AWindowObject::getWindow(void) {
+AegisWindow *AWindowObject::getWindow(void) {
 	switch (type) {
 		case WindowType:
-			return (WaWindow *) this;
+			return (AegisWindow *) this;
 			break;
 		case WindowFrameType:
-			return ((WaFrameWindow *) this)->wa;
+			return ((AegisFrameWindow *) this)->aegis;
 			break;
 		case SubwindowType:
 			switch (((DWindowObject *) this)->decor_root->type) {
 				case WindowFrameType:
-					return (WaWindow *)
-						((WaFrameWindow *)
-						 ((DWindowObject *) this)->decor_root)->wa;
+					return (AegisWindow *)
+						((AegisFrameWindow *)
+						 ((DWindowObject *) this)->decor_root)->aegis;
 				default:
-					return (WaWindow *) 0;
+					return (AegisWindow *) 0;
 			}
 			break;
 		case MenuItemType: {
@@ -624,17 +624,17 @@ WaWindow *AWindowObject::getWindow(void) {
 								   return m_awo->getWindow();
 						   }
 		default:
-						   return (WaWindow *) 0;
+						   return (AegisWindow *) 0;
 	}
 }
 
-WaScreen *AWindowObject::getScreen(void) {
+AegisScreen *AWindowObject::getScreen(void) {
 	switch (type) {
 		case RootType:
-			return (WaScreen *) this;
+			return (AegisScreen *) this;
 			break;
 		default:
-			return (WaScreen *) 0;
+			return (AegisScreen *) 0;
 	}
 }
 
@@ -677,8 +677,8 @@ void AWindowObject::showInfo(XEvent *, Action *a) {
 	ws->showInfoMessage(__FUNCTION__, a->param? a->param: "");
 }
 
-void AWindowObject::showWarning(XEvent *, Action *a) {
-	ws->showWarningMessage(__FUNCTION__, a->param? a->param: "");
+void AWindowObject::showAegisrning(XEvent *, Action *a) {
+	ws->showAegisrningMessage(__FUNCTION__, a->param? a->param: "");
 }
 
 void AWindowObject::exec(XEvent *, Action *a) {
@@ -694,7 +694,7 @@ void AWindowObject::exec(XEvent *, Action *a) {
 void AWindowObject::doing(XEvent *, Action *a) {
 	if (! a->param) PARAM_WARNING;
 
-	char *str = WA_STRDUP(a->param);
+	char *str = AE_STRDUP(a->param);
 	Tst<char *> *attr;
 
 	attr = short_do_string_to_tst(str);
@@ -726,21 +726,21 @@ void AWindowObject::setActionFile(XEvent *, Action *a) {
 	if (! a->param) PARAM_WARNING;
 
 	if (ws->config.action_file) delete [] ws->config.action_file;
-	ws->config.action_file = WA_STRDUP(a->param);
+	ws->config.action_file = AE_STRDUP(a->param);
 }
 
 void AWindowObject::setStyleFile(XEvent *, Action *a) {
 	if (! a->param) PARAM_WARNING;
 
 	if (ws->config.style_file) delete [] ws->config.style_file;
-	ws->config.style_file = WA_STRDUP(a->param);
+	ws->config.style_file = AE_STRDUP(a->param);
 }
 
 void AWindowObject::setMenuFile(XEvent *, Action *a) {
 	if (! a->param) PARAM_WARNING;
 
 	if (ws->config.menu_file) delete [] ws->config.menu_file;
-	ws->config.menu_file = WA_STRDUP(a->param);
+	ws->config.menu_file = AE_STRDUP(a->param);
 }
 
 void AWindowObject::reloadWithActionFile(XEvent *, Action *a) {
@@ -787,14 +787,14 @@ void AWindowObject::previousDesktop(XEvent *, Action *) {
 	ws->previousDesktop();
 }
 
-void AWindowObject::pointerRelativeWarp(XEvent *, Action *a) {
+void AWindowObject::pointerRelativeAegisrp(XEvent *, Action *a) {
 	if (! a->param) PARAM_WARNING;
-	ws->pointerRelativeWarp(a->param);
+	ws->pointerRelativeAegisrp(a->param);
 }
 
-void AWindowObject::pointerFixedWarp(XEvent *, Action *a) {
+void AWindowObject::pointerFixedAegisrp(XEvent *, Action *a) {
 	if (! a->param) PARAM_WARNING;
-	ws->pointerFixedWarp(a->param);
+	ws->pointerFixedAegisrp(a->param);
 }
 
 void AWindowObject::viewportLeft(XEvent *, Action *) {
@@ -870,7 +870,7 @@ void AWindowObject::setActionList(int state, Action *a) {
 		if (actionlists[state])
 			actionlists[state]->unref();
 		actionlists[state] = new_al->ref();
-		if (type == WindowType) ((WaWindow *) this)->updateGrabs();
+		if (type == WindowType) ((AegisWindow *) this)->updateGrabs();
 	}
 }
 
@@ -1043,25 +1043,25 @@ void AWindowObject::focusRoot(XEvent *, Action *) {
 }
 
 void AWindowObject::windowRaise(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->raise();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowLower(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->lower();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowFocus(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) ws->aegis->focusNew(w->id);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowRaiseFocus(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) {
 		w->raise();
 		ws->aegis->focusNew(w->id, true);
@@ -1071,14 +1071,14 @@ void AWindowObject::windowRaiseFocus(XEvent *, Action *) {
 
 void AWindowObject::windowStartMove(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->move(e);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartResizeUpRight(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resize(e, EastResizeTypeMask |
 			NorthResizeTypeMask);
 	else ACTION_WARNING;
@@ -1086,7 +1086,7 @@ void AWindowObject::windowStartResizeUpRight(XEvent *e, Action *) {
 
 void AWindowObject::windowStartResizeDownRight(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resize(e, EastResizeTypeMask |
 			SouthResizeTypeMask);
 	else ACTION_WARNING;
@@ -1094,14 +1094,14 @@ void AWindowObject::windowStartResizeDownRight(XEvent *e, Action *) {
 
 void AWindowObject::windowStartResizeRight(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resize(e, EastResizeTypeMask);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartResizeUpLeft(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resize(e, WestResizeTypeMask |
 			NorthResizeTypeMask);
 	else ACTION_WARNING;
@@ -1109,7 +1109,7 @@ void AWindowObject::windowStartResizeUpLeft(XEvent *e, Action *) {
 
 void AWindowObject::windowStartResizeDownLeft(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resize(e, WestResizeTypeMask |
 			SouthResizeTypeMask);
 	else ACTION_WARNING;
@@ -1117,42 +1117,42 @@ void AWindowObject::windowStartResizeDownLeft(XEvent *e, Action *) {
 
 void AWindowObject::windowStartResizeLeft(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resize(e, WestResizeTypeMask);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartResizeUp(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resize(e, NorthResizeTypeMask);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartResizeDown(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resize(e, SouthResizeTypeMask);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartResizeSmart(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeSmart(e);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartOpaqueMove(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->moveOpaque(e);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartOpaqueResizeUpRight(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeOpaque(e, EastResizeTypeMask |
 			NorthResizeTypeMask);
 	else ACTION_WARNING;
@@ -1160,7 +1160,7 @@ void AWindowObject::windowStartOpaqueResizeUpRight(XEvent *e, Action *) {
 
 void AWindowObject::windowStartOpaqueResizeDownRight(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeOpaque(e, EastResizeTypeMask |
 			SouthResizeTypeMask);
 	else ACTION_WARNING;
@@ -1168,14 +1168,14 @@ void AWindowObject::windowStartOpaqueResizeDownRight(XEvent *e, Action *) {
 
 void AWindowObject::windowStartOpaqueResizeRight(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeOpaque(e, EastResizeTypeMask);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartOpaqueResizeUpLeft(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeOpaque(e, WestResizeTypeMask |
 			NorthResizeTypeMask);
 	else ACTION_WARNING;
@@ -1183,7 +1183,7 @@ void AWindowObject::windowStartOpaqueResizeUpLeft(XEvent *e, Action *) {
 
 void AWindowObject::windowStartOpaqueResizeDownLeft(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeOpaque(e, WestResizeTypeMask |
 			SouthResizeTypeMask);
 	else ACTION_WARNING;
@@ -1191,368 +1191,368 @@ void AWindowObject::windowStartOpaqueResizeDownLeft(XEvent *e, Action *) {
 
 void AWindowObject::windowStartOpaqueResizeLeft(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeOpaque(e, WestResizeTypeMask);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartOpaqueResizeUp(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeOpaque(e, NorthResizeTypeMask);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartOpaqueResizeDown(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeOpaque(e, SouthResizeTypeMask);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowStartOpaqueResizeSmart(XEvent *e, Action *) {
 	e->xany.window = id;
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->resizeSmartOpaque(e);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowMoveResize(XEvent *e, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->moveResize(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowMoveResizeVirtual(XEvent *e, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->moveResizeVirtual(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowMoveToPointer(XEvent *e, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->moveWindowToPointer(e);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowMoveToSmartPlace(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->moveWindowToSmartPlace();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDesktopMask(XEvent *, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->desktopMask(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowJoinDesktop(XEvent *, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->joinDesktop(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowPartDesktop(XEvent *, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->partDesktop(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowPartCurrentDesktop(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->partCurrentDesktop();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowJoinAllDesktops(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->joinAllDesktops();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowPartAllDesktopsExceptCurrent(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->partAllDesktopsExceptCurrent();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowPartCurrentJoinDesktop(XEvent *, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->partCurrentJoinDesktop(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowCloneMergeWithWindow(XEvent *, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->cloneMergeWithWindow(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowVertMergeWithWindow(XEvent *, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->vertMergeWithWindow(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowHorizMergeWithWindow(XEvent *, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->horizMergeWithWindow(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowExplode(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->explode();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowMergedToFront(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->toFront();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowUnMerge(XEvent *e, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->unMergeMaster(e);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowSetMergeMode(XEvent *, Action *a) {
-	WaWindow *w;
+	AegisWindow *w;
 	if (! a->param) PARAM_WARNING;
 	if ((w = getWindow())) w->setMergeMode(a->param);
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowNextMergeMode(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->nextMergeMode();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowPrevMergeMode(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->prevMergeMode();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowClose(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->close();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowKill(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->kill();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowCloseKill(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->closeKill();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowShade(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->shade();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowUnShade(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->unShade();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowToggleShade(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->toggleShade();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowMaximize(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->maximize();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowUnMaximize(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->unMaximize();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowToggleMaximize(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->toggleMaximize();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowMinimize(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->minimize();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowUnMinimize(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->unMinimize();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowSticky(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->sticky();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowUnSticky(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->unSticky();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowToggleSticky(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->toggleSticky();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowFullscreenOn(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->fullscreenOn();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowFullscreenOff(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->fullscreenOff();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowFullscreenToggle(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->fullscreenToggle();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowToggleMinimize(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->toggleMinimize();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorTitleOn(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorTitleOn();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorTitleOff(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorTitleOff();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorTitleToggle(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorTitleToggle();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorBorderOn(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorBorderOn();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorBorderOff(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorBorderOff();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorBorderToggle(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorBorderToggle();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorHandlesOn(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorHandlesOn();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorHandlesOff(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorHandlesOff();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorHandlesToggle(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorHandlesToggle();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorAllOn(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorAllOn();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowDecorAllOff(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->decorAllOff();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowAlwaysOnTopOn(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->alwaysontopOn();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowAlwaysOnTopOff(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->alwaysontopOff();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowAlwaysOnTopToggle(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->alwaysontopToggle();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowAlwaysAtBottomOn(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->alwaysatbottomOn();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowAlwaysAtBottomOff(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->alwaysatbottomOff();
 	else ACTION_WARNING;
 }
 
 void AWindowObject::windowAlwaysAtBottomToggle(XEvent *, Action *) {
-	WaWindow *w;
+	AegisWindow *w;
 	if ((w = getWindow())) w->alwaysatbottomToggle();
 	else ACTION_WARNING;
 }
@@ -1722,7 +1722,7 @@ void AWindowObject::setStackingLayer(XEvent *, Action *a) {
 	} else ACTION_WARNING;
 }
 
-Doing::Doing(WaScreen *_ws) {
+Doing::Doing(AegisScreen *_ws) {
 	param = NULL;
 	wreg = NULL;
 	ws = _ws;
@@ -1763,7 +1763,7 @@ void Doing::applyAttributes(Parser *parser, Tst<char *> *attr) {
 
 	value = parser->attrGetString(attr, "parameter", NULL);
 	if (value) {
-		param = WA_STRDUP(value);
+		param = AE_STRDUP(value);
 	}
 
 	value = parser->attrGetString(attr, "window", NULL);
@@ -1824,7 +1824,7 @@ static const struct ActionFunctionMap {
 } actionfunction_map[] = {
 	{ "nop", &AWindowObject::nop },
 	{ "showinfo", &AWindowObject::showInfo },
-	{ "showwarning", &AWindowObject::showWarning },
+	{ "showwarning", &AWindowObject::showAegisrning },
 	{ "exec", &AWindowObject::exec },
 	{ "do", &AWindowObject::doing },
 	{ "stoptimer", &AWindowObject::stopTimer },
@@ -1843,8 +1843,8 @@ static const struct ActionFunctionMap {
 	{ "gotodesktop", &AWindowObject::goToDesktop },
 	{ "nextdesktop", &AWindowObject::nextDesktop },
 	{ "previousdesktop", &AWindowObject::previousDesktop },
-	{ "pointerrelativewarp", &AWindowObject::pointerRelativeWarp },
-	{ "pointerfixedwarp", &AWindowObject::pointerFixedWarp },
+	{ "pointerrelativewarp", &AWindowObject::pointerRelativeAegisrp },
+	{ "pointerfixedwarp", &AWindowObject::pointerFixedAegisrp },
 	{ "viewportleft", &AWindowObject::viewportLeft },
 	{ "viewportright", &AWindowObject::viewportRight },
 	{ "viewportup", &AWindowObject::viewportUp },

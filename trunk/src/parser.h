@@ -53,7 +53,7 @@ extern "C" {
 
 #include "util.h"
 #include "refcounted.h"
-#include "aegis_regex.h"
+#include "ae_regex.h"
 #include "tst.h"
 
 class Action;
@@ -69,7 +69,7 @@ class RenderOpRectangle;
 class RenderOpEllipse;
 class RenderOpText;
 class Style;
-class WaScreen;
+class AegisScreen;
 class Variable;
 
 typedef enum {
@@ -150,7 +150,7 @@ class ElementHandler;
 
 class Parser {
 	public:
-		Parser(WaScreen *, int = 0, bool = true);
+		Parser(AegisScreen *, int = 0, bool = true);
 		~Parser(void);
 
 		void pushElementHandler(ElementHandler *);
@@ -176,7 +176,7 @@ class Parser {
 		unsigned int unknown_element_depth;
 		char *filename;
 		bool aegis_element_found;
-		WaScreen *ws;
+		AegisScreen *ws;
 		StringBuffer strbuf;
 		Tst<char *> constants;
 };

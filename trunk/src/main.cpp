@@ -23,13 +23,9 @@
 #  include "../config.h"
 #endif // HAVE_CONFIG_H
 
-extern "C" {
-
 #ifdef    HAVE_STDIO_H
 #  include <stdio.h>
 #endif // HAVE_STDIO_H
-
-}
 
 #include "aegis.h"
 
@@ -38,7 +34,7 @@ void help(void);
 void version(void);
 
 char *program_name;
-
+//{{{
 static const struct argument_def {
 	char *name;
 	char *short_name;
@@ -103,7 +99,7 @@ static const struct argument_def {
 		"      --info-command           Info command",
 		NULL, NULL },
 	{ "--warning-command", NULL, "[--warning-command=COMMAND]\n    ",
-		"      --warning-command        Warning command",
+		"      --warning-command        Aegisrning command",
 		NULL, NULL },
 	{ "--usage", NULL, "[--usage] ",
 		"      --usage                  Display brief usage message", usage,
@@ -114,7 +110,9 @@ static const struct argument_def {
 		"      --version                Output version information and exit",
 		version, NULL }
 };
+//}}}
 
+//{{{
 void parse_arguments(int argc, char **argv, char **values) {
 	int i, j, size = sizeof(argument_map) /
 		sizeof(struct argument_def);
@@ -162,25 +160,27 @@ void parse_arguments(int argc, char **argv, char **values) {
 		}
 	}
 }
-
+//}}}
+//{{{
 int main(int argc, char **argv) {
 	XEvent e;
 	char *arg_values[sizeof(argument_map) / sizeof(struct argument_def)];
 	memset(&arg_values, 0, sizeof(argument_map) / sizeof(struct argument_def) *
 			sizeof(char *));
 
-	program_name = WA_STRDUP(argv[0]);
+	program_name = AE_STRDUP(argv[0]);
 
 	parse_arguments(argc, argv, arg_values);
 
 	delete [] program_name;
 
-	Aegis *aegis = new Aegis(argv, arg_values);
+	Aegis * aegis = new Aegis(argv, arg_values);
 	aegis->eh->eventLoop(&aegis->eh->empty_return_mask, &e);
 
 	exit(1);
 }
-
+//}}}
+//{{{
 void usage(void) {
 	unsigned int i, size = sizeof(argument_map) / sizeof(struct argument_def);
 	cout << "Usage: " << program_name << " ";
@@ -190,7 +190,8 @@ void usage(void) {
 	cout << endl << endl << "Type " << program_name <<
 		" --help for a full description." << endl << endl;
 }
-
+//}}}
+//{{{
 void help(void) {
 	unsigned int i, size = sizeof(argument_map) / sizeof(struct argument_def);
 
@@ -236,7 +237,9 @@ void help(void) {
 
 	cout << "Report bugs to <david@aegis.org>." << endl;
 }
-
+//}}}
+//{{{
 void version(void) {
 	cout << PACKAGE << " " << VERSION << endl;
 }
+//}}}

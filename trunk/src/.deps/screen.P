@@ -134,7 +134,7 @@ screen.o: screen.cpp ../config.h /usr/X11R6/include/X11/Xlib.h \
   /usr/lib/gcc-lib/i686-pc-linux-gnu/3.3.4/include/g++-v3/bits/istream.tcc \
   refcounted.h timer.h /usr/include/sys/time.h action.h parser.h \
   /usr/include/sys/stat.h /usr/include/bits/stat.h /usr/include/expat.h \
-  /usr/include/expat_external.h aegis_regex.h /usr/include/regex.h tst.h \
+  /usr/include/expat_external.h ae_regex.h /usr/include/regex.h tst.h \
   net.h window.h /usr/X11R6/include/X11/extensions/shape.h style.h \
   /usr/include/cairo.h /usr/include/cairo-features.h \
   /usr/include/pixman.h /usr/include/stdint.h \
@@ -350,7 +350,7 @@ parser.h :
 /usr/include/bits/stat.h :
 /usr/include/expat.h :
 /usr/include/expat_external.h :
-aegis_regex.h :
+ae_regex.h :
 /usr/include/regex.h :
 tst.h :
 net.h :

@@ -47,7 +47,7 @@ extern "C" {
 #include "screen.h"
 
 #ifdef    PNG
-#  include "png.h"
+#  include "ae_png.h"
 #endif // PNG
 
 Tst<cairo_filter_t>      *filter_tst;
@@ -65,10 +65,10 @@ Tst<HorizontalAlignment> *horizontal_alignment_tst;
 Tst<VerticalAlignment>   *vertical_alignment_tst;
 Tst<cairo_operator_t>    *operator_tst;
 
-WaSurface::WaSurface(Display *_display,
+AegisSurface::AegisSurface(Display *_display,
 		cairo_surface_t *sp, Pixmap p, Pixmap b,
 		unsigned char *_data, unsigned int w, unsigned int h) :
-	RefCounted<WaSurface>(this) {
+	RefCounted<AegisSurface>(this) {
 		display = _display;
 		crsurface = sp;
 		pixmap = p;
@@ -78,7 +78,7 @@ WaSurface::WaSurface(Display *_display,
 		data = _data;
 	}
 
-WaSurface::~WaSurface(void) {
+AegisSurface::~AegisSurface(void) {
 	if (crsurface) cairo_surface_destroy(crsurface);
 	if (pixmap) XFreePixmap(display, pixmap);
 	if (bitmap) XFreePixmap(display, bitmap);
@@ -88,7 +88,7 @@ WaSurface::~WaSurface(void) {
 CacheSurface::CacheSurface(Display *_display, cairo_surface_t *sp, Pixmap p,
 		unsigned char *_data, unsigned int w,
 		unsigned int h, map<int, RenderGroup *> *dg) :
-	WaSurface(_display, sp, p, None, _data, w, h) {
+	AegisSurface(_display, sp, p, None, _data, w, h) {
 		map<int, RenderGroup *>::iterator it = dg->begin();
 		for (; it != dg->end(); it++)
 			dynamic_groups.insert(
@@ -119,12 +119,12 @@ bool CacheSurface::dynamicGroupsMatch(DWindowObject *dwo) {
 	return true;
 }
 
-WaColor::WaColor(double r, double g, double b, double a) :
-	RefCounted<WaColor>(this) {
+AegisColor::AegisColor(double r, double g, double b, double a) :
+	RefCounted<AegisColor>(this) {
 		alpha = a; red = r; green = g; blue = b;
 	}
 
-bool WaColor::parseColor(WaScreen *ws, const char *spec) {
+bool AegisColor::parseColor(AegisScreen *ws, const char *spec) {
 	XColor core_color;
 	if (! XParseColor(ws->display, ws->colormap, spec, &core_color))
 		return false;
@@ -184,7 +184,7 @@ void RenderOp::calcWidth(double parent_width, double hdpi,
 		unsigned int *return_width) {
 	double rw;
 	calc_length(_w, _wu, hdpi, parent_width, &rw);
-	*return_width = WA_ROUND_U(rw);
+	*return_width = AE_ROUND_U(rw);
 }
 
 void RenderOp::fcalcWidth(double parent_width, double hdpi,
@@ -196,7 +196,7 @@ void RenderOp::calcHeight(double parent_height, double vdpi,
 		unsigned int *return_height) {
 	double rh;
 	calc_length(_h, _hu, vdpi, parent_height, &rh);
-	*return_height = WA_ROUND_U(rh);
+	*return_height = AE_ROUND_U(rh);
 }
 
 void RenderOp::calcPositionAndSize(double parent_width,
@@ -230,13 +230,13 @@ void RenderOp::calcPositionFromSize(double parent_width, double parent_height,
 			NULL, NULL);
 }
 
-RenderGroup::RenderGroup(WaScreen *_ws, char *_name) :
+RenderGroup::RenderGroup(AegisScreen *_ws, char *_name) :
 	RenderOp(RenderOpGroupType) {
 		opacity = RENDER_OPACITY_DEFAULT;
 		has_dynamic_op = is_a_style = false;
 		cacheable = true;
 		ws = _ws;
-		if (_name) name = WA_STRDUP(_name);
+		if (_name) name = AE_STRDUP(_name);
 		else name = NULL;
 		return_surface = NULL;
 		parent_surface = NULL;
@@ -347,8 +347,8 @@ void RenderGroup::render(DWindowObject *dwo, cairo_t *cr,
 	} else {
 		calcPositionAndSize(w, h, ws->hdpi, ws->vdpi, &x, &y,
 				&_width, &_height);
-		width = WA_ROUND_U(_width);
-		height = WA_ROUND_U(_height);
+		width = AE_ROUND_U(_width);
+		height = AE_ROUND_U(_height);
 	}
 
 	CacheSurface *cache_surface = findCachedSurface(dwo, width, height);
@@ -368,7 +368,7 @@ void RenderGroup::render(DWindowObject *dwo, cairo_t *cr,
 						width, height);
 		} else {
 			if (ws->aegis->client_side_rendering) {
-				data = new unsigned char[width * height * sizeof(WaPixel)];
+				data = new unsigned char[width * height * sizeof(AegisPixel)];
 				groupsurface =
 					cairo_surface_create_for_image((char *) data,
 							CAIRO_FORMAT_ARGB32,
@@ -616,13 +616,13 @@ void PathOperator::applyAttributes(Parser *parser, Tst<char *> *attr) {
 	}
 }
 
-WaColorStop::WaColorStop(double _offset, WaColor *_color)
-	: RefCounted<WaColorStop>(this) {
+AegisColorStop::AegisColorStop(double _offset, AegisColor *_color)
+	: RefCounted<AegisColorStop>(this) {
 		color = _color;
 		offset = _offset;
 	}
 
-WaColorStop::~WaColorStop(void) {
+AegisColorStop::~AegisColorStop(void) {
 	color->unref();
 }
 
@@ -689,7 +689,7 @@ void RenderPattern::clear(void) {
 }
 
 void RenderPattern::inheritContent(RenderPattern *inherit_pattern) {
-	list<WaColorStop *>::iterator it = inherit_pattern->color_stops.begin();
+	list<AegisColorStop *>::iterator it = inherit_pattern->color_stops.begin();
 	for (; it != inherit_pattern->color_stops.end(); it++)
 		color_stops.push_back((*it)->ref());
 }
@@ -852,7 +852,7 @@ void RenderPattern::setcairo_pattern(DWindowObject *dwo,
 	}
 
 	int stops = 0;
-	list<WaColorStop *>::iterator it = color_stops.begin();
+	list<AegisColorStop *>::iterator it = color_stops.begin();
 	for (; it != color_stops.end(); ++it) {
 		cairo_pattern_add_color_stop (pattern, (*it)->offset,
 				(*it)->color->red,
@@ -1044,7 +1044,7 @@ void RenderOpDraw::applyAttributes(Parser *parser, Tst<char *> *attr) {
 
 	value = parser->attrGetString(attr, "stroke_dasharray", NULL);
 	if (value) {
-		value = WA_STRDUP(value);
+		value = AE_STRDUP(value);
 		ndash = 1;
 		for (int i = 0; value[i] != '\0'; i++) {
 			if (value[i] == ',') {
@@ -1136,7 +1136,7 @@ void RenderOpDraw::draw(DWindowObject *dwo, cairo_t *cr,
 }
 
 RenderOpPath::RenderOpPath(char *_name) : RenderOpDraw(RenderOpPathType) {
-	if (_name) name = WA_STRDUP(_name);
+	if (_name) name = AE_STRDUP(_name);
 	else name = NULL;
 }
 
@@ -1238,8 +1238,8 @@ void RenderOpPath::render(DWindowObject *dwo, cairo_t *cr,
 	}
 
 	cairo_move_to (cr, 0.0, 0.0);
-	draw(dwo, cr, crsurface, WA_ROUND_U(width),
-			WA_ROUND_U(height));
+	draw(dwo, cr, crsurface, AE_ROUND_U(width),
+			AE_ROUND_U(height));
 }
 
 void RenderOpLine::applyAttributes(Parser *parser, Tst<char *> *attr) {
@@ -1258,7 +1258,7 @@ void RenderOpLine::render(DWindowObject *dwo, cairo_t *cr,
 	cairo_move_to(cr, x, y);
 	cairo_rel_line_to(cr, width, height);
 	cairo_move_to (cr, 0.0, 0.0);
-	draw(dwo, cr, crsurface, WA_ROUND_U(width), WA_ROUND_U(height));
+	draw(dwo, cr, crsurface, AE_ROUND_U(width), AE_ROUND_U(height));
 }
 
 void RenderOpRectangle::applyAttributes(Parser *parser,
@@ -1363,8 +1363,8 @@ void RenderOpRectangle::render(DWindowObject *dwo, cairo_t *cr,
 
 	cairo_translate(cr, x, y);
 	cairo_move_to (cr, 0.0, 0.0);
-	draw(dwo, cr, crsurface, WA_ROUND_U(width),
-			WA_ROUND_U(height));
+	draw(dwo, cr, crsurface, AE_ROUND_U(width),
+			AE_ROUND_U(height));
 }
 
 static const struct WeightMap {
@@ -1400,12 +1400,12 @@ RenderOpText::RenderOpText(char *_name) : RenderOpDraw(RenderOpTextType) {
 	text_halign = LeftAlignType;
 	utf8 = NULL;
 	is_static = false;
-	family = WA_STRDUP(RENDER_FONT_KEY_DEFAULT);
+	family = AE_STRDUP(RENDER_FONT_KEY_DEFAULT);
 	font = NULL;
 	slant = RENDER_FONT_SLANT_DEFAULT;
 	weight = RENDER_FONT_WEIGHT_DEFAULT;
 	bg_group = NULL;
-	if (_name) name = WA_STRDUP(_name);
+	if (_name) name = AE_STRDUP(_name);
 	else name = NULL;
 }
 
@@ -1447,7 +1447,7 @@ void RenderOpText::inheritAttributes(RenderOpText *inherit) {
 	top_spacing_u = inherit->top_spacing_u;
 	bottom_spacing_u = inherit->bottom_spacing_u;
 	text_halign = inherit->text_halign;
-	family = WA_STRDUP((char *) inherit->family);
+	family = AE_STRDUP((char *) inherit->family);
 	slant = inherit->slant;
 	weight = inherit->weight;
 	if (bg_group) bg_group->unref();
@@ -1537,7 +1537,7 @@ void RenderOpText::applyAttributes(Parser *parser, Tst<char *> *attr) {
 	value = parser->attrGetString(attr, "font", NULL);
 	if (value) {
 		delete [] family;
-		family = WA_STRDUP(value);
+		family = AE_STRDUP(value);
 	}
 	((RenderOpDraw *) this)->applyAttributes(parser, attr);
 }
@@ -1562,7 +1562,7 @@ void RenderOpText::calcLinePosition(double width,
 			PXLenghtUnitType, PXLenghtUnitType,
 			PXLenghtUnitType, PXLenghtUnitType,
 			region_width, region_height, 1.0, 1.0,
-			WA_ROUND_U(width), 1.0,
+			AE_ROUND_U(width), 1.0,
 			0.0, 0.0, return_x, &d, NULL, NULL);
 	if (*return_x < 0.0) *return_x = 0.0;
 }
@@ -1778,8 +1778,8 @@ void RenderOpText::render(DWindowObject *dwo, cairo_t *cr,
 				cairo_move_to(cr, left_space + (*sit)->x + pos_x, y_off + y_pos);
 				cairo_text_path(cr, (unsigned char *) (*sit)->text);
 				cairo_move_to(cr, 0.0, 0.0);
-				draw(dwo, cr, crsurface, WA_ROUND_U(width),
-						WA_ROUND_U(height));
+				draw(dwo, cr, crsurface, AE_ROUND_U(width),
+						AE_ROUND_U(height));
 			} else {
 				if (shadow) {
 					shadow_color.setcairo_color(cr);
@@ -1885,7 +1885,7 @@ bool RenderOpImage::applyAttributes(Parser *parser, Tst<char *> *attr) {
 		if (filename) {
 			rgba = read_image_to_rgba(filename, &image_width, &image_height);
 			if (rgba)
-				image = parser->ws->rgbaToWaSurface(rgba, image_width,
+				image = parser->ws->rgbaToAegisSurface(rgba, image_width,
 						image_height);
 			delete [] filename;
 		} else {
@@ -1920,7 +1920,7 @@ bool RenderOpImage::applyAttributes(Parser *parser, Tst<char *> *attr) {
 void RenderOpImage::render(DWindowObject *dwo, cairo_t *cr, cairo_surface_t *,
 		unsigned int w, unsigned int h) {
 	double x, y, width, height;
-	WaSurface *img;
+	AegisSurface *img;
 	cairo_matrix_t *matrix;
 	cairo_pattern_t *pattern;
 
@@ -2050,7 +2050,7 @@ void RenderOpSvg::render(DWindowObject *dwo, cairo_t *cr,
 			(unsigned int) height);
 
 	if (svg_cairo_render(cairo_svg, cr) != SVG_CAIRO_STATUS_SUCCESS) {
-		dwo->ws->showWarningMessage(__FUNCTION__, "svg rendering failed");
+		dwo->ws->showAegisrningMessage(__FUNCTION__, "svg rendering failed");
 	}
 
 	cairo_restore(cr);

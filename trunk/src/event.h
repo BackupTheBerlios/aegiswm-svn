@@ -83,7 +83,7 @@ class EventHandler {
 		XWMHints *wm_hints;
 		int xfd;
 		Window action_manager_window;
-		WaScreen *action_manager_screen;
+		AegisScreen *action_manager_screen;
 };
 
 #endif // __EventHandler_hh

@@ -25,12 +25,12 @@
 class DockappHandler;
 class Dockapp;
 
-#include "aegis_regex.h"
+#include "ae_regex.h"
 #include "style.h"
 
 class DockappHandler : public RootWindowObject {
 	public:
-		DockappHandler(WaScreen *, char *);
+		DockappHandler(AegisScreen *, char *);
 		~DockappHandler(void);
 
 		void update(void);
@@ -51,7 +51,7 @@ class DockappHandler : public RootWindowObject {
 
 class Dockapp : public AWindowObject {
 	public:
-		Dockapp(WaScreen *, Window);
+		Dockapp(AegisScreen *, Window);
 		~Dockapp(void);
 
 		Window icon_id, client_id;

@@ -62,7 +62,7 @@ extern "C" {
 
 Tst<int>           *win_state_tst;
 Tst<long int>      *x11_modifier_tst;
-Tst<long int>      *wa_modifier_tst;
+Tst<long int>      *ae_modifier_tst;
 Tst<int>           *dynamic_try_tst;
 Tst<ParserElement> *cfg_element_tst;
 Tst<ParserElement> *actionlist_element_tst;
@@ -191,7 +191,7 @@ char *StringBuffer::getString(void) {
 	return str;
 }
 
-Parser::Parser(WaScreen *_ws, int _include_depth, bool cr_xml_parser) {
+Parser::Parser(AegisScreen *_ws, int _include_depth, bool cr_xml_parser) {
 	if (cr_xml_parser) {
 		xml_parser = XML_ParserCreate("UTF-8");
 		if (! xml_parser) {
@@ -211,7 +211,7 @@ Parser::Parser(WaScreen *_ws, int _include_depth, bool cr_xml_parser) {
 
 	include_depth = _include_depth;
 	unknown_element_depth = 0;
-	filename = WA_STRDUP("");
+	filename = AE_STRDUP("");
 	aegis_element_found = false;
 	ws = _ws;
 }
@@ -219,7 +219,7 @@ Parser::Parser(WaScreen *_ws, int _include_depth, bool cr_xml_parser) {
 Parser::~Parser(void) {
 	char *warnings = strbuf.getString();
 	if (*warnings != '\0')
-		ws->showWarningMessage(__FUNCTION__, warnings);
+		ws->showAegisrningMessage(__FUNCTION__, warnings);
 
 	if (xml_parser)
 		XML_ParserFree(xml_parser);
@@ -248,7 +248,7 @@ void Parser::popElementHandler(void) {
 
 void Parser::setFilename(const char *name) {
 	delete [] filename;
-	filename = WA_STRDUP((char *) name);
+	filename = AE_STRDUP((char *) name);
 }
 
 bool Parser::parseChunk(const char *data, int len) {
@@ -284,7 +284,7 @@ bool Parser::parseFile(const char *file, bool ignore_missing) {
 	} else {
 		int len;
 		delete [] filename;
-		filename = WA_STRDUP((char *) file);
+		filename = AE_STRDUP((char *) file);
 		do {
 			void *buf = XML_GetBuffer(xml_parser, PARSE_BUFFER_SIZE);
 			if (! buf) {
@@ -348,7 +348,7 @@ bool Parser::parseCommand(const char *command, bool ignore_missing) {
 		int len;
 
 		if (filename) delete [] filename;
-		filename = WA_STRDUP("STDOUT");
+		filename = AE_STRDUP("STDOUT");
 
 		do {
 			void *buf = XML_GetBuffer(xml_parser, PARSE_BUFFER_SIZE);
@@ -608,7 +608,7 @@ bool CfgElementHandler::startElement(ParserElement element,
 
 											Tst<char *>::iterator it = cons->find(cname);
 											if (it == cons->end())
-												cons->insert(cname, WA_STRDUP(cvalue));
+												cons->insert(cname, AE_STRDUP(cvalue));
 
 										} else {
 											parser->warning("required attribute=name or attribute=value "
@@ -968,7 +968,7 @@ static ModifierMap x11_modifier_map[] = {
 	{ "button5", Button5Mask }
 };
 
-static ModifierMap wa_modifier_map[] = {
+static ModifierMap ae_modifier_map[] = {
 	{ "moveresize", MoveResizeMask },
 	{ "statetrue", StateTrueMask }
 };
@@ -979,11 +979,11 @@ bool ActionElementHandler::startElement(ParserElement element,
 	switch (element) {
 		case ParserElementModifier: {
 										unsigned int *x11_modifier_value = &action->x11mod;
-										unsigned int *wa_modifier_value = &action->wamod;
+										unsigned int *ae_modifier_value = &action->wamod;
 										char *value = parser->attrGetString(attr, "constraint", NULL);
 										if (value && (! strcasecmp(value, "must_not_exist"))) {
 											x11_modifier_value = &action->x11nmod;
-											wa_modifier_value = &action->wanmod;
+											ae_modifier_value = &action->wanmod;
 										}
 
 										value = parser->attrGetString(attr, "name", NULL);
@@ -995,16 +995,16 @@ bool ActionElementHandler::startElement(ParserElement element,
 												mod_set = true;
 											}
 											if (! mod_set) {
-												it = wa_modifier_tst->find(value);
-												if (it != wa_modifier_tst->end()) {
-													*wa_modifier_value = *it;
+												it = ae_modifier_tst->find(value);
+												if (it != ae_modifier_tst->end()) {
+													*ae_modifier_value = *it;
 													mod_set = true;
 												}
 											}
 											if (! mod_set) {
 												it = client_window_state_tst->find(value);
 												if (it != client_window_state_tst->end()) {
-													*wa_modifier_value = *it;
+													*ae_modifier_value = *it;
 													mod_set = true;
 												}
 											}
@@ -1578,7 +1578,7 @@ ParserElement RenderPatternElementHandler::elementMap(const XML_Char *name) {
 bool RenderPatternElementHandler::startElement(ParserElement element,
 		const XML_Char *,
 		Tst<char *> *attr) {
-	WaColor *color = new WaColor();
+	AegisColor *color = new AegisColor();
 	double offset = 0.0;
 	char *value = parser->attrGetString(attr, "color", NULL);
 	if (value) {
@@ -1592,7 +1592,7 @@ bool RenderPatternElementHandler::startElement(ParserElement element,
 
 	offset = parser->attrGetDouble(attr, "offset", offset);
 
-	pattern->color_stops.push_back(new WaColorStop(offset, color));
+	pattern->color_stops.push_back(new AegisColorStop(offset, color));
 
 	return false;
 }
@@ -1783,7 +1783,7 @@ void RenderOpTextElementHandler::endElement(const XML_Char *) {
 		}
 	} else {
 		text->is_static = true;
-		text->utf8 = WA_STRDUP(utf8);
+		text->utf8 = AE_STRDUP(utf8);
 	}
 
 	if (rendergroup) rendergroup->operations.push_back(text);
@@ -1856,11 +1856,11 @@ void parser_create_tsts(void) {
 		x11_modifier_tst->insert(x11_modifier_map[i].name,
 				x11_modifier_map[i].modifier);
 
-	wa_modifier_tst = new Tst<long int>;
-	size = sizeof(wa_modifier_map) / sizeof(ModifierMap);
+	ae_modifier_tst = new Tst<long int>;
+	size = sizeof(ae_modifier_map) / sizeof(ModifierMap);
 	for (i = 0; i < size; i++)
-		wa_modifier_tst->insert(wa_modifier_map[i].name,
-				wa_modifier_map[i].modifier);
+		ae_modifier_tst->insert(ae_modifier_map[i].name,
+				ae_modifier_map[i].modifier);
 
 	dynamic_try_tst = new Tst<int>;
 	size = sizeof(dynamic_try_map) / sizeof(DynamicTryMap);

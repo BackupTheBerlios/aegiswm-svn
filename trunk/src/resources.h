@@ -43,7 +43,7 @@ extern "C" {
 class ResourceHandler;
 
 #include "aegis.h"
-#include "aegis_regex.h"
+#include "ae_regex.h"
 #include "style.h"
 
 class ResourceHandler {
@@ -51,7 +51,7 @@ class ResourceHandler {
 		ResourceHandler(Aegis *, char **);
 
 		void loadConfig(Aegis *);
-		void loadConfig(WaScreen *);
+		void loadConfig(AegisScreen *);
 
 		XrmDatabase database;
 		char **options;

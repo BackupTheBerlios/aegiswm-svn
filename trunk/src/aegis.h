@@ -107,13 +107,13 @@ class Aegis {
 		EventHandler *eh;
 		NetHandler *net;
 		Timer *timer;
-		WaCursor *cursor;
+		AegisCursor *cursor;
 		unsigned long double_click, screenmask;
 		bool wmerr, running;
 		bool quit_signal, restart_signal, unknown_signal;
 
 		map<Window, WindowObject *> window_table;
-		list<WaScreen *> wascreen_list;
+		list<AegisScreen *> wascreen_list;
 		int min_key, max_key;
 		list<ModifierMap *> modmaps;
 
@@ -146,14 +146,14 @@ class Aegis {
 		bool focusNew(Window, bool = false);
 		void addToFocusHistory(Window);
 		void removeFromFocusHistory(Window);
-		void focusRevertFrom(WaScreen *, Window);
+		void focusRevertFrom(AegisScreen *, Window);
 
 		Window prefocus;
 		list<Window> focus_history;
 };
 
-void wa_grab_server(void);
-void wa_ungrab_server(void);
+void ae_grab_server(void);
+void ae_ungrab_server(void);
 bool validate_drawable(Drawable, unsigned int * = NULL, unsigned int * = NULL);
 const bool validate_window_mapped(Window);
 int xerrorhandler(Display *, XErrorEvent *);
@@ -161,10 +161,10 @@ int wmrunningerror(Display *, XErrorEvent *);
 void signalhandler(int);
 void restart(char *);
 void quit(int);
-char *expand(char *, WaWindow *, MenuItem *, const char * = NULL,
+char *expand(char *, AegisWindow *, MenuItem *, const char * = NULL,
 		char * = NULL, MenuItem * = NULL);
 char *preexpand(char *, bool *);
-char *wa_locale_to_utf8(const char *);
+char *ae_locale_to_utf8(const char *);
 
 extern list<DWindowObject *> __render_list;
 

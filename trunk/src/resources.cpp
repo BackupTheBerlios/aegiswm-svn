@@ -94,7 +94,7 @@ void ResourceHandler::loadConfig(Aegis *aegis) {
 		if (! strcasecmp("all", value_str))
 			aegis->screenmask = 0xffffffff;
 		else {
-			value_str = WA_STRDUP(value_str);
+			value_str = AE_STRDUP(value_str);
 			char *token = strtok(value_str, ", \t");
 			if (token) aegis->screenmask |= (1L << atoi(token));
 			while ((token = strtok(NULL, ", \t")))
@@ -116,7 +116,7 @@ void ResourceHandler::loadConfig(Aegis *aegis) {
 	}
 
 	if (value_str) {
-		char *sdir = environment_expansion(WA_STRDUP(value_str));
+		char *sdir = environment_expansion(AE_STRDUP(value_str));
 		aegis_pathenv = new char[strlen(path) + strlen(sdir) + 7];
 		sprintf(aegis_pathenv, "PATH=%s:%s", sdir, path);
 		delete [] sdir;
@@ -202,7 +202,7 @@ void ResourceHandler::loadConfig(Aegis *aegis) {
 
 	}
 
-	void ResourceHandler::loadConfig(WaScreen *wascreen) {
+	void ResourceHandler::loadConfig(AegisScreen *wascreen) {
 		XrmValue value;
 		char *value_str;
 		char *value_type;
@@ -210,43 +210,43 @@ void ResourceHandler::loadConfig(Aegis *aegis) {
 		int sn = wascreen->screen_number;
 		ScreenConfig *sc = &wascreen->config;
 
-		sc->action_file = WA_STRDUP((char *) DEFAULTACTIONFILE);
-		sc->menu_file = WA_STRDUP((char *) DEFAULTMENUFILE);
-		sc->style_file = WA_STRDUP((char *) DEFAULTSTYLEFILE);
+		sc->action_file = AE_STRDUP((char *) DEFAULTACTIONFILE);
+		sc->menu_file = AE_STRDUP((char *) DEFAULTMENUFILE);
+		sc->style_file = AE_STRDUP((char *) DEFAULTSTYLEFILE);
 
 		if (options[ARG_ACTIONFILE]) {
 			delete [] sc->action_file;
-			sc->action_file = WA_STRDUP(options[ARG_ACTIONFILE]);
+			sc->action_file = AE_STRDUP(options[ARG_ACTIONFILE]);
 		} else {
 			snprintf(rc_name, 256, "screen%d.actionFile", sn);
 			snprintf(rc_class, 256, "Screen%d.ActionFile", sn);
 			if (XrmGetResource(database, rc_name, rc_class, &value_type, &value)) {
 				delete [] sc->action_file;
-				sc->action_file = WA_STRDUP(value.addr);
+				sc->action_file = AE_STRDUP(value.addr);
 			}
 		}
 
 		if (options[ARG_STYLEFILE]) {
 			delete [] sc->style_file;
-			sc->style_file = WA_STRDUP(options[ARG_STYLEFILE]);
+			sc->style_file = AE_STRDUP(options[ARG_STYLEFILE]);
 		} else {
 			snprintf(rc_name, 256, "screen%d.styleFile", sn);
 			snprintf(rc_class, 256, "Screen%d.StyleFile", sn);
 			if (XrmGetResource(database, rc_name, rc_class, &value_type, &value)) {
 				delete [] sc->style_file;
-				sc->style_file = WA_STRDUP(value.addr);
+				sc->style_file = AE_STRDUP(value.addr);
 			}
 		}
 
 		if (options[ARG_MENUFILE]) {
 			delete [] sc->menu_file;
-			sc->menu_file = WA_STRDUP(options[ARG_MENUFILE]);
+			sc->menu_file = AE_STRDUP(options[ARG_MENUFILE]);
 		} else {
 			snprintf(rc_name, 256, "screen%d.menuFile", sn);
 			snprintf(rc_class, 256, "Screen%d.MenuFile", sn);
 			if (XrmGetResource(database, rc_name, rc_class, &value_type, &value)) {
 				delete [] sc->menu_file;
-				sc->menu_file = WA_STRDUP(value.addr);
+				sc->menu_file = AE_STRDUP(value.addr);
 			}
 		}
 
@@ -414,7 +414,7 @@ void ResourceHandler::loadConfig(Aegis *aegis) {
 			int i;
 			for (i = 0; value_str[i] == ' ' || value_str[i] == '\t'; i++);
 			if (value_str[i] != '\0') {
-				char *command = WA_STRDUP(value_str);
+				char *command = AE_STRDUP(value_str);
 				sc->info_command =
 					preexpand(command, &sc->info_command_dynamic);
 			}
@@ -436,7 +436,7 @@ void ResourceHandler::loadConfig(Aegis *aegis) {
 			int i;
 			for (i = 0; value_str[i] == ' ' || value_str[i] == '\t'; i++);
 			if (value_str[i] != '\0') {
-				char *command = WA_STRDUP(value_str);
+				char *command = AE_STRDUP(value_str);
 				sc->warning_command =
 					preexpand(command, &sc->warning_command_dynamic);
 			}

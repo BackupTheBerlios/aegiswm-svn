@@ -44,9 +44,9 @@ extern "C" {
 
 #include "menu.h"
 
-Menu::Menu(WaScreen *ws, char *n) :
+Menu::Menu(AegisScreen *ws, char *n) :
 	RootWindowObject(ws, 0, MenuType,
-			new WaStringMap(WindowIDName, n), "frame") {
+			new AegisStringMap(WindowIDName, n), "frame") {
 		XSetWindowAttributes attrib_set;
 		name = (*(ids->begin())).second;
 		width = height = 0;
@@ -151,14 +151,14 @@ void Menu::update(void) {
 	calc_length(style->right_spacing, style->right_spacing_u,
 			ws->hdpi, ws->width, &_right_spacing);
 
-	top_spacing = WA_ROUND_U(_top_spacing);
-	bottom_spacing = WA_ROUND_U(_bottom_spacing);
-	left_spacing = WA_ROUND_U(_left_spacing);
-	right_spacing = WA_ROUND_U(_right_spacing);
+	top_spacing = AE_ROUND_U(_top_spacing);
+	bottom_spacing = AE_ROUND_U(_bottom_spacing);
+	left_spacing = AE_ROUND_U(_left_spacing);
+	right_spacing = AE_ROUND_U(_right_spacing);
 
 	newheight = top_spacing;
 
-	newwidth = WA_ROUND_U(_width * width_factor);
+	newwidth = AE_ROUND_U(_width * width_factor);
 
 	list<MenuItem *>::iterator it = items.begin();
 	for (; it != items.end(); ++it) {
@@ -254,14 +254,14 @@ void Menu::map(AWindowObject *_awo, bool focus, bool force) {
 
 void Menu::map(int mapx, int mapy) {
 	if (items.empty()) {
-		ws->showWarningMessage("menu=%s does not contain any items.", name);
+		ws->showAegisrningMessage("menu=%s does not contain any items.", name);
 		return;
 	}
 	ws->raiseWindow(id);
 	move(mapx, mapy);
 	XUngrabPointer(ws->display, CurrentTime);
 	if (! mapped) {
-		WaWindow *ww = NULL;
+		AegisWindow *ww = NULL;
 		EventDetail ed;
 		focus = (Window) 0;
 		if (a_id) {
@@ -328,7 +328,7 @@ void Menu::unmap(void) {
 
 	if (was_mapped) {
 		EventDetail ed;
-		WaWindow *ww = NULL;
+		AegisWindow *ww = NULL;
 		XUnmapWindow(ws->display, id);
 		if (a_id) {
 			AWindowObject *awo = (AWindowObject *)
@@ -458,13 +458,13 @@ void Menu::removeSpecialItems(void) {
 }
 
 void Menu::addWindowListItems(void) {
-	list<WaWindow *>::iterator it = ws->wawindow_list.begin();
+	list<AegisWindow *>::iterator it = ws->wawindow_list.begin();
 	for (; it != ws->wawindow_list.end() &&
 			(! ((*it)->wstate & StateTasklistMask)); ++it);
 
 	if (it == ws->wawindow_list.end()) return;
 
-	WaWindow *next = NULL, *last = *it;
+	AegisWindow *next = NULL, *last = *it;
 	while (next != last) {
 		it++;
 		if (it == ws->wawindow_list.end())
@@ -475,7 +475,7 @@ void Menu::addWindowListItems(void) {
 		MenuItem *mi = new MenuItem(ws, this, "item");
 		mi->commonStyleUpdate();
 		delete [] mi->str;
-		mi->str = WA_STRDUP(next->name);
+		mi->str = AE_STRDUP(next->name);
 		MenuItemAction *mia = new MenuItemAction();
 		mia->func = &AWindowObject::windowRaiseFocus;
 		mi->actions.push_back(mia);
@@ -496,15 +496,15 @@ void Menu::addWindowListItems(void) {
 	update();
 }
 
-void Menu::addMergeListItems(WaWindow *ww, SpecialMenuType smtype) {
-	list<WaWindow *>::iterator it = ws->wawindow_list.begin();
+void Menu::addMergeListItems(AegisWindow *ww, SpecialMenuType smtype) {
+	list<AegisWindow *>::iterator it = ws->wawindow_list.begin();
 	for (; it != ws->wawindow_list.end() &&
 			(! ((*it)->wstate & StateTasklistMask)) &&
 			(*it)->id != ww->id && (! (*it)->master); ++it);
 
 	if (it == ws->wawindow_list.end()) return;
 
-	WaWindow *next = NULL, *last = *it;
+	AegisWindow *next = NULL, *last = *it;
 	while (next != last) {
 		it++;
 		if (it == ws->wawindow_list.end())
@@ -528,7 +528,7 @@ void Menu::addMergeListItems(WaWindow *ww, SpecialMenuType smtype) {
 		}
 		mi->commonStyleUpdate();
 		delete [] mi->str;
-		mi->str = WA_STRDUP(next->name);
+		mi->str = AE_STRDUP(next->name);
 		mi->a_id = next->id;
 
 		if (next->wm_icon_image)
@@ -574,17 +574,17 @@ bool MenuItemAction::applyAttributes(Parser *parser, Tst<char *> *attr) {
 	value = parser->attrGetString(attr, "parameter", NULL);
 	if (value) {
 		if (param) delete [] param;
-		param = WA_STRDUP(value);
+		param = AE_STRDUP(value);
 	}
 
 	return true;
 }
 
-MenuItem::MenuItem(WaScreen *_ws, Menu *m, char *n) :
+MenuItem::MenuItem(AegisScreen *_ws, Menu *m, char *n) :
 	DWindowObject(_ws, 0, MenuItemType, m->ids->ref(), n) {
 		XSetWindowAttributes attrib_set;
-		str = WA_STRDUP("");
-		str2 = WA_STRDUP("");
+		str = AE_STRDUP("");
+		str2 = AE_STRDUP("");
 		str_dynamic = str2_dynamic = false;
 		submenuname = NULL;
 		menu = (Menu *) m->ref();
@@ -663,7 +663,7 @@ void MenuItem::applyAttributes(Parser *parser, Tst<char *> *attr) {
 		if (filename) {
 			rgba = read_image_to_rgba(filename, &image_width, &image_height);
 			if (rgba) {
-				WaSurface *image = ws->rgbaToWaSurface(rgba, image_width,
+				AegisSurface *image = ws->rgbaToAegisSurface(rgba, image_width,
 						image_height);
 				if (image) {
 					icon_image = new RenderGroup(ws, NULL);
@@ -725,7 +725,7 @@ void MenuItem::applyAttributes(Parser *parser, Tst<char *> *attr) {
 	value = parser->attrGetString(attr, "submenu", NULL);
 	if (value) {
 		submenu = ws->getMenuNamed(submenuname, false);
-		if (! submenu) submenuname = WA_STRDUP(value);
+		if (! submenu) submenuname = AE_STRDUP(value);
 	}
 
 	value = parser->attrGetString(attr, "monitor_window_state", NULL);
@@ -760,12 +760,12 @@ void MenuItem::mapSubmenu(char *param, bool force) {
 		if (yoff_str) {
 			value = get_double_and_unit(yoff_str + 1, &unit);
 			calc_length(value, unit, ws->vdpi, menu->height, &value_return);
-			yoff = WA_ROUND(value_return);
+			yoff = AE_ROUND(value_return);
 			*yoff_str = '\0';
 		}
 		value = get_double_and_unit(param, &unit);
 		calc_length(value, unit, ws->hdpi, menu->width, &value_return);
-		xoff = WA_ROUND(value_return);
+		xoff = AE_ROUND(value_return);
 		if (yoff_str) *yoff_str = ',';
 		if (xoff > (int) menu->width) xoff = menu->width;
 		if (xoff < - (int) menu->width) xoff = - (int) menu->width;
@@ -816,7 +816,7 @@ void MenuItem::perform(XEvent *e) {
 		list<MenuItemAction *>::iterator it = actions.begin();
 		for (; it != actions.end(); it++) {
 			if (action->param) delete [] action->param;
-			if ((*it)->param) action->param = WA_STRDUP((*it)->param);
+			if ((*it)->param) action->param = AE_STRDUP((*it)->param);
 			else action->param = NULL;
 
 			if (awo)
@@ -827,8 +827,8 @@ void MenuItem::perform(XEvent *e) {
 	}
 	else if (menu->special_menu_type != NoSpecialMenuType &&
 			awo && awo->type == WindowType) {
-		WaWindow *master = (WaWindow *) awo;
-		WaWindow *child = NULL;
+		AegisWindow *master = (AegisWindow *) awo;
+		AegisWindow *child = NULL;
 		AWindowObject *m_awo = (AWindowObject *)
 			ws->aegis->findWin(menu->a_id, ANY_ACTION_WINDOW_TYPE);
 		if (m_awo) child = m_awo->getWindow();
@@ -1098,7 +1098,7 @@ void MenuItem::evalWhatToRender(bool, bool size_change,
 	}
 }
 
-WaSurface *MenuItem::getBgInfo(DWindowObject **return_dwo,
+AegisSurface *MenuItem::getBgInfo(DWindowObject **return_dwo,
 		int *return_x, int *return_y) {
 	*return_x = x;
 	*return_y = y;

@@ -127,7 +127,7 @@ typedef enum {
 } DrawingOrder;
 
 class DWindowObject;
-class WaScreen;
+class AegisScreen;
 
 class RenderOp;
 class RenderOpText;
@@ -208,11 +208,11 @@ inline void attributes_get_area_default(Parser *parser, Tst<char *> *attr,
 void attributes_get_render(Parser *, Tst<char *> *, cairo_operator_t *, bool *,
 		double *);
 
-class WaSurface : public RefCounted<WaSurface> {
+class AegisSurface : public RefCounted<AegisSurface> {
 	public:
-		WaSurface(Display *, cairo_surface_t *, Pixmap, Pixmap,
+		AegisSurface(Display *, cairo_surface_t *, Pixmap, Pixmap,
 				unsigned char *, unsigned int, unsigned int);
-		virtual ~WaSurface(void);
+		virtual ~AegisSurface(void);
 
 		Display *display;
 		cairo_surface_t *crsurface;
@@ -221,7 +221,7 @@ class WaSurface : public RefCounted<WaSurface> {
 		unsigned int width, height;
 };
 
-class CacheSurface : public WaSurface {
+class CacheSurface : public AegisSurface {
 	public:
 		CacheSurface(Display *, cairo_surface_t *, Pixmap,
 				unsigned char *, unsigned int, unsigned int,
@@ -234,14 +234,14 @@ class CacheSurface : public WaSurface {
 		RenderGroup *group;
 };
 
-class WaColor : public RefCounted<WaColor> {
+class AegisColor : public RefCounted<AegisColor> {
 	public:
-		WaColor(double = RENDER_COLOR_RED_DEFAULT,
+		AegisColor(double = RENDER_COLOR_RED_DEFAULT,
 				double = RENDER_COLOR_GREEN_DEFAULT,
 				double = RENDER_COLOR_BLUE_DEFAULT,
 				double = RENDER_OPACITY_DEFAULT);
 
-		bool parseColor(WaScreen *, const char *);
+		bool parseColor(AegisScreen *, const char *);
 		void setOpacity(double o) { alpha = o; }
 		double getOpacity(void) { return alpha; }
 
@@ -284,7 +284,7 @@ class RenderOp : public RefCounted<RenderOp> {
 
 class RenderGroup : public RenderOp {
 	public:
-		RenderGroup(WaScreen * = NULL, char * = NULL);
+		RenderGroup(AegisScreen * = NULL, char * = NULL);
 		virtual ~RenderGroup(void);
 
 		void clear(void);
@@ -309,7 +309,7 @@ class RenderGroup : public RenderOp {
 		double opacity;
 
 	protected:
-		WaScreen *ws;
+		AegisScreen *ws;
 };
 
 #define DynamicGroupStaticType            (1 << 0)
@@ -330,13 +330,13 @@ class RenderOpDynamic : public RenderOp {
 		list<int> dynamic_order;
 };
 
-class WaColorStop : public RefCounted<WaColorStop> {
+class AegisColorStop : public RefCounted<AegisColorStop> {
 	public:
-		WaColorStop(double, WaColor *);
-		~WaColorStop(void);
+		AegisColorStop(double, AegisColor *);
+		~AegisColorStop(void);
 
 		double offset;
-		WaColor *color;
+		AegisColor *color;
 };
 
 class RenderPattern : public RefCounted<RenderPattern> {
@@ -352,7 +352,7 @@ class RenderPattern : public RefCounted<RenderPattern> {
 		void setcairo_pattern(DWindowObject *, cairo_t *, cairo_surface_t *,
 				unsigned int, unsigned int);
 
-		list<WaColorStop *> color_stops;
+		list<AegisColorStop *> color_stops;
 		cairo_filter_t filter;
 		cairo_extend_t extend;
 
@@ -380,7 +380,7 @@ class RenderOpDraw : public RenderOp {
 				unsigned int, unsigned int);
 
 	protected:
-		WaColor stroke_color, fill_color;
+		AegisColor stroke_color, fill_color;
 		RenderPattern *stroke_pattern, *fill_pattern;
 		double linewidth, tolerance, miterlimit;
 		LenghtUnitType linewidth_u;
@@ -500,7 +500,7 @@ class RenderOpText : public RenderOpDraw {
 					   right_spacing_u, top_spacing_u, bottom_spacing_u;
 		bool shadow, dynamic_area_width, dynamic_area_height;
 		HorizontalAlignment text_halign;
-		WaColor shadow_color;
+		AegisColor shadow_color;
 		char *family;
 		cairo_font_t *font;
 		RenderGroup *bg_group;
@@ -529,7 +529,7 @@ class RenderOpSolid : public RenderOpFill {
 				unsigned int, unsigned int);
 
 	private:
-		WaColor color;
+		AegisColor color;
 };
 
 class RenderOpImage : public RenderOpFill {
@@ -543,7 +543,7 @@ class RenderOpImage : public RenderOpFill {
 
 		ImageScaleType scale;
 		cairo_filter_t filter;
-		WaSurface *image;
+		AegisSurface *image;
 };
 
 #ifdef    SVG

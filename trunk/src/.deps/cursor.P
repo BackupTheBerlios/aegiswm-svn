@@ -129,7 +129,7 @@ cursor.o: cursor.cpp ../config.h /usr/X11R6/include/X11/Xlib.h \
   /usr/include/bits/sigstack.h /usr/include/sys/ucontext.h \
   /usr/include/iconv.h screen.h \
   /usr/X11R6/include/X11/extensions/Xinerama.h resources.h \
-  /usr/X11R6/include/X11/Xresource.h aegis_regex.h /usr/include/regex.h \
+  /usr/X11R6/include/X11/Xresource.h ae_regex.h /usr/include/regex.h \
   style.h /usr/include/cairo.h /usr/include/cairo-features.h \
   /usr/include/pixman.h /usr/include/stdint.h \
   /usr/X11R6/include/X11/extensions/Xrender.h \
@@ -336,7 +336,7 @@ screen.h :
 /usr/X11R6/include/X11/extensions/Xinerama.h :
 resources.h :
 /usr/X11R6/include/X11/Xresource.h :
-aegis_regex.h :
+ae_regex.h :
 /usr/include/regex.h :
 style.h :
 /usr/include/cairo.h :

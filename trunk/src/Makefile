@@ -57,7 +57,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-host_alias = foo
+host_alias = src
 host_triplet = 
 CAIRO_CFLAGS = -I/usr/include/freetype2 -I/usr/X11R6/include  
 CAIRO_LIBS = -L/usr/X11R6/lib -lcairo -lm -lfontconfig -lpixman -lXrender -lX11 -lXext  
@@ -116,7 +116,7 @@ aegis_LDADD =  $(CAIRO_LIBS) $(LOCALE_LIBS) $(ICONV_LIBS) $(EXPAT_LIBS) $(THREAD
 
 bin_PROGRAMS = aegis
 
-aegis_SOURCES =  	main.cpp 	aegis.cpp 	aegis.h 	screen.cpp 	screen.h 	window.cpp 	window.h 	resources.cpp 	resources.h 	event.cpp 	event.h 	menu.cpp 	menu.h 	net.cpp 	net.h 	dockapp.cpp 	dockapp.h 	timer.cpp 	timer.h 	aegis_regex.cpp 	aegis_regex.h 	parser.cpp 	parser.h 	style.cpp 	style.h 	action.cpp 	action.h 	cursor.cpp 	cursor.h 	render.cpp 	render.h 	png.cpp 	png.h 	util.cpp 	util.h 	refcounted.h 	tst.h
+aegis_SOURCES =  	main.cpp 	aegis.cpp 	aegis.h 	screen.cpp 	screen.h 	window.cpp 	window.h 	resources.cpp 	resources.h 	event.cpp 	event.h 	menu.cpp 	menu.h 	net.cpp 	net.h 	dockapp.cpp 	dockapp.h 	timer.cpp 	timer.h 	ae_regex.cpp 	ae_regex.h 	parser.cpp 	parser.h 	style.cpp 	style.h 	action.cpp 	action.h 	cursor.cpp 	cursor.h 	render.cpp 	render.h 	ae_png.cpp 	ae_png.h 	util.cpp 	util.h 	refcounted.h 	tst.h
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -131,8 +131,8 @@ LIBS =
 X_EXTRA_LIBS = 
 X_PRE_LIBS =  -lSM -lICE
 aegis_OBJECTS =  main.o aegis.o screen.o window.o resources.o event.o \
-menu.o net.o dockapp.o timer.o aegis_regex.o parser.o style.o action.o \
-cursor.o render.o png.o util.o
+menu.o net.o dockapp.o timer.o ae_regex.o parser.o style.o action.o \
+cursor.o render.o ae_png.o util.o
 aegis_DEPENDENCIES = 
 aegis_LDFLAGS = 
 CXXFLAGS = -g -O2
@@ -150,9 +150,9 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DEP_FILES =  .deps/action.P .deps/aegis.P .deps/aegis_regex.P \
+DEP_FILES =  .deps/action.P .deps/aegis.P .deps/ae_regex.P \
 .deps/cursor.P .deps/dockapp.P .deps/event.P .deps/main.P .deps/menu.P \
-.deps/net.P .deps/parser.P .deps/png.P .deps/render.P .deps/resources.P \
+.deps/net.P .deps/parser.P .deps/ae_png.P .deps/render.P .deps/resources.P \
 .deps/screen.P .deps/style.P .deps/timer.P .deps/util.P .deps/window.P
 SOURCES = $(aegis_SOURCES)
 OBJECTS = $(aegis_OBJECTS)

@@ -56,10 +56,10 @@ using std::endl;
 
 #define UNUSED_VARIABLE(x) ((void) (x)) 
 
-#define WA_ROUND_U(value) __wa_round_to_unsigned(value)
-#define WA_ROUND(value) ((int) (value + 0.5))
+#define AE_ROUND_U(value) __ae_round_to_unsigned(value)
+#define AE_ROUND(value) ((int) (value + 0.5))
 
-#define WA_STRDUP(str) __wa_strdup(str)
+#define AE_STRDUP(str) __ae_strdup(str)
 
 #define WARNING      cerr << "aegis: warning: "
 #define ERROR        cerr << "aegis: error: "
@@ -128,7 +128,7 @@ delete list;
 	} \
 delete map;
 
-typedef unsigned long WaPixel;
+typedef unsigned long AegisPixel;
 
 #define RootType        (1L << 0)
 #define WindowFrameType (1L << 1)
@@ -199,11 +199,11 @@ enum {
 
 #include "refcounted.h"
 
-class WaStringMap : public RefCounted<WaStringMap> {
+class AegisStringMap : public RefCounted<AegisStringMap> {
 	public:
-		inline WaStringMap(void) : RefCounted<WaStringMap>(this) {}
-		WaStringMap(int, const char *);
-		~WaStringMap(void);
+		inline AegisStringMap(void) : RefCounted<AegisStringMap>(this) {}
+		AegisStringMap(int, const char *);
+		~AegisStringMap(void);
 
 		void add(int, const char *, ...) __attribute__((format(printf, 3, 4)));
 		inline map<int, char *>::iterator begin(void) { return str_map.begin(); }
@@ -216,12 +216,12 @@ class WaStringMap : public RefCounted<WaStringMap> {
 		map<int, char *> str_map;
 };
 
-inline unsigned int __wa_round_to_unsigned(double uv) {
+inline unsigned int __ae_round_to_unsigned(double uv) {
 	int tmp = (int) (uv + 0.5);
 	return (tmp > 0)? (unsigned int) tmp: 0;
 }
 
-inline char *__wa_strdup(char *s) {
+inline char *__ae_strdup(char *s) {
 	char *tmp = new char[strlen(s) + 1];
 	strcpy(tmp, s);
 	return tmp;

@@ -43,7 +43,7 @@ typedef enum {
 
 class Menu : public RootWindowObject {
 	public:
-		Menu(WaScreen *, char *);
+		Menu(AegisScreen *, char *);
 		~Menu(void);
 
 		void inheritContent(Menu *);
@@ -66,7 +66,7 @@ class Menu : public RootWindowObject {
 		void clearOutline(void);
 		void removeSpecialItems(void);
 		void addWindowListItems(void);
-		void addMergeListItems(WaWindow *, SpecialMenuType);
+		void addMergeListItems(AegisWindow *, SpecialMenuType);
 		void styleUpdate(bool, bool);
 
 		list<MenuItem *> items;
@@ -97,7 +97,7 @@ class MenuItemAction {
 
 class MenuItem : public DWindowObject {
 	public:
-		MenuItem(WaScreen *, Menu *, char *);
+		MenuItem(AegisScreen *, Menu *, char *);
 		~MenuItem(void);
 
 		void applyAttributes(Parser *, Tst<char *> *);
@@ -115,7 +115,7 @@ class MenuItem : public DWindowObject {
 		void currentPositionAndSize(int *, int *,
 				unsigned int *, unsigned int *);
 		void evalWhatToRender(bool, bool, bool *, bool *, bool *);
-		WaSurface *getBgInfo(DWindowObject **, int *, int *);
+		AegisSurface *getBgInfo(DWindowObject **, int *, int *);
 
 		unsigned int width, height;
 		int y, x, newy, newx;

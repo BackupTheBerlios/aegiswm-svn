@@ -34,8 +34,8 @@ extern "C" {
 
 #include "net.h"
 
-NetHandler::NetHandler(Aegis *wa) {
-	aegis = wa;
+NetHandler::NetHandler(Aegis *aegis) {
+	aegis = aegis;
 	display = aegis->display;
 	size_hints = XAllocSizeHints();
 	classhint = XAllocClassHint();
@@ -202,7 +202,7 @@ NetHandler::NetHandler(Aegis *wa) {
 	aegis_xrootpmap_id = None;
 }
 
-void NetHandler::getWMProtocols(WaWindow *ww) {
+void NetHandler::getWMProtocols(AegisWindow *ww) {
 	int n;
 	Atom *protocols;
 
@@ -217,7 +217,7 @@ void NetHandler::getWMProtocols(WaWindow *ww) {
 	}
 }
 
-void NetHandler::getWMHints(WaWindow *ww) {
+void NetHandler::getWMHints(AegisWindow *ww) {
 	XWMHints *wm_hints = NULL;
 	ww->state = NormalState;
 
@@ -264,14 +264,14 @@ void NetHandler::getWMHints(WaWindow *ww) {
 	}
 }
 
-void NetHandler::getClassHint(WaWindow *ww) {
+void NetHandler::getClassHint(AegisWindow *ww) {
 	int status = 0;
 
 	status = XGetClassHint(ww->display, ww->id, classhint);
 
 	if (status) {
 		if (classhint->res_class) {
-			char *newwclass = wa_locale_to_utf8((char *) classhint->res_class);
+			char *newwclass = ae_locale_to_utf8((char *) classhint->res_class);
 			if (newwclass) {
 				if (ww->frame) DWIN_RENDER_GET(ww->frame);
 				delete [] ww->wclass;
@@ -282,7 +282,7 @@ void NetHandler::getClassHint(WaWindow *ww) {
 		}
 		if (classhint->res_name) {
 			char *newwclassname =
-				wa_locale_to_utf8((char *) classhint->res_name);
+				ae_locale_to_utf8((char *) classhint->res_name);
 			if (newwclassname) {
 				if (ww->frame) DWIN_RENDER_GET(ww->frame);
 				delete [] ww->wclassname;
@@ -294,7 +294,7 @@ void NetHandler::getClassHint(WaWindow *ww) {
 	}
 }
 
-void NetHandler::getWMClientMachineHint(WaWindow *ww) {
+void NetHandler::getWMClientMachineHint(AegisWindow *ww) {
 	int status = 0, n;
 	XTextProperty text_prop;
 	char **cl;
@@ -304,7 +304,7 @@ void NetHandler::getWMClientMachineHint(WaWindow *ww) {
 	if (status) {
 		if (text_prop.encoding == XA_STRING) {
 			char *newhostname =
-				wa_locale_to_utf8((char *) text_prop.value);
+				ae_locale_to_utf8((char *) text_prop.value);
 			if (newhostname) {
 				if (ww->frame) DWIN_RENDER_GET(ww->frame);
 				delete [] ww->host;
@@ -321,7 +321,7 @@ void NetHandler::getWMClientMachineHint(WaWindow *ww) {
 			if (cl) {
 				if (ww->frame) DWIN_RENDER_GET(ww->frame);
 				delete [] ww->host;
-				ww->host = WA_STRDUP(cl[0]);
+				ww->host = AE_STRDUP(cl[0]);
 				if (ww->frame) DWIN_RENDER_RELEASE(ww->frame);
 				XFreeStringList(cl);
 			}
@@ -329,7 +329,7 @@ void NetHandler::getWMClientMachineHint(WaWindow *ww) {
 	}
 }
 
-void NetHandler::getTransientForHint(WaWindow *ww) {
+void NetHandler::getTransientForHint(AegisWindow *ww) {
 	int status = 0;
 	Window trans;
 
@@ -342,11 +342,11 @@ void NetHandler::getTransientForHint(WaWindow *ww) {
 		if (status && (trans != ww->id)) {
 			if (trans == None || trans == ww->ws->id) {
 				ww->transient_for = ww->ws->id;
-				list<WaWindow *>::iterator it = ww->ws->wawindow_list.begin();
+				list<AegisWindow *>::iterator it = ww->ws->wawindow_list.begin();
 				for (; it != ww->ws->wawindow_list.end(); ++it)
 					if ((*it) != ww) (*it)->transients.push_back(ww->id);
 			} else {
-				WaWindow *transfor = (WaWindow *)
+				AegisWindow *transfor = (AegisWindow *)
 					aegis->findWin(trans, WindowType);
 				if (transfor) {
 					if (transfor != ww) {
@@ -354,7 +354,7 @@ void NetHandler::getTransientForHint(WaWindow *ww) {
 						transfor->transients.push_back(ww->id);
 					}
 				} else if (ww->window_group) {
-					list<WaWindow *>::iterator it =
+					list<AegisWindow *>::iterator it =
 						ww->ws->wawindow_list.begin();
 					for (;it != ww->ws->wawindow_list.end(); ++it) {
 						if ((*it) != ww &&
@@ -373,7 +373,7 @@ void NetHandler::getTransientForHint(WaWindow *ww) {
 		ww->setWindowState(ww->wstate & ~StateTransientMask);
 }
 
-void NetHandler::getMWMHints(WaWindow *ww) {
+void NetHandler::getMWMHints(AegisWindow *ww) {
 	MwmHints *mwmhints;
 	int status = Success - 1;
 
@@ -403,7 +403,7 @@ void NetHandler::getMWMHints(WaWindow *ww) {
 	}
 }
 
-void NetHandler::getWMNormalHints(WaWindow *ww) {
+void NetHandler::getWMNormalHints(AegisWindow *ww) {
 	long dummy;
 	int status = 0;
 
@@ -470,7 +470,7 @@ void NetHandler::getWMNormalHints(WaWindow *ww) {
 		ww->size.min_height;
 }
 
-void NetHandler::getState(WaWindow *ww) {
+void NetHandler::getState(AegisWindow *ww) {
 	CARD32 *data;
 
 	ww->state = WithdrawnState;
@@ -484,7 +484,7 @@ void NetHandler::getState(WaWindow *ww) {
 	} else ww->deleted = true;
 }
 
-void NetHandler::setState(WaWindow *ww, int newstate) {
+void NetHandler::setState(AegisWindow *ww, int newstate) {
 	CARD32 data[2];
 
 	ww->state = newstate;
@@ -516,7 +516,7 @@ void NetHandler::setState(WaWindow *ww, int newstate) {
 	ww->sendConfig();
 }
 
-void NetHandler::getWmState(WaWindow *ww) {
+void NetHandler::getWmState(AegisWindow *ww) {
 	CARD32 *data;
 	bool vert = false, horz = false, shaded = false, decor = false;
 	unsigned int i;
@@ -583,7 +583,7 @@ void NetHandler::getWmState(WaWindow *ww) {
 	ww->windowStateCheck();
 }
 
-void NetHandler::setWmState(WaWindow *ww) {
+void NetHandler::setWmState(AegisWindow *ww) {
 	int i = 0;
 	CARD32 data[16];
 	CARD32 data2[6];
@@ -631,7 +631,7 @@ void NetHandler::setWmState(WaWindow *ww) {
 	ww->windowStateCheck();
 }
 
-void NetHandler::setSupported(WaScreen *ws) {
+void NetHandler::setSupported(AegisScreen *ws) {
 	CARD32 data[54];
 	int i = 0;
 
@@ -700,7 +700,7 @@ void NetHandler::setSupported(WaScreen *ws) {
 			PropModeReplace, (unsigned char *) data, i);
 }
 
-void NetHandler::setSupportedWMCheck(WaScreen *ws, Window child) {
+void NetHandler::setSupportedWMCheck(AegisScreen *ws, Window child) {
 	XChangeProperty(display, ws->id, net_supported_wm_check, XA_WINDOW, 32,
 			PropModeReplace, (unsigned char *) &child, 1);
 
@@ -712,13 +712,13 @@ void NetHandler::setSupportedWMCheck(WaScreen *ws, Window child) {
 			strlen(PACKAGE));
 }
 
-void NetHandler::setClientList(WaScreen *ws) {
+void NetHandler::setClientList(AegisScreen *ws) {
 	CARD32 *data;
 	int i = 0;
 
 	data = new CARD32[ws->wawindow_list_map_order.size() + 1];
 
-	list<WaWindow *>::iterator it =
+	list<AegisWindow *>::iterator it =
 		ws->wawindow_list_map_order.begin();
 	for (; it != ws->wawindow_list_map_order.end(); ++it) {
 		data[i++] = (*it)->id;
@@ -730,27 +730,27 @@ void NetHandler::setClientList(WaScreen *ws) {
 	delete [] data;
 }
 
-void NetHandler::setClientListStacking(WaScreen *ws) {
+void NetHandler::setClientListStacking(AegisScreen *ws) {
 	CARD32 *data;
 	int i = 0;
-	WaFrameWindow *wf;
+	AegisFrameWindow *wf;
 
 	data = new CARD32[ws->wawindow_list.size() + 1];
 
 	list<Window>::reverse_iterator it = ws->aab_stacking_list.rbegin();
 	for (; it != ws->aab_stacking_list.rend(); ++it) {
-		wf = (WaFrameWindow *) aegis->findWin(*it, WindowFrameType);
-		if (wf) data[i++] = wf->wa->id;
+		wf = (AegisFrameWindow *) aegis->findWin(*it, WindowFrameType);
+		if (wf) data[i++] = wf->aegis->id;
 	}
 	it = ws->stacking_list.rbegin();
 	for (; it != ws->stacking_list.rend(); ++it) {
-		wf = (WaFrameWindow *) aegis->findWin(*it, WindowFrameType);
-		if (wf) data[i++] = wf->wa->id;
+		wf = (AegisFrameWindow *) aegis->findWin(*it, WindowFrameType);
+		if (wf) data[i++] = wf->aegis->id;
 	}
 	it = ws->aot_stacking_list.rbegin();
 	for (; it != ws->aot_stacking_list.rend(); ++it) {
-		wf = (WaFrameWindow *) aegis->findWin(*it, WindowFrameType);
-		if (wf) data[i++] = wf->wa->id;
+		wf = (AegisFrameWindow *) aegis->findWin(*it, WindowFrameType);
+		if (wf) data[i++] = wf->aegis->id;
 	}
 
 	XChangeProperty(display, ws->id, net_client_list_stacking, XA_WINDOW,
@@ -759,7 +759,7 @@ void NetHandler::setClientListStacking(WaScreen *ws) {
 	delete [] data;
 }
 
-void NetHandler::getClientListStacking(WaScreen *ws) {
+void NetHandler::getClientListStacking(AegisScreen *ws) {
 	CARD32 *data;
 	unsigned int i;
 
@@ -770,15 +770,15 @@ void NetHandler::getClientListStacking(WaScreen *ws) {
 				(unsigned char **) &data) == Success &&
 			items_read) {
 		for (i = 0; i < items_read; i++) {
-			WaWindow *ww = (WaWindow *) aegis->findWin(data[i], WindowType);
+			AegisWindow *ww = (AegisWindow *) aegis->findWin(data[i], WindowType);
 			if (ww) ws->raiseWindow(ww->frame->id, false);
 		}
 	}
 }
 
-void NetHandler::setActiveWindow(WaScreen *ws, WaWindow *ww) {
+void NetHandler::setActiveWindow(AegisScreen *ws, AegisWindow *ww) {
 	CARD32 *data;
-	list<WaWindow *>::iterator it;
+	list<AegisWindow *>::iterator it;
 	int i = 0;
 
 	data = new CARD32[ws->wawindow_list.size() + 1];
@@ -802,8 +802,8 @@ void NetHandler::setActiveWindow(WaScreen *ws, WaWindow *ww) {
 	sendNotify(ws, ActiveWindowChangeNotify, (ww)? ww->id: 0);
 }
 
-void NetHandler::getActiveWindow(WaScreen *ws) {
-	WaWindow *ww;
+void NetHandler::getActiveWindow(AegisScreen *ws) {
+	AegisWindow *ww;
 	CARD32 *data;
 	int i;
 
@@ -818,7 +818,7 @@ void NetHandler::getActiveWindow(WaScreen *ws) {
 				ws->aegis->focusNew(ws->id);
 				break;
 			}
-			ww = (WaWindow *) aegis->findWin(data[i], WindowType);
+			ww = (AegisWindow *) aegis->findWin(data[i], WindowType);
 			if (ww) {
 				ws->wawindow_list.remove(ww);
 				ws->wawindow_list.push_front(ww);
@@ -830,7 +830,7 @@ void NetHandler::getActiveWindow(WaScreen *ws) {
 	}
 }
 
-void NetHandler::getVirtualPos(WaWindow *ww) {
+void NetHandler::getVirtualPos(AegisWindow *ww) {
 	int *data;
 
 	if (XGetWindowProperty(display, ww->id, aegis_net_virtual_pos,
@@ -850,7 +850,7 @@ void NetHandler::getVirtualPos(WaWindow *ww) {
 	}
 }
 
-void NetHandler::getXaName(WaWindow *ww) {
+void NetHandler::getXaName(AegisWindow *ww) {
 	int status = 0, n;
 	XTextProperty text_prop;
 	char **cl;
@@ -859,7 +859,7 @@ void NetHandler::getXaName(WaWindow *ww) {
 
 	if (status) {
 		if (text_prop.encoding == XA_STRING) {
-			char *newname = wa_locale_to_utf8((char *) text_prop.value);
+			char *newname = ae_locale_to_utf8((char *) text_prop.value);
 			if (newname) {
 				ww->ws->smartNameRemove(ww);
 				if (ww->frame) DWIN_RENDER_GET(ww->frame);
@@ -881,7 +881,7 @@ void NetHandler::getXaName(WaWindow *ww) {
 				ww->ws->smartNameRemove(ww);
 				if (ww->frame) DWIN_RENDER_GET(ww->frame);
 				delete [] ww->name;
-				ww->name = WA_STRDUP(cl[0]);
+				ww->name = AE_STRDUP(cl[0]);
 				ww->realnamelen = strlen(ww->name);
 				ww->ws->smartName(ww);
 				if (ww->frame) DWIN_RENDER_RELEASE(ww->frame);
@@ -893,7 +893,7 @@ void NetHandler::getXaName(WaWindow *ww) {
 		ww->ws->smartNameRemove(ww);
 		if (ww->frame) DWIN_RENDER_GET(ww->frame);
 		delete [] ww->name;
-		ww->name = WA_STRDUP("");
+		ww->name = AE_STRDUP("");
 		ww->realnamelen = 0;
 		ww->ws->smartName(ww);
 		if (ww->frame) DWIN_RENDER_RELEASE(ww->frame);
@@ -901,7 +901,7 @@ void NetHandler::getXaName(WaWindow *ww) {
 	}
 }
 
-bool NetHandler::getNetName(WaWindow *ww) {
+bool NetHandler::getNetName(AegisWindow *ww) {
 	char *data;
 	int status = Success - 1;
 
@@ -914,7 +914,7 @@ bool NetHandler::getNetName(WaWindow *ww) {
 		ww->ws->smartNameRemove(ww);
 		if (ww->frame) DWIN_RENDER_GET(ww->frame);
 		delete [] ww->name;
-		ww->name = WA_STRDUP(data);
+		ww->name = AE_STRDUP(data);
 		ww->realnamelen = strlen(ww->name);
 		ww->ws->smartName(ww);
 		if (ww->frame) DWIN_RENDER_RELEASE(ww->frame);
@@ -925,17 +925,17 @@ bool NetHandler::getNetName(WaWindow *ww) {
 	return false;
 }
 
-void NetHandler::setVisibleName(WaWindow *ww) {
+void NetHandler::setVisibleName(AegisWindow *ww) {
 	XChangeProperty(display, ww->id, net_wm_visible_name,
 			utf8_string, 8, PropModeReplace,
 			(unsigned char *) ww->name, strlen(ww->name));
 }
 
-void NetHandler::removeVisibleName(WaWindow *ww) {
+void NetHandler::removeVisibleName(AegisWindow *ww) {
 	XDeleteProperty(display, ww->id, net_wm_visible_name);
 }
 
-void NetHandler::setVirtualPos(WaWindow *ww) {
+void NetHandler::setVirtualPos(AegisWindow *ww) {
 	int data[2];
 
 	ww->gravitate(RemoveGravity);
@@ -946,13 +946,13 @@ void NetHandler::setVirtualPos(WaWindow *ww) {
 	XChangeProperty(display, ww->id, aegis_net_virtual_pos, XA_INTEGER,
 			32, PropModeReplace, (unsigned char *) data, 2);
 
-	list<WaWindow *>::iterator mit = ww->merged.begin();
+	list<AegisWindow *>::iterator mit = ww->merged.begin();
 	for (; mit != ww->merged.end(); mit++) {
 		if ((*mit) != ww) setVirtualPos(*mit);
 	}
 }
 
-void NetHandler::getWmStrut(WaWindow *ww) {
+void NetHandler::getWmStrut(AegisWindow *ww) {
 	CARD32 *data;
 	WMstrut *wm_strut;
 	bool found = false;
@@ -1000,7 +1000,7 @@ void NetHandler::getWmStrut(WaWindow *ww) {
 	}
 }
 
-void NetHandler::getWmPid(WaWindow *ww) {
+void NetHandler::getWmPid(AegisWindow *ww) {
 	char tmp[32];
 	CARD32 *data;
 	int status = Success - 1;
@@ -1014,13 +1014,13 @@ void NetHandler::getWmPid(WaWindow *ww) {
 		snprintf(tmp, 32, "%d" , (unsigned int) *data);
 		if (ww->frame) DWIN_RENDER_GET(ww->frame);
 		delete [] ww->pid;
-		ww->pid = WA_STRDUP(tmp);
+		ww->pid = AE_STRDUP(tmp);
 		if (ww->frame) DWIN_RENDER_RELEASE(ww->frame);
 		XFree(data);
 	}
 }
 
-void NetHandler::getWmUserTime(WaWindow *ww) {
+void NetHandler::getWmUserTime(AegisWindow *ww) {
 	CARD32 *data;
 	int status = Success - 1;
 
@@ -1041,7 +1041,7 @@ void NetHandler::getWmUserTime(WaWindow *ww) {
 	}
 }
 
-void NetHandler::getDesktopViewPort(WaScreen *ws) {
+void NetHandler::getDesktopViewPort(AegisScreen *ws) {
 	CARD32 *data;
 
 	if (XGetWindowProperty(display, ws->id, net_desktop_viewport, 0L, 32L,
@@ -1064,7 +1064,7 @@ void NetHandler::getDesktopViewPort(WaScreen *ws) {
 	}
 }
 
-void NetHandler::setDesktopViewPort(WaScreen *ws) {
+void NetHandler::setDesktopViewPort(AegisScreen *ws) {
 	CARD32 data[16 * 2];
 
 	unsigned int i = 0;
@@ -1080,7 +1080,7 @@ void NetHandler::setDesktopViewPort(WaScreen *ws) {
 			ws->current_desktop->v_y);
 }
 
-void NetHandler::setDesktopGeometry(WaScreen *ws) {
+void NetHandler::setDesktopGeometry(AegisScreen *ws) {
 	CARD32 data[2];
 
 	data[0] = ws->v_xmax + ws->width;
@@ -1089,7 +1089,7 @@ void NetHandler::setDesktopGeometry(WaScreen *ws) {
 			PropModeReplace, (unsigned char *) data, 2);
 }
 
-void NetHandler::setNumberOfDesktops(WaScreen *ws) {
+void NetHandler::setNumberOfDesktops(AegisScreen *ws) {
 	CARD32 data[1];
 
 	data[0] = ws->desktop_list.size();
@@ -1097,7 +1097,7 @@ void NetHandler::setNumberOfDesktops(WaScreen *ws) {
 			PropModeReplace, (unsigned char *) data, 1);
 }
 
-void NetHandler::setCurrentDesktop(WaScreen *ws) {
+void NetHandler::setCurrentDesktop(AegisScreen *ws) {
 	CARD32 data[1];
 
 	data[0] = ws->current_desktop->number;
@@ -1107,7 +1107,7 @@ void NetHandler::setCurrentDesktop(WaScreen *ws) {
 	sendNotify(ws, DesktopChangeNotify, ws->current_desktop->number);
 }
 
-void NetHandler::getCurrentDesktop(WaScreen *ws) {
+void NetHandler::getCurrentDesktop(AegisScreen *ws) {
 	CARD32 *data;
 
 	if (XGetWindowProperty(display, ws->id, net_current_desktop, 0L, 1L,
@@ -1120,7 +1120,7 @@ void NetHandler::getCurrentDesktop(WaScreen *ws) {
 	}
 }
 
-void NetHandler::setDesktopNames(WaScreen *ws, char *names) {
+void NetHandler::setDesktopNames(AegisScreen *ws, char *names) {
 	int i;
 
 	for (i = 0; i < 8192; i++) {
@@ -1134,7 +1134,7 @@ void NetHandler::setDesktopNames(WaScreen *ws, char *names) {
 				PropModeReplace, (unsigned char *) names, i + 1);
 }
 
-void NetHandler::setWorkarea(WaScreen *ws) {
+void NetHandler::setWorkarea(AegisScreen *ws) {
 	CARD32 data[16 * 4];
 
 	unsigned int i = 0;
@@ -1160,14 +1160,14 @@ void NetHandler::wXDNDClearAwareness(Window window) {
 	XDeleteProperty(aegis->display, window, xdndaware);
 }
 
-void NetHandler::deleteSupported(WaScreen *ws) {
+void NetHandler::deleteSupported(AegisScreen *ws) {
 	XDeleteProperty(display, ws->id, net_desktop_geometry);
 	XDeleteProperty(display, ws->id, net_workarea);
 	XDeleteProperty(display, ws->id, net_supported_wm_check);
 	XDeleteProperty(display, ws->id, net_supported);
 }
 
-void NetHandler::getXRootPMapId(WaScreen *ws) {
+void NetHandler::getXRootPMapId(AegisScreen *ws) {
 	CARD32 *data;
 
 	int status = XGetWindowProperty(ws->display, ws->id, xrootpmap_id, 0L, 1L,
@@ -1191,7 +1191,7 @@ void NetHandler::getXRootPMapId(WaScreen *ws) {
 
 					ws->bg_surface->unref();
 				}
-				ws->bg_surface = new WaSurface(ws->display, NULL,
+				ws->bg_surface = new AegisSurface(ws->display, NULL,
 						(Pixmap) (*data), None, NULL,
 						w, h);
 
@@ -1217,7 +1217,7 @@ void NetHandler::getXRootPMapId(WaScreen *ws) {
 	}
 }
 
-void NetHandler::setXRootPMapId(WaScreen *ws, WaSurface *bg_surface) {
+void NetHandler::setXRootPMapId(AegisScreen *ws, AegisSurface *bg_surface) {
 	if (! bg_surface) {
 		if (ws->bg_surface && ws->bg_surface->pixmap == aegis_xrootpmap_id) {
 			XDeleteProperty(ws->display, ws->id, xrootpmap_id);
@@ -1227,7 +1227,7 @@ void NetHandler::setXRootPMapId(WaScreen *ws, WaSurface *bg_surface) {
 	XChangeProperty(ws->display, ws->id, xrootpmap_id, XA_PIXMAP,
 			32, PropModeReplace,
 			(unsigned char *) &bg_surface->pixmap, 1);
-	WaSurface *old_bg = ws->bg_surface;
+	AegisSurface *old_bg = ws->bg_surface;
 
 	RENDER_GET_ONE;
 
@@ -1248,7 +1248,7 @@ void NetHandler::setXRootPMapId(WaScreen *ws, WaSurface *bg_surface) {
 	ws->forceRenderOfWindows(ANY_DECOR_WINDOW_TYPE & ~RootType);
 }
 
-void NetHandler::getWmType(WaWindow *ww) {
+void NetHandler::getWmType(AegisWindow *ww) {
 	CARD32 *data;
 	int status = Success - 1;
 
@@ -1319,7 +1319,7 @@ void NetHandler::getWmType(WaWindow *ww) {
 	}
 }
 
-void NetHandler::setDesktop(WaWindow *ww) {
+void NetHandler::setDesktop(AegisWindow *ww) {
 	CARD32 data[1];
 
 	data[0] = 0;
@@ -1340,7 +1340,7 @@ void NetHandler::setDesktop(WaWindow *ww) {
 			PropModeReplace, (unsigned char *) data, 1);
 }
 
-void NetHandler::setDesktopMask(WaWindow *ww) {
+void NetHandler::setDesktopMask(AegisWindow *ww) {
 	CARD32 data[1];
 
 	data[0] = ww->desktop_mask;
@@ -1350,7 +1350,7 @@ void NetHandler::setDesktopMask(WaWindow *ww) {
 			(unsigned char *) data, 1);
 }
 
-void NetHandler::getDesktop(WaWindow *ww) {
+void NetHandler::getDesktop(AegisWindow *ww) {
 	CARD32 *data;
 
 	if (XGetWindowProperty(display, ww->id, net_wm_desktop, 0L, 1L,
@@ -1389,7 +1389,7 @@ bool NetHandler::isSystrayWindow(Window w) {
 	return ((items_read)? true: false);
 }
 
-void NetHandler::setSystrayWindows(WaScreen *ws) {
+void NetHandler::setSystrayWindows(AegisScreen *ws) {
 	CARD32 *data;
 	int i = 0;
 
@@ -1405,7 +1405,7 @@ void NetHandler::setSystrayWindows(WaScreen *ws) {
 	delete [] data;
 }
 
-void NetHandler::getMergedState(WaWindow *ww) {
+void NetHandler::getMergedState(AegisWindow *ww) {
 	CARD32 *data;
 	Window mwin = (Window) 0;
 	int mtype = NullMergeType;
@@ -1428,7 +1428,7 @@ void NetHandler::getMergedState(WaWindow *ww) {
 	}
 
 	if (mwin) {
-		WaWindow *master = (WaWindow *)
+		AegisWindow *master = (AegisWindow *)
 			ww->aegis->findWin(mwin, WindowType);
 		if (master) {
 			if (mtype != VertMergeType && mtype != HorizMergeType)
@@ -1447,7 +1447,7 @@ void NetHandler::getMergedState(WaWindow *ww) {
 	}
 }
 
-void NetHandler::setMergedState(WaWindow *ww) {
+void NetHandler::setMergedState(AegisWindow *ww) {
 	CARD32 data[1];
 
 	if (ww->master) {
@@ -1463,13 +1463,13 @@ void NetHandler::setMergedState(WaWindow *ww) {
 		XDeleteProperty(display, ww->id, aegis_net_wm_merged_to);
 }
 
-void NetHandler::setMergeOrder(WaWindow *ww) {
+void NetHandler::setMergeOrder(AegisWindow *ww) {
 	CARD32 *data;
 	int i = 0;
 
 	data = new CARD32[ww->merged.size()];
 
-	list<WaWindow *>::iterator it = ww->merged.begin();
+	list<AegisWindow *>::iterator it = ww->merged.begin();
 	for (; it != ww->merged.end(); it++)
 		data[i++] = (*it)->id;
 
@@ -1481,7 +1481,7 @@ void NetHandler::setMergeOrder(WaWindow *ww) {
 		XDeleteProperty(display, ww->id, aegis_net_wm_merge_order);
 }
 
-void NetHandler::getMergeOrder(WaWindow *ww) {
+void NetHandler::getMergeOrder(AegisWindow *ww) {
 	CARD32 *data;
 	int status = Success - 1;
 
@@ -1493,7 +1493,7 @@ void NetHandler::getMergeOrder(WaWindow *ww) {
 	if (status == Success && items_read) {
 		int i = items_read;
 		for (i--; i >= 0; i--) {
-			list<WaWindow *>::iterator it = ww->merged.begin();
+			list<AegisWindow *>::iterator it = ww->merged.begin();
 			for (; it != ww->merged.end(); it++) {
 				if (data[i] == (*it)->id) {
 					ww->merged.erase(it);
@@ -1507,7 +1507,7 @@ void NetHandler::getMergeOrder(WaWindow *ww) {
 	}
 }
 
-void NetHandler::setMergeAtfront(WaWindow *ww, Window win) {
+void NetHandler::setMergeAtfront(AegisWindow *ww, Window win) {
 	CARD32 data[1];
 
 	if (ww->ws->shutdown) return;
@@ -1519,7 +1519,7 @@ void NetHandler::setMergeAtfront(WaWindow *ww, Window win) {
 			(unsigned char *) data, 1);
 }
 
-void NetHandler::getMergeAtfront(WaWindow *ww) {
+void NetHandler::getMergeAtfront(AegisWindow *ww) {
 	CARD32 *data;
 	int status = Success - 1;
 
@@ -1531,7 +1531,7 @@ void NetHandler::getMergeAtfront(WaWindow *ww) {
 	if (status == Success && items_read) {
 		if (*data == ww->id) ww->toFront();
 		else {
-			list<WaWindow *>::iterator it = ww->merged.begin();
+			list<AegisWindow *>::iterator it = ww->merged.begin();
 			for (; it != ww->merged.end(); it++) {
 				if ((*it)->id == *data)
 					(*it)->toFront();
@@ -1541,7 +1541,7 @@ void NetHandler::getMergeAtfront(WaWindow *ww) {
 	}
 }
 
-void NetHandler::setAllowedActions(WaWindow *ww) {
+void NetHandler::setAllowedActions(AegisWindow *ww) {
 	CARD32 data[10];
 	int i = 0;
 
@@ -1568,7 +1568,7 @@ void NetHandler::setAllowedActions(WaWindow *ww) {
 			(unsigned char *) data, i);
 }
 
-void NetHandler::removeAllowedActions(WaWindow *ww) {
+void NetHandler::removeAllowedActions(AegisWindow *ww) {
 	XDeleteProperty(display, ww->id, net_wm_allowed_actions);
 }
 
@@ -1589,7 +1589,7 @@ void NetHandler::sendNotify(AWindowObject *awo, long int event,
 #define BEST_ICON_MATCH_SIZE 256
 #define MAX_ICON_MATCH_DIFF 5000
 
-void NetHandler::getWmIconImage(WaWindow *ww) {
+void NetHandler::getWmIconImage(AegisWindow *ww) {
 	CARD32 *data;
 	int status = Success - 1;
 
@@ -1636,29 +1636,29 @@ void NetHandler::getWmIconImage(WaWindow *ww) {
 		unsigned int h = best[1];
 		len = w * h;
 		unsigned long *argb_data = &best[2];
-		unsigned char *pix = new unsigned char[len * sizeof(WaPixel)];
+		unsigned char *pix = new unsigned char[len * sizeof(AegisPixel)];
 
-		for (unsigned int i = 0; i < len * sizeof(WaPixel);
-				i += sizeof(WaPixel)) {
+		for (unsigned int i = 0; i < len * sizeof(AegisPixel);
+				i += sizeof(AegisPixel)) {
 			unsigned long *base = argb_data++;
 			unsigned char blue = *base;
 			unsigned char green = *base >> 8;
 			unsigned char red = *base >> 16;
 			unsigned char alpha = *base >> 24;
-			WaPixel p;
+			AegisPixel p;
 
 			red = (unsigned) red * (unsigned) alpha / 255;
 			green = (unsigned) green * (unsigned) alpha / 255;
 			blue = (unsigned) blue * (unsigned) alpha / 255;
 			p = (alpha << 24) | (red << 16) | (green << 8) | (blue << 0);
-			memcpy(&pix[i], &p, sizeof(WaPixel));
+			memcpy(&pix[i], &p, sizeof(AegisPixel));
 		}
 
 		XFree(data);
 
 		RenderGroup *icon_group = new RenderGroup(ww->ws, NULL);
 		RenderOpImage *icon_image = new RenderOpImage();
-		icon_image->image = ww->ws->rgbaToWaSurface(pix, w, h);
+		icon_image->image = ww->ws->rgbaToAegisSurface(pix, w, h);
 		icon_image->scale = ImageNormalScaleType;
 		icon_group->operations.push_back(icon_image);
 		icon_group->_w = w;
@@ -1677,7 +1677,7 @@ void NetHandler::getWmIconImage(WaWindow *ww) {
 	}
 }
 
-void NetHandler::getWmIconSvg(WaWindow *ww) {
+void NetHandler::getWmIconSvg(AegisWindow *ww) {
 	CARD32 *data;
 	int status = Success - 1;
 
@@ -1738,12 +1738,12 @@ char *NetHandler::getDockappHandler(Dockapp *dockapp) {
 			(unsigned char **) &data);
 
 	if (status == Success && items_read) {
-		handlername = WA_STRDUP((char *) data);
+		handlername = AE_STRDUP((char *) data);
 		XFree(data);
 	}
 
 	if (! handlername)
-		return WA_STRDUP("default");
+		return AE_STRDUP("default");
 	else
 		return handlername;
 }
@@ -1778,7 +1778,7 @@ void NetHandler::setDockappPrio(Dockapp *dockapp) {
 				(unsigned char *) dockapp->prio, 1);
 }
 
-void NetHandler::getConfig(WaScreen *ws, Window window, Atom atom,
+void NetHandler::getConfig(AegisScreen *ws, Window window, Atom atom,
 		unsigned int incsize) {
 	CARD32 *data;
 	Parser * parser = NULL;

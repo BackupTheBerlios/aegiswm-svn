@@ -37,7 +37,7 @@ extern "C" {
 
 }
 
-class WaScreen;
+class AegisScreen;
 class ScreenEdge;
 class Regex;
 
@@ -79,16 +79,16 @@ class Desktop {
 
 class SystrayWindow : public WindowObject {
 	public:
-		inline SystrayWindow(Window id, WaScreen *_ws) :
+		inline SystrayWindow(Window id, AegisScreen *_ws) :
 			WindowObject(_ws, id, SystrayType) {}
 };
 
 class MReq {
 	public:
-		inline MReq(Window m, WaWindow *w, int t) { mid = m; win = w; type = t; }
+		inline MReq(Window m, AegisWindow *w, int t) { mid = m; win = w; type = t; }
 
 		Window mid;
-		WaWindow *win;
+		AegisWindow *win;
 		int type;
 };
 
@@ -114,10 +114,10 @@ typedef struct {
 	bool warning_command_dynamic;
 } ScreenConfig;
 
-class WaScreen : public RootWindowObject {
+class AegisScreen : public RootWindowObject {
 	public:
-		WaScreen(Display *, int, Aegis *);
-		~WaScreen(void);
+		AegisScreen(Display *, int, Aegis *);
+		~AegisScreen(void);
 
 		Visual *findARGBVisual (void);
 		void forceRenderOfWindows(int);
@@ -146,9 +146,9 @@ class WaScreen : public RootWindowObject {
 		void getWorkareaSize(int *, int *, unsigned int *, unsigned int *);
 		void addDockapp(Dockapp *, char *);
 		void goToDesktop(unsigned int);
-		WaWindow *regexMatchWindow(char *, WaWindow * = NULL);
-		void smartName(WaWindow *);
-		void smartNameRemove(WaWindow *);
+		AegisWindow *regexMatchWindow(char *, AegisWindow * = NULL);
+		void smartName(AegisWindow *);
+		void smartNameRemove(AegisWindow *);
 		Pixmap getRootBgPixmap(Pixmap, unsigned int, unsigned int, int, int,
 				unsigned int, unsigned int);
 		unsigned char *getRootBgImage(unsigned char *, unsigned int, unsigned int,
@@ -162,21 +162,21 @@ class WaScreen : public RootWindowObject {
 		void taskSwitcher(void);
 		void previousTask(void);
 		void nextTask(void);
-		void pointerRelativeWarp(char *);
-		void pointerFixedWarp(char *);
+		void pointerRelativeAegisrp(char *);
+		void pointerFixedAegisrp(char *);
 		void viewportRelativeMove(char *);
 		void viewportFixedMove(char *);
 		void nextDesktop(void);
 		void previousDesktop(void);
 		void findClosestWindow(int);
-		WaSurface *rgbaToWaSurface(unsigned char *, unsigned int, unsigned int);
+		AegisSurface *rgbaToAegisSurface(unsigned char *, unsigned int, unsigned int);
 
 		list<ActionRegex *> *getRegexActionList(char *);
 		list<StyleRegex *> *getRegexStyleList(char *);
 		void getRegexTargets(WindowRegex *, long int, bool,
 				list<AWindowObject *> *);
 		void showMessage(char *, bool, const char *, const char *, va_list);
-		void showWarningMessage(const char *, const char *, ...)
+		void showAegisrningMessage(const char *, const char *, ...)
 			__attribute__((format(printf, 3, 4)));
 		void showInfoMessage(const char *, const char *, ...)
 			__attribute__((format(printf, 3, 4)));
@@ -198,7 +198,7 @@ class WaScreen : public RootWindowObject {
 		GC black_gc, white_gc, xor_gc;
 		Menu *windowlist_menu;
 
-		WaSurface *bg_surface;
+		AegisSurface *bg_surface;
 
 		char displaystring[256];
 		ScreenEdge *west, *east, *north, *south;
@@ -211,8 +211,8 @@ class WaScreen : public RootWindowObject {
 		Desktop *current_desktop;
 
 		list<Window> aot_stacking_list, stacking_list, aab_stacking_list;
-		list<WaWindow *> wawindow_list;
-		list<WaWindow *> wawindow_list_map_order;
+		list<AegisWindow *> wawindow_list;
+		list<AegisWindow *> wawindow_list_map_order;
 		list<WMstrut *> strut_list;
 		list<DockappHandler *> docks;
 		list<Window> systray_window_list;
@@ -251,7 +251,7 @@ class WaScreen : public RootWindowObject {
 
 class ScreenEdge : public AWindowObject {
 	public:
-		ScreenEdge(WaScreen *, char *, int, int, int, int);
+		ScreenEdge(AegisScreen *, char *, int, int, int, int);
 		~ScreenEdge(void);
 };
 

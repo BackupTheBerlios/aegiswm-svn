@@ -49,8 +49,8 @@ extern "C" {
 
 #include "util.h"
 
-WaStringMap::WaStringMap(int key, const char *str) :
-	RefCounted<WaStringMap>(this) {
+AegisStringMap::AegisStringMap(int key, const char *str) :
+	RefCounted<AegisStringMap>(this) {
 		char *newstr;
 		if (str) {
 			newstr = new char[strlen(str) + 1];
@@ -62,7 +62,7 @@ WaStringMap::WaStringMap(int key, const char *str) :
 		str_map.insert(make_pair(key, newstr));
 	}
 
-WaStringMap::~WaStringMap(void) {
+AegisStringMap::~AegisStringMap(void) {
 	map<int, char *>::iterator it = str_map.begin();
 	for (; it != str_map.end(); it++) {
 		delete ((*it).second);
@@ -70,7 +70,7 @@ WaStringMap::~WaStringMap(void) {
 	str_map.clear();
 }
 
-void WaStringMap::add(int key, const char *str, ...) {
+void AegisStringMap::add(int key, const char *str, ...) {
 	va_list arglist;
 	char buffer[8192];
 
@@ -80,7 +80,7 @@ void WaStringMap::add(int key, const char *str, ...) {
 	vsnprintf(buffer, 8192, str, arglist);
 	va_end(arglist);
 
-	str_map.insert(make_pair(key, WA_STRDUP(buffer)));
+	str_map.insert(make_pair(key, AE_STRDUP(buffer)));
 }
 
 char *environment_expansion(char *s) {
@@ -153,7 +153,7 @@ char *smartfile(const char *name, char *configfile, bool warn) {
 	FILE *fd;
 	if (! name) return NULL;
 
-	char *ename = environment_expansion(WA_STRDUP((char *) name));
+	char *ename = environment_expansion(AE_STRDUP((char *) name));
 
 	if (configfile) {
 		bool path_ok = false;

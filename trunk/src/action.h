@@ -38,14 +38,14 @@ class AWindowObject;
 class Action;
 class ActionList;
 class WindowObject;
-class WaStringList;
+class AegisStringList;
 
 #include "parser.h"
 #include "refcounted.h"
-#include "aegis_regex.h"
+#include "ae_regex.h"
 
-class WaScreen;
-class WaWindow;
+class AegisScreen;
+class AegisWindow;
 class Style;
 class Menu;
 class MenuItem;
@@ -66,7 +66,7 @@ typedef enum {
 
 class WindowObject : public RefCounted<WindowObject> {
 	public:
-		WindowObject(WaScreen *, Window, int);
+		WindowObject(AegisScreen *, Window, int);
 		virtual ~WindowObject(void);
 
 		void setStacking(StackingType);
@@ -74,16 +74,16 @@ class WindowObject : public RefCounted<WindowObject> {
 		Window id;
 		int type;
 		StackingType stacking;
-		WaScreen *ws;
+		AegisScreen *ws;
 };
 
 #define ACTION_WARNING { \
-	ws->showWarningMessage(__FUNCTION__, "Tried to trigger action " \
+	ws->showAegisrningMessage(__FUNCTION__, "Tried to trigger action " \
 			"function %s on a window that " \
 			"does not support that action.", __FUNCTION__); }
 
 #define PARAM_WARNING { \
-	ws->showWarningMessage(__FUNCTION__, "Missing parameter, action " \
+	ws->showAegisrningMessage(__FUNCTION__, "Missing parameter, action " \
 			"function %s requires a " \
 			"parameter.", __FUNCTION__); \
 	return; }
@@ -92,13 +92,13 @@ typedef void (AWindowObject::*ActionFunc)(XEvent *, Action *);
 
 class AWindowObject : public WindowObject {
 	public:
-		AWindowObject(WaScreen *, Window, int, WaStringMap *, char *);
+		AWindowObject(AegisScreen *, Window, int, AegisStringMap *, char *);
 		virtual ~AWindowObject(void);
-		void resetActionList(WaStringMap *);
+		void resetActionList(AegisStringMap *);
 		void resetActionList(void);
 		void evalState(EventDetail *);
 
-		WaStringMap *ids;
+		AegisStringMap *ids;
 		char *window_name;
 
 		int window_state_mask;
@@ -106,8 +106,8 @@ class AWindowObject : public WindowObject {
 		ActionList *actionlists[WIN_STATE_LAST];
 		ActionList *default_actionlists[WIN_STATE_LAST];
 
-		WaWindow       *getWindow(void);
-		WaScreen       *getScreen(void);
+		AegisWindow       *getWindow(void);
+		AegisScreen       *getScreen(void);
 		MenuItem       *getMenuItem(void);
 		DockappHandler *getDockHandler(void);
 		Dockapp        *getDockapp(void);
@@ -116,7 +116,7 @@ class AWindowObject : public WindowObject {
 
 		void nop(XEvent *, Action *);
 		void showInfo(XEvent *, Action *);
-		void showWarning(XEvent *, Action *);
+		void showAegisrning(XEvent *, Action *);
 		void exec(XEvent *, Action *);
 		void doing(XEvent *, Action *);
 		void stopTimer(XEvent *, Action *);
@@ -135,8 +135,8 @@ class AWindowObject : public WindowObject {
 		void goToDesktop(XEvent *, Action *);
 		void nextDesktop(XEvent *, Action *);
 		void previousDesktop(XEvent *, Action *);
-		void pointerRelativeWarp(XEvent *, Action *);
-		void pointerFixedWarp(XEvent *, Action *);
+		void pointerRelativeAegisrp(XEvent *, Action *);
+		void pointerFixedAegisrp(XEvent *, Action *);
 		void viewportLeft(XEvent *, Action *);
 		void viewportRight(XEvent *, Action *);
 		void viewportUp(XEvent *, Action *);
@@ -340,13 +340,13 @@ enum {
 
 class ActionList : public RefCounted<ActionList> {
 	public:
-		ActionList(WaScreen *, char *);
+		ActionList(AegisScreen *, char *);
 		~ActionList(void);
 
 		void clear(void);
 		void inheritContent(ActionList *);
 
-		WaScreen *ws;
+		AegisScreen *ws;
 		char *name;
 		list<Action *> actionlist;
 };
@@ -355,7 +355,7 @@ class ActionRegex : public WindowRegex {
 	public:
 		ActionRegex(int s, char *wr) : WindowRegex(s, wr) { actionlist = NULL; }
 
-		inline ActionList *match(WaStringMap *m, int s, char *w = NULL) {
+		inline ActionList *match(AegisStringMap *m, int s, char *w = NULL) {
 			if (((WindowRegex *) this)->match(m, s, w))
 				return (ActionList *) actionlist->ref();
 			else
@@ -373,7 +373,7 @@ class Action : public RefCounted<Action> {
 		void applyAttributes(Parser *, Tst<char *> *);
 		bool match(EventDetail *);
 
-		WaScreen *ws;
+		AegisScreen *ws;
 		ActionFunc func;
 		char *param;
 		unsigned int type, detail, x11mod, x11nmod, wamod, wanmod;
@@ -393,7 +393,7 @@ class Action : public RefCounted<Action> {
 
 class Doing {
 	public:
-		Doing(WaScreen *);
+		Doing(AegisScreen *);
 		~Doing(void);
 
 		void applyAttributes(Parser *, Tst<char *> *);
@@ -404,7 +404,7 @@ class Doing {
 		ActionFunc func;
 		int target_type;
 		char *param;
-		WaScreen *ws;
+		AegisScreen *ws;
 };
 
 Tst<char *> *short_do_string_to_tst(char *);

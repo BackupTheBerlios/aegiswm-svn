@@ -41,7 +41,7 @@ extern "C" {
 #include "aegis.h"
 
 LoadedCursor::LoadedCursor(char *_name, Cursor _cursor) {
-	name = WA_STRDUP(_name);
+	name = AE_STRDUP(_name);
 	cursor = _cursor;
 }
 
@@ -49,7 +49,7 @@ LoadedCursor::~LoadedCursor(void) {
 	delete [] name;
 }
 
-WaCursor::WaCursor(Display *dpy) {
+AegisCursor::AegisCursor(Display *dpy) {
 	display = dpy;
 }
 
@@ -138,7 +138,7 @@ static const struct cursormatch {
 };
 #endif // XCURSOR
 
-Cursor WaCursor::getCursor(char *cursorname) {
+Cursor AegisCursor::getCursor(char *cursorname) {
 	Cursor cursor;
 
 	if (! cursorname) return (Cursor) 0;

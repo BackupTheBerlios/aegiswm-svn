@@ -32,8 +32,8 @@ extern "C" {
 #endif // SHAPE
 }
 
-class WaWindow;
-class WaFrameWindow;
+class AegisWindow;
+class AegisFrameWindow;
 class FlagMonitor;
 
 #ifdef    SHAPE
@@ -56,8 +56,8 @@ class ShapeInfo;
 #include "net.h"
 
 #define MERGED_LOOP \
-	list<WaWindow *>::iterator __mw_it = merged.begin(); \
-for (WaWindow *_mw = NULL; _mw != this && \
+	list<AegisWindow *>::iterator __mw_it = merged.begin(); \
+for (AegisWindow *_mw = NULL; _mw != this && \
 		(_mw = (__mw_it == merged.end())? this: *__mw_it); __mw_it++)
 
 #define ApplyGravity   1
@@ -108,12 +108,12 @@ typedef struct {
 	int misc0;
 	int misc1;
 	Colormap colormap;
-} WaWindowAttributes;
+} AegisWindowAttributes;
 
-class WaWindow : public AWindowObject {
+class AegisWindow : public AWindowObject {
 	public:
-		WaWindow(Window, WaScreen *);
-		~WaWindow(void);
+		AegisWindow(Window, AegisScreen *);
+		~AegisWindow(void);
 
 		void withdrawTransient(void);
 		void mapWindow(void);
@@ -127,8 +127,8 @@ class WaWindow : public AWindowObject {
 		void updateGrabs(void);
 		bool incSizeCheck(int, int, unsigned int *, unsigned int *);
 		void _maximize(int, int);
-		void merge(WaWindow *, int);
-		void unmerge(WaWindow *);
+		void merge(AegisWindow *, int);
+		void unmerge(AegisWindow *);
 		bool checkMoveMerge(int, int, int = 0, int = 0);
 		void raise(void);
 		void lower(void);
@@ -231,8 +231,8 @@ class WaWindow : public AWindowObject {
 		Aegis *aegis;
 		int screen_number, state, restore_shade, old_bw;
 		unsigned int top_spacing, bottom_spacing, left_spacing, right_spacing;
-		WaFrameWindow *frame;
-		WaWindowAttributes attrib, old_attrib, restore_max;
+		AegisFrameWindow *frame;
+		AegisWindowAttributes attrib, old_attrib, restore_max;
 		long int wstate, old_wstate;
 		SizeStruct size;
 		long int protocol_mask;
@@ -243,8 +243,8 @@ class WaWindow : public AWindowObject {
 		bool urgent;
 		list<Window> transients;
 		unsigned int desktop_mask;
-		list<WaWindow *> merged;
-		WaWindow *master;
+		list<AegisWindow *> merged;
+		AegisWindow *master;
 		int mergetype, mergemode;
 		bool mergedback;
 		Window window_group;
@@ -269,15 +269,15 @@ class WaWindow : public AWindowObject {
 		unsigned int outl_w, outl_h;
 };
 
-class WaFrameWindow : public RootWindowObject {
+class AegisFrameWindow : public RootWindowObject {
 	public:
-		WaFrameWindow(WaWindow *, WaStringMap *);
-		~WaFrameWindow(void);
+		AegisFrameWindow(AegisWindow *, AegisStringMap *);
+		~AegisFrameWindow(void);
 
 		void styleUpdate(bool, bool);
 
-		WaWindow *wa;
-		WaWindowAttributes attrib;
+		AegisWindow * aegis;
+		AegisWindowAttributes attrib;
 
 #ifdef    SHAPE
 		void startRender(void);

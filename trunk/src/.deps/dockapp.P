@@ -1,5 +1,5 @@
 dockapp.o: dockapp.cpp ../config.h /usr/X11R6/include/X11/Xatom.h \
-  dockapp.h aegis_regex.h /usr/include/stdio.h /usr/include/features.h \
+  dockapp.h ae_regex.h /usr/include/stdio.h /usr/include/features.h \
   /usr/include/sys/cdefs.h /usr/include/gnu/stubs.h \
   /usr/lib/gcc-lib/i686-pc-linux-gnu/3.3.4/include/stddef.h \
   /usr/include/bits/types.h /usr/include/bits/wordsize.h \
@@ -162,7 +162,7 @@ dockapp.cpp :
 ../config.h :
 /usr/X11R6/include/X11/Xatom.h :
 dockapp.h :
-aegis_regex.h :
+ae_regex.h :
 /usr/include/stdio.h :
 /usr/include/features.h :
 /usr/include/sys/cdefs.h :

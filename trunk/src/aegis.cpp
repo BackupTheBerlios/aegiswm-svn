@@ -97,6 +97,7 @@ pthread_mutex_t __render_list_mutex;
 pthread_cond_t  __render_list_cond;
 #endif // THREAD
 
+//{{{
 Aegis::Aegis(char **av, char **_options) {
 	struct sigaction action;
 	int dummy;
@@ -165,7 +166,7 @@ Aegis::Aegis(char **av, char **_options) {
 	}
 #endif // HAVE_ICONV
 
-	cursor = new WaCursor(display);
+	cursor = new AegisCursor(display);
 
 #ifdef    SHAPE
 	shape = XShapeQueryExtension(display, &shape_event, &dummy);
@@ -232,7 +233,7 @@ Aegis::Aegis(char **av, char **_options) {
 
 	for (i = 0; i < ScreenCount(display); ++i) {
 		if (screenmask & (1L << i)) {
-			WaScreen *ws = new WaScreen(display, i, this);
+			AegisScreen *ws = new AegisScreen(display, i, this);
 			if (! wmerr) {
 				ws->commonStyleUpdate();
 				wascreen_list.push_back(ws);
@@ -262,7 +263,7 @@ Aegis::Aegis(char **av, char **_options) {
 	ed.type = MapRequest;
 	ed.detail = 0;
 	ed.x11mod = ed.wamod = 0;
-	list<WaScreen *>::iterator it = wascreen_list.begin();
+	list<AegisScreen *>::iterator it = wascreen_list.begin();
 	for (; it != wascreen_list.end(); it++)
 		eh->evAct(NULL, (*it)->id, &ed);
 
@@ -281,6 +282,7 @@ Aegis::Aegis(char **av, char **_options) {
 #endif // THREAD
 
 }
+//}}}
 
 Aegis::~Aegis(void) {
 	running = false;
@@ -324,7 +326,7 @@ void Aegis::getModifierMappings(void) {
 				if (kstring) {
 					int modmask = mask_table[i / modmap->max_keypermod];
 					ModifierMap *mm = new ModifierMap;
-					mm->name = WA_STRDUP(kstring);
+					mm->name = AE_STRDUP(kstring);
 					mm->modifier = modmask;
 					modmaps.push_back(mm);
 				}
@@ -349,7 +351,7 @@ bool Aegis::focusNew(Window win, bool make_vis) {
 	if ((it = window_table.find(win)) != window_table.end()) {
 		switch (((*it).second)->type) {
 			case RootType: {
-							   WaScreen *ws = (WaScreen *) (*it).second;
+							   AegisScreen *ws = (AegisScreen *) (*it).second;
 							   if (ws->style && (! ws->style->focusable)) return status;
 							   ws->focused = true;
 							   prefocus = win;
@@ -358,7 +360,7 @@ bool Aegis::focusNew(Window win, bool make_vis) {
 							   status = true;
 						   } break;
 			case WindowType: {
-								 WaWindow *ww = (WaWindow *) (*it).second;
+								 AegisWindow *ww = (AegisWindow *) (*it).second;
 								 int newvx, newvy, x, y;
 								 XEvent e;
 								 if (ww->master) ww->hidden = ww->master->hidden;
@@ -481,7 +483,7 @@ void Aegis::removeFromFocusHistory(Window win) {
 	focus_history.remove(win);
 }
 
-void Aegis::focusRevertFrom(WaScreen *ws, Window win) {
+void Aegis::focusRevertFrom(AegisScreen *ws, Window win) {
 	list<Window>::iterator it = focus_history.begin();
 	for (;it != focus_history.end(); it++) {
 		if (ws->config.revert_to_window && *it == ws->id)
@@ -491,7 +493,7 @@ void Aegis::focusRevertFrom(WaScreen *ws, Window win) {
 		}
 	}
 	if (it == focus_history.end()) {
-		list<WaWindow *>::iterator wit = ws->wawindow_list.begin();
+		list<AegisWindow *>::iterator wit = ws->wawindow_list.begin();
 		for (; wit != ws->wawindow_list.end(); wit++)
 			if (! (*wit)->hidden &&
 					(! ((*wit)->wstate & StateMinimizedMask))) {
@@ -503,7 +505,7 @@ void Aegis::focusRevertFrom(WaScreen *ws, Window win) {
 	}
 }
 
-void wa_grab_server(void) {
+void ae_grab_server(void) {
 	if (grab_count == 0) {
 		grab_count++;
 		XGrabServer(aegis->display);
@@ -518,7 +520,7 @@ void wa_grab_server(void) {
 
 }
 
-void wa_ungrab_server(void) {
+void ae_ungrab_server(void) {
 #ifdef    DEBUG
 	if (grab_count == 0) {
 		WARNING << "server not grabbed" << endl;
@@ -628,9 +630,9 @@ int xerrorhandler(Display *d, XErrorEvent *e) {
 				aegis->window_table.end()) {
 			if (((*it).second)->type == WindowType) {
 				if (error_output) {
-					cerr << " (" << ((WaWindow *) (*it).second)->name << ")";
+					cerr << " (" << ((AegisWindow *) (*it).second)->name << ")";
 				}
-				((WaWindow *) (*it).second)->deleted = true;
+				((AegisWindow *) (*it).second)->deleted = true;
 			} else if (((*it).second)->type == DockAppType) {
 				if (error_output) {
 					cerr << " (" << ((Dockapp *) (*it).second)->name << ")";
@@ -686,7 +688,7 @@ void restart(char *command) {
 	aegis->eh->handleEvent((XEvent *) &cme);
 
 	if (command) {
-		commandline_to_argv(WA_STRDUP(command), tmp_argv, 128);
+		commandline_to_argv(AE_STRDUP(command), tmp_argv, 128);
 		aegis->running = false;
 		delete aegis;
 		execvp(*tmp_argv, tmp_argv);
@@ -716,7 +718,7 @@ void quit(int status) {
 	exit(status);
 }
 
-char *expand(char *org, WaWindow *w, MenuItem *m,
+char *expand(char *org, AegisWindow *w, MenuItem *m,
 		const char *warning_function, char *warning_message,
 		MenuItem *m2) {
 	int i;
@@ -913,7 +915,7 @@ char *expand(char *org, WaWindow *w, MenuItem *m,
 		i += ilen;
 	}
 	if (found) return expanded;
-	else return WA_STRDUP(org);
+	else return AE_STRDUP(org);
 }
 
 char *preexpand(char *org, bool *dynamic) {
@@ -1072,14 +1074,14 @@ char *preexpand(char *org, bool *dynamic) {
 		i += ilen;
 	}
 	if (found) return expanded;
-	else return WA_STRDUP(org);
+	else return AE_STRDUP(org);
 }
 
 #ifdef    HAVE_ICONV
 #ifndef   ICONV_CONST
 #  define ICONV_CONST
 #endif // !ICONV_CONST
-char *wa_locale_to_utf8(const char *str) {
+char *ae_locale_to_utf8(const char *str) {
 	char *dest;
 	char *outp;
 	const char *p;
@@ -1142,8 +1144,8 @@ again:
 		return dest;
 }
 #else
-char *wa_locale_to_utf8(const char *str) {
-	return WA_STRDUP((char *) str);
+char *ae_locale_to_utf8(const char *str) {
+	return AE_STRDUP((char *) str);
 }
 #endif // HAVE_ICONV
 

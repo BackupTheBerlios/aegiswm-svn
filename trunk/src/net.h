@@ -74,79 +74,79 @@ class NetHandler {
 	public:
 		NetHandler(Aegis *);
 
-		void getWMProtocols(WaWindow *);
-		void getWMHints(WaWindow *);
-		void getClassHint(WaWindow *);
-		void getWMClientMachineHint(WaWindow *);
-		void getTransientForHint(WaWindow *);
-		void getMWMHints(WaWindow *);
-		void getWMNormalHints(WaWindow *);
-		void getState(WaWindow *);
-		void setState(WaWindow *, int);
-		void getWmState(WaWindow *);
-		void setWmState(WaWindow *);
-		void getVirtualPos(WaWindow *);
-		void setVirtualPos(WaWindow *);
-		void getWmStrut(WaWindow *);
-		void getWmPid(WaWindow *);
-		void getWmUserTime(WaWindow *);
-		void getXaName(WaWindow *);
-		bool getNetName(WaWindow *);
-		void setVisibleName(WaWindow *);
-		void removeVisibleName(WaWindow *);
-		void setDesktop(WaWindow *);
-		void setDesktopMask(WaWindow *);
-		void getDesktop(WaWindow *);
+		void getWMProtocols(AegisWindow *);
+		void getWMHints(AegisWindow *);
+		void getClassHint(AegisWindow *);
+		void getWMClientMachineHint(AegisWindow *);
+		void getTransientForHint(AegisWindow *);
+		void getMWMHints(AegisWindow *);
+		void getWMNormalHints(AegisWindow *);
+		void getState(AegisWindow *);
+		void setState(AegisWindow *, int);
+		void getWmState(AegisWindow *);
+		void setWmState(AegisWindow *);
+		void getVirtualPos(AegisWindow *);
+		void setVirtualPos(AegisWindow *);
+		void getWmStrut(AegisWindow *);
+		void getWmPid(AegisWindow *);
+		void getWmUserTime(AegisWindow *);
+		void getXaName(AegisWindow *);
+		bool getNetName(AegisWindow *);
+		void setVisibleName(AegisWindow *);
+		void removeVisibleName(AegisWindow *);
+		void setDesktop(AegisWindow *);
+		void setDesktopMask(AegisWindow *);
+		void getDesktop(AegisWindow *);
 
-		void setSupported(WaScreen *);
-		void setSupportedWMCheck(WaScreen *, Window);
-		void setClientList(WaScreen *);
-		void setClientListStacking(WaScreen *);
-		void getClientListStacking(WaScreen *);
-		void setActiveWindow(WaScreen *, WaWindow *);
-		void getActiveWindow(WaScreen *);
-		void getDesktopViewPort(WaScreen *);
-		void setDesktopViewPort(WaScreen *);
-		void setDesktopGeometry(WaScreen *);
-		void setNumberOfDesktops(WaScreen *);
-		void setCurrentDesktop(WaScreen *);
-		void getCurrentDesktop(WaScreen *);
-		void setDesktopNames(WaScreen *, char *);
+		void setSupported(AegisScreen *);
+		void setSupportedWMCheck(AegisScreen *, Window);
+		void setClientList(AegisScreen *);
+		void setClientListStacking(AegisScreen *);
+		void getClientListStacking(AegisScreen *);
+		void setActiveWindow(AegisScreen *, AegisWindow *);
+		void getActiveWindow(AegisScreen *);
+		void getDesktopViewPort(AegisScreen *);
+		void setDesktopViewPort(AegisScreen *);
+		void setDesktopGeometry(AegisScreen *);
+		void setNumberOfDesktops(AegisScreen *);
+		void setCurrentDesktop(AegisScreen *);
+		void getCurrentDesktop(AegisScreen *);
+		void setDesktopNames(AegisScreen *, char *);
 
 		void wXDNDMakeAwareness(Window);
 		void wXDNDClearAwareness(Window);
 
-		void setWorkarea(WaScreen *);
-		void deleteSupported(WaScreen *);
+		void setWorkarea(AegisScreen *);
+		void deleteSupported(AegisScreen *);
 
-		void getXRootPMapId(WaScreen *);
-		void setXRootPMapId(WaScreen *, WaSurface *);
+		void getXRootPMapId(AegisScreen *);
+		void setXRootPMapId(AegisScreen *, AegisSurface *);
 
-		void getWmType(WaWindow *);
+		void getWmType(AegisWindow *);
 
-		void setAllowedActions(WaWindow *);
-		void removeAllowedActions(WaWindow *);
+		void setAllowedActions(AegisWindow *);
+		void removeAllowedActions(AegisWindow *);
 
-		void getMergedState(WaWindow *);
-		void setMergedState(WaWindow *);
-		void setMergeAtfront(WaWindow *, Window);
-		void getMergeAtfront(WaWindow *);
-		void getMergeOrder(WaWindow *);
-		void setMergeOrder(WaWindow *);
+		void getMergedState(AegisWindow *);
+		void setMergedState(AegisWindow *);
+		void setMergeAtfront(AegisWindow *, Window);
+		void getMergeAtfront(AegisWindow *);
+		void getMergeOrder(AegisWindow *);
+		void setMergeOrder(AegisWindow *);
 
 		bool isSystrayWindow(Window);
-		void setSystrayWindows(WaScreen *);
+		void setSystrayWindows(AegisScreen *);
 
 		void sendNotify(AWindowObject *, long int, long int = 0, long int = 0);
 
-		void getWmIconImage(WaWindow *);
-		void getWmIconSvg(WaWindow *);
+		void getWmIconImage(AegisWindow *);
+		void getWmIconSvg(AegisWindow *);
 		char *getDockappHandler(Dockapp *);
 		void setDockappHandler(Dockapp *);
 		void getDockappPrio(Dockapp *);
 		void setDockappPrio(Dockapp *);
 
-		void getConfig(WaScreen *, Window, Atom, unsigned int);
+		void getConfig(AegisScreen *, Window, Atom, unsigned int);
 
 		Aegis *aegis;
 		Display *display;

@@ -51,8 +51,8 @@ aegis_SOURCES = \
 	dockapp.h \
 	timer.cpp \
 	timer.h \
-	aegis_regex.cpp \
-	aegis_regex.h \
+	ae_regex.cpp \
+	ae_regex.h \
 	parser.cpp \
 	parser.h \
 	style.cpp \
@@ -63,8 +63,8 @@ aegis_SOURCES = \
 	cursor.h \
 	render.cpp \
 	render.h \
-	png.cpp \
-	png.h \
+	ae_png.cpp \
+	ae_png.h \
 	util.cpp \
 	util.h \
 	refcounted.h \

@@ -38,9 +38,9 @@ class LoadedCursor {
 		Cursor cursor;
 };
 
-class WaCursor {
+class AegisCursor {
 	public:
-		WaCursor(Display *);
+		AegisCursor(Display *);
 
 		Cursor getCursor(char *);
 

@@ -40,7 +40,7 @@ extern "C" {
 
 #include "window.h"
 
-WaWindow::WaWindow(Window win_id, WaScreen *scrn) :
+AegisWindow::AegisWindow(Window win_id, AegisScreen *scrn) :
 	AWindowObject(NULL, win_id, WindowType, NULL, "client") {
 		XWindowAttributes init_attrib;
 		XSetWindowAttributes attrib_set;
@@ -52,11 +52,11 @@ WaWindow::WaWindow(Window win_id, WaScreen *scrn) :
 		net = aegis->net;
 		wm_strut = NULL;
 		move_resize = false;
-		name = WA_STRDUP("");
-		wclass = WA_STRDUP("");
-		wclassname = WA_STRDUP("");
-		host = WA_STRDUP("");
-		pid = WA_STRDUP("");
+		name = AE_STRDUP("");
+		wclass = AE_STRDUP("");
+		wclassname = AE_STRDUP("");
+		host = AE_STRDUP("");
+		pid = AE_STRDUP("");
 		realnamelen = 0;
 		master = NULL;
 		init_done = remap = outline_state = false;
@@ -121,9 +121,9 @@ WaWindow::WaWindow(Window win_id, WaScreen *scrn) :
 
 		char window_id_str[32];
 		snprintf(window_id_str, 32, "0x%lx", id);
-		rid = WA_STRDUP(window_id_str);
+		rid = AE_STRDUP(window_id_str);
 
-		WaStringMap *sm = new WaStringMap();
+		AegisStringMap *sm = new AegisStringMap();
 		sm->add(WindowIDName, name);
 		sm->add(WindowIDClassName, wclassname);
 		sm->add(WindowIDClass, wclass);
@@ -132,7 +132,7 @@ WaWindow::WaWindow(Window win_id, WaScreen *scrn) :
 		sm->add(WindowIDWinID, rid);
 		resetActionList(sm);
 
-		frame = new WaFrameWindow(this, sm->ref());
+		frame = new AegisFrameWindow(this, sm->ref());
 
 #ifdef    SHAPE
 		shaped = false;
@@ -193,7 +193,7 @@ window_create_end:
 		windowStateCheck();
 	}
 
-WaWindow::~WaWindow(void) {
+AegisWindow::~AegisWindow(void) {
 	explode();
 	if (master) master->unmerge(this);
 
@@ -272,20 +272,20 @@ WaWindow::~WaWindow(void) {
 	}
 }
 
-void WaWindow::withdrawTransient(void) {
+void AegisWindow::withdrawTransient(void) {
 	if (transient_for) {
 		if (transient_for == ws->id) {
-			list<WaWindow *>::iterator it = ws->wawindow_list.begin();
+			list<AegisWindow *>::iterator it = ws->wawindow_list.begin();
 			for (; it != ws->wawindow_list.end(); ++it)
 				if ((*it) != this) (*it)->transients.remove(id);
 		}
 		else {
-			WaWindow *transfor = (WaWindow *)
+			AegisWindow *transfor = (AegisWindow *)
 				aegis->findWin(transient_for, WindowType);
 			if (transfor)
 				transfor->transients.remove(id);
 			else if (window_group) {
-				list<WaWindow *>::iterator it = ws->wawindow_list.begin();
+				list<AegisWindow *>::iterator it = ws->wawindow_list.begin();
 				for (;it != ws->wawindow_list.end(); ++it) {
 					if ((*it) != this &&
 							(*it)->window_group == window_group &&
@@ -298,7 +298,7 @@ void WaWindow::withdrawTransient(void) {
 	transient_for = (Window) 0;
 }
 
-void WaWindow::calcSpacing(void) {
+void AegisWindow::calcSpacing(void) {
 	double _top_spacing, _bottom_spacing,_left_spacing, _right_spacing;
 
 	calc_length(frame->style->top_spacing, frame->style->top_spacing_u,
@@ -310,13 +310,13 @@ void WaWindow::calcSpacing(void) {
 	calc_length(frame->style->right_spacing, frame->style->right_spacing_u,
 			ws->hdpi, ws->width, &_right_spacing);
 
-	top_spacing = WA_ROUND_U(_top_spacing);
-	bottom_spacing = WA_ROUND_U(_bottom_spacing);
-	left_spacing = WA_ROUND_U(_left_spacing);
-	right_spacing = WA_ROUND_U(_right_spacing);
+	top_spacing = AE_ROUND_U(_top_spacing);
+	bottom_spacing = AE_ROUND_U(_bottom_spacing);
+	left_spacing = AE_ROUND_U(_left_spacing);
+	right_spacing = AE_ROUND_U(_right_spacing);
 }
 
-void WaWindow::gravitate(int multiplier) {
+void AegisWindow::gravitate(int multiplier) {
 	switch (size.win_gravity) {
 		case NorthWestGravity:
 			attrib.x += multiplier * (left_spacing + right_spacing);
@@ -346,7 +346,7 @@ void WaWindow::gravitate(int multiplier) {
 	}
 }
 
-void WaWindow::initPosition(void) {
+void AegisWindow::initPosition(void) {
 	if (size.min_width > attrib.width) attrib.width = size.min_width;
 	if (size.min_height > attrib.height) attrib.height = size.min_height;
 	restore_max.x = attrib.x;
@@ -358,7 +358,7 @@ void WaWindow::initPosition(void) {
 	old_attrib.height = old_attrib.width = INT_MAX;
 }
 
-void WaWindow::mapWindow(void) {
+void AegisWindow::mapWindow(void) {
 	if (deleted) return;
 
 	XMapWindow(display, id);
@@ -371,7 +371,7 @@ void WaWindow::mapWindow(void) {
 	mapped = true;
 }
 
-void WaWindow::show(void) {
+void AegisWindow::show(void) {
 	if ((! (wstate & StateMinimizedMask)) && hidden && mapped && (! master)) {
 		XMapWindow(display, id);
 		XMapWindow(display, frame->id);
@@ -379,7 +379,7 @@ void WaWindow::show(void) {
 	}
 }
 
-void WaWindow::hide(void) {
+void AegisWindow::hide(void) {
 	if (! hidden) {
 		if (has_focus) aegis->focusRevertFrom(ws, id);
 		XUnmapWindow(display, frame->id);
@@ -389,7 +389,7 @@ void WaWindow::hide(void) {
 	}
 }
 
-void WaWindow::updateAllAttributes(void) {
+void AegisWindow::updateAllAttributes(void) {
 	if (master) { master->updateAllAttributes(); return; }
 
 	old_attrib.x = old_attrib.y = INT_MIN;
@@ -423,7 +423,7 @@ void WaWindow::updateAllAttributes(void) {
 		redrawWindow();
 }
 
-void WaWindow::redrawWindow(bool force_if_viewable) {
+void AegisWindow::redrawWindow(bool force_if_viewable) {
 	if (master) {
 		sendcf = false;
 		master->redrawWindow(force_if_viewable);
@@ -449,7 +449,7 @@ void WaWindow::redrawWindow(bool force_if_viewable) {
 		frame->attrib.width = left_spacing + attrib.width + right_spacing;
 		old_attrib.width = attrib.width;
 
-		list<WaWindow *>::iterator it = merged.begin();
+		list<AegisWindow *>::iterator it = merged.begin();
 		for (; it != merged.end(); it++) {
 			if ((*it)->mergetype == VertMergeType)
 				frame->attrib.width += (*it)->attrib.width;
@@ -460,7 +460,7 @@ void WaWindow::redrawWindow(bool force_if_viewable) {
 	if (old_attrib.height != attrib.height) {
 		frame->attrib.height = top_spacing + attrib.height + bottom_spacing;
 		if (! (wstate & StateShadedMask)) {
-			list<WaWindow *>::iterator it = merged.begin();
+			list<AegisWindow *>::iterator it = merged.begin();
 			for (; it != merged.end(); it++) {
 				if ((*it)->attrib.height < 1) (*it)->attrib.height = 1;
 				if ((*it)->mergetype == HorizMergeType)
@@ -509,7 +509,7 @@ void WaWindow::redrawWindow(bool force_if_viewable) {
 		if (! (wstate & StateShadedMask)) {
 			int cx = left_spacing + attrib.width;
 			int cy = top_spacing + attrib.height;
-			list<WaWindow *>::iterator mit = merged.begin();
+			list<AegisWindow *>::iterator mit = merged.begin();
 			for (; mit != merged.end(); mit++) {
 				Window wd;
 				switch ((*mit)->mergetype) {
@@ -563,7 +563,7 @@ void WaWindow::redrawWindow(bool force_if_viewable) {
 	drawDecor();
 }
 
-void WaWindow::reparentWin(void) {
+void AegisWindow::reparentWin(void) {
 	XSetWindowAttributes attrib_set;
 
 	attrib_set.event_mask = PropertyChangeMask | StructureNotifyMask |
@@ -605,7 +605,7 @@ void WaWindow::reparentWin(void) {
 	}
 }
 
-void WaWindow::updateGrabs(void) {
+void AegisWindow::updateGrabs(void) {
 	XUngrabButton(display, AnyButton, AnyModifier, id);
 	XUngrabKey(display, AnyKey, AnyModifier, id);
 
@@ -628,8 +628,8 @@ void WaWindow::updateGrabs(void) {
 }
 
 #ifdef    SHAPE
-void WaWindow::shapeEvent(void) {
-	WaFrameWindow *real_frame;
+void AegisWindow::shapeEvent(void) {
+	AegisFrameWindow *real_frame;
 
 	if (master) real_frame = master->frame;
 	else real_frame = frame;
@@ -638,7 +638,7 @@ void WaWindow::shapeEvent(void) {
 }
 #endif // SHAPE
 
-void WaWindow::sendConfig(void) {
+void AegisWindow::sendConfig(void) {
 	XConfigureEvent ce;
 
 	ce.type              = ConfigureNotify;
@@ -666,14 +666,14 @@ void WaWindow::sendConfig(void) {
 	XSendEvent(display, ws->id, false, StructureNotifyMask,
 			(XEvent *) &ce);
 
-	list<WaWindow *>::iterator mit = merged.begin();
+	list<AegisWindow *>::iterator mit = merged.begin();
 	for (; mit != merged.end(); mit++)
 		(*mit)->sendConfig();
 
 	XFlush(display);
 }
 
-void WaWindow::drawOutline(int x, int y, int width, int height) {
+void AegisWindow::drawOutline(int x, int y, int width, int height) {
 	if (outline_state) clearOutline();
 	outline_state = true;
 
@@ -686,7 +686,7 @@ void WaWindow::drawOutline(int x, int y, int width, int height) {
 			outl_x, outl_y, outl_w, outl_h);
 }
 
-void WaWindow::clearOutline(void) {
+void AegisWindow::clearOutline(void) {
 	if (! outline_state) return;
 	outline_state = false;
 
@@ -694,7 +694,7 @@ void WaWindow::clearOutline(void) {
 			outl_x, outl_y, outl_w, outl_h);
 }
 
-void WaWindow::drawDecor(void) {
+void AegisWindow::drawDecor(void) {
 	if (! init_done) return;
 
 #ifdef    SHAPE
@@ -704,7 +704,7 @@ void WaWindow::drawDecor(void) {
 	frame->pushRenderEvent();
 }
 
-bool WaWindow::incSizeCheck(int width, int height,
+bool AegisWindow::incSizeCheck(int width, int height,
 		unsigned int *n_w, unsigned int *n_h) {
 	bool resize = false;
 
@@ -786,11 +786,11 @@ bool WaWindow::incSizeCheck(int width, int height,
 	return resize;
 }
 
-void WaWindow::raise(void) {
+void AegisWindow::raise(void) {
 	if (master) {
 		master->raise(); return;
 	} else {
-		list<WaWindow * >::iterator it = merged.begin();
+		list<AegisWindow * >::iterator it = merged.begin();
 		for (; it != merged.end(); it++)
 			ws->raiseWindow((*it)->frame->id, false);
 	}
@@ -800,11 +800,11 @@ void WaWindow::raise(void) {
 	net->sendNotify(this, RaiseNotify);
 }
 
-void WaWindow::lower(void) {
+void AegisWindow::lower(void) {
 	if (master) {
 		master->lower(); return;
 	} else {
-		list<WaWindow * >::iterator it = merged.begin();
+		list<AegisWindow * >::iterator it = merged.begin();
 		for (; it != merged.end(); it++)
 			ws->lowerWindow((*it)->frame->id, false);
 	}
@@ -814,8 +814,8 @@ void WaWindow::lower(void) {
 	net->sendNotify(this, LowerNotify);
 }
 
-void WaWindow::move(XEvent *e) {
-	WaWindow *w;
+void AegisWindow::move(XEvent *e) {
+	AegisWindow *w;
 	XEvent event, *map_ev;
 	int px, py, nx, ny, i;
 	list<XEvent *> *maprequest_list;
@@ -960,7 +960,7 @@ void WaWindow::move(XEvent *e) {
 	}
 }
 
-void WaWindow::moveOpaque(XEvent *e) {
+void AegisWindow::moveOpaque(XEvent *e) {
 	int px, py, prelx, prely, i;
 	int sw = attrib.width;
 	int sh = attrib.height;
@@ -994,9 +994,9 @@ void WaWindow::moveOpaque(XEvent *e) {
 	}
 }
 
-bool WaWindow::_moveOpaque(XEvent *e, int saved_w, int saved_h, int px,
+bool AegisWindow::_moveOpaque(XEvent *e, int saved_w, int saved_h, int px,
 		int py, list<XEvent *> *maprequest_list) {
-	WaWindow *w;
+	AegisWindow *w;
 	XEvent event, *map_ev;
 	int sx, sy, nx, ny, mnx, mny;
 
@@ -1203,13 +1203,13 @@ bool WaWindow::_moveOpaque(XEvent *e, int saved_w, int saved_h, int px,
 	}
 }
 
-void WaWindow::resize(XEvent *e, int how) {
+void AegisWindow::resize(XEvent *e, int how) {
 	XEvent event, *map_ev;
 	int px, py, width, height, n_x, o_x, n_y, o_y, i;
 	list<XEvent *> *maprequest_list;
 	Window wd;
 	unsigned int ui, n_w, n_h, o_w, o_h;
-	WaWindow *w;
+	AegisWindow *w;
 
 	if (! (functions & FunctionResizeMask)) return;
 
@@ -1405,13 +1405,13 @@ void WaWindow::resize(XEvent *e, int how) {
 	}
 }
 
-void WaWindow::resizeOpaque(XEvent *e, int how) {
+void AegisWindow::resizeOpaque(XEvent *e, int how) {
 	XEvent event, *map_ev;
 	int px, py, width, height, i;
 	list<XEvent *> *maprequest_list;
 	Window wd;
 	unsigned int n_w, n_h, sw, sh, ui;
-	WaWindow *w;
+	AegisWindow *w;
 
 	if (! (functions & FunctionResizeMask)) return;
 
@@ -1599,7 +1599,7 @@ void WaWindow::resizeOpaque(XEvent *e, int how) {
 	}
 }
 
-void WaWindow::resizeSmart(XEvent *e) {
+void AegisWindow::resizeSmart(XEvent *e) {
 	int x, y, i;
 	Window wd;
 	unsigned int ui;
@@ -1620,7 +1620,7 @@ void WaWindow::resizeSmart(XEvent *e) {
 	resize(e, resize_mask);
 }
 
-void WaWindow::resizeSmartOpaque(XEvent *e) {
+void AegisWindow::resizeSmartOpaque(XEvent *e) {
 	int x, y, i;
 	Window wd;
 	unsigned int ui;
@@ -1641,7 +1641,7 @@ void WaWindow::resizeSmartOpaque(XEvent *e) {
 	resizeOpaque(e, resize_mask);
 }
 
-void WaWindow::_maximize(int x, int y) {
+void AegisWindow::_maximize(int x, int y) {
 	if (master) return;
 	int new_width, new_height;
 	unsigned int n_w, n_h;
@@ -1668,7 +1668,7 @@ void WaWindow::_maximize(int x, int y) {
 	int rest_x = attrib.x;
 	int rest_y = attrib.y;
 
-	list<WaWindow *>::iterator mit = merged.begin();
+	list<AegisWindow *>::iterator mit = merged.begin();
 	for (; mit != merged.end(); mit++) {
 		switch ((*mit)->mergetype) {
 			case VertMergeType:
@@ -1714,7 +1714,7 @@ void WaWindow::_maximize(int x, int y) {
 	}
 }
 
-void WaWindow::unMaximize(void) {
+void AegisWindow::unMaximize(void) {
 	if (master) { master->unMaximize(); return; }
 	int rest_height, tmp_shade_height = 0;
 	unsigned int n_w, n_h;
@@ -1738,12 +1738,12 @@ void WaWindow::unMaximize(void) {
 	}
 }
 
-void WaWindow::toggleMaximize(void) {
+void AegisWindow::toggleMaximize(void) {
 	if (! (wstate & StateMaximizedMask)) maximize();
 	else unMaximize();
 }
 
-void WaWindow::close(void) {
+void AegisWindow::close(void) {
 	XEvent ev;
 
 	ev.type = ClientMessage;
@@ -1756,16 +1756,16 @@ void WaWindow::close(void) {
 	XSendEvent(display, id, false, NoEventMask, &ev);
 }
 
-void WaWindow::kill(void) {
+void AegisWindow::kill(void) {
 	XKillClient(display, id);
 }
 
-void WaWindow::closeKill(void) {
+void AegisWindow::closeKill(void) {
 	if (protocol_mask & DeleteWindowProtocalMask) close();
 	else kill();
 }
 
-void WaWindow::shade(void) {
+void AegisWindow::shade(void) {
 	if (! (functions & FunctionResizeMask)) return;
 
 	if (master) { master->shade(); return; }
@@ -1784,7 +1784,7 @@ void WaWindow::shade(void) {
 	}
 }
 
-void WaWindow::unShade(void) {
+void AegisWindow::unShade(void) {
 	if (master) { master->unShade(); return; }
 	if (wstate & StateShadedMask) {
 		attrib.height = restore_shade;
@@ -1797,12 +1797,12 @@ void WaWindow::unShade(void) {
 	}
 }
 
-void WaWindow::toggleShade(void) {
+void AegisWindow::toggleShade(void) {
 	if (wstate & StateShadedMask) unShade();
 	else shade();
 }
 
-void WaWindow::sticky(void) {
+void AegisWindow::sticky(void) {
 	if (master) { master->sticky(); return; }
 	MERGED_LOOP {
 		_mw->wstate |= StateStickyMask;
@@ -1810,7 +1810,7 @@ void WaWindow::sticky(void) {
 	}
 }
 
-void WaWindow::unSticky(void) {
+void AegisWindow::unSticky(void) {
 	if (master) { master->unSticky(); return; }
 	MERGED_LOOP {
 		_mw->wstate &= ~StateStickyMask;
@@ -1818,7 +1818,7 @@ void WaWindow::unSticky(void) {
 	}
 }
 
-void WaWindow::toggleSticky(void) {
+void AegisWindow::toggleSticky(void) {
 	if (master) { master->toggleSticky(); return; }
 
 	if (wstate & StateStickyMask) wstate &= ~StateStickyMask;
@@ -1831,7 +1831,7 @@ void WaWindow::toggleSticky(void) {
 	}
 }
 
-void WaWindow::minimize(void) {
+void AegisWindow::minimize(void) {
 	if (master) { master->minimize(); return; }
 	if (wstate & StateMinimizedMask) return;
 	MERGED_LOOP {
@@ -1840,7 +1840,7 @@ void WaWindow::minimize(void) {
 	}
 }
 
-void WaWindow::unMinimize(void) {
+void AegisWindow::unMinimize(void) {
 	if (master) { master->unMinimize(); return; }
 	if (! (wstate & StateMinimizedMask)) return;
 	MERGED_LOOP {
@@ -1849,13 +1849,13 @@ void WaWindow::unMinimize(void) {
 	}
 }
 
-void WaWindow::toggleMinimize(void) {
+void AegisWindow::toggleMinimize(void) {
 	if (master) { master->toggleMinimize(); return; }
 	if (wstate & StateMinimizedMask) unMinimize();
 	else minimize();
 }
 
-void WaWindow::fullscreenOn(void) {
+void AegisWindow::fullscreenOn(void) {
 	if (! (functions & FunctionResizeMask)) return;
 	if (! (functions & FunctionMoveMask)) return;
 
@@ -1880,7 +1880,7 @@ void WaWindow::fullscreenOn(void) {
 	net->setWmState(this);
 }
 
-void WaWindow::fullscreenOff(void) {
+void AegisWindow::fullscreenOff(void) {
 	if (master) { master->fullscreenOff(); return; }
 	if (! (wstate & StateFullscreenMask)) return;
 
@@ -1901,12 +1901,12 @@ void WaWindow::fullscreenOff(void) {
 	net->setWmState(this);
 }
 
-void WaWindow::fullscreenToggle(void) {
+void AegisWindow::fullscreenToggle(void) {
 	if (wstate & StateFullscreenMask) fullscreenOff();
 	else fullscreenOn();
 }
 
-void WaWindow::setDecor(long newdecormask) {
+void AegisWindow::setDecor(long newdecormask) {
 	if (! (functions & FunctionSetDecorMask)) return;
 
 	if (master) { master->setDecor(newdecormask); return; }
@@ -1935,7 +1935,7 @@ void WaWindow::setDecor(long newdecormask) {
 	}
 }
 
-void WaWindow::alwaysontopOn(void) {
+void AegisWindow::alwaysontopOn(void) {
 	if (! (functions & FunctionSetStackingMask)) return;
 
 	if (master) { master->alwaysontopOn(); return; }
@@ -1951,7 +1951,7 @@ void WaWindow::alwaysontopOn(void) {
 	net->setClientListStacking(ws);
 }
 
-void WaWindow::alwaysatbottomOn(void) {
+void AegisWindow::alwaysatbottomOn(void) {
 	if (! (functions & FunctionSetStackingMask)) return;
 
 	if (master) { master->alwaysatbottomOn(); return; }
@@ -1967,7 +1967,7 @@ void WaWindow::alwaysatbottomOn(void) {
 	net->setClientListStacking(ws);
 }
 
-void WaWindow::alwaysontopOff(void) {
+void AegisWindow::alwaysontopOff(void) {
 	if (master) { master->alwaysontopOff(); return; }
 	if (! (wstate & StateAlwaysOnTopMask)) return;
 
@@ -1980,7 +1980,7 @@ void WaWindow::alwaysontopOff(void) {
 	net->setClientListStacking(ws);
 }
 
-void WaWindow::alwaysatbottomOff(void) {
+void AegisWindow::alwaysatbottomOff(void) {
 	if (master) { master->alwaysatbottomOff(); return; }
 	if (! (wstate & StateAlwaysAtBottomMask)) return;
 
@@ -1992,17 +1992,17 @@ void WaWindow::alwaysatbottomOff(void) {
 	net->setClientListStacking(ws);
 }
 
-void WaWindow::alwaysontopToggle(void) {
+void AegisWindow::alwaysontopToggle(void) {
 	if (wstate & StateAlwaysOnTopMask) alwaysontopOff();
 	else alwaysontopOn();
 }
 
-void WaWindow::alwaysatbottomToggle(void) {
+void AegisWindow::alwaysatbottomToggle(void) {
 	if (wstate & StateAlwaysAtBottomMask) alwaysatbottomOff();
 	else alwaysatbottomOn();
 }
 
-void WaWindow::moveResize(char *s) {
+void AegisWindow::moveResize(char *s) {
 	int x, y, geometry;
 	unsigned int width, height;
 
@@ -2032,7 +2032,7 @@ void WaWindow::moveResize(char *s) {
 	checkMoveMerge(attrib.x, attrib.y);
 }
 
-void WaWindow::moveResizeVirtual(char *s) {
+void AegisWindow::moveResizeVirtual(char *s) {
 	int x, y, geometry;
 	unsigned int width, height;
 
@@ -2065,7 +2065,7 @@ void WaWindow::moveResizeVirtual(char *s) {
 	checkMoveMerge(attrib.x, attrib.y);
 }
 
-void WaWindow::moveWindowToPointer(XEvent *e) {
+void AegisWindow::moveWindowToPointer(XEvent *e) {
 	if (! (functions & FunctionMoveMask)) return;
 
 	attrib.x = e->xbutton.x_root - attrib.width / 2;
@@ -2088,7 +2088,7 @@ void WaWindow::moveWindowToPointer(XEvent *e) {
 	checkMoveMerge(attrib.x, attrib.y);
 }
 
-void WaWindow::moveWindowToSmartPlace(void) {
+void AegisWindow::moveWindowToSmartPlace(void) {
 	if (! (functions & FunctionMoveMask)) return;
 
 	int temp_h, temp_w;
@@ -2106,7 +2106,7 @@ void WaWindow::moveWindowToSmartPlace(void) {
 		if (! first) test_x = 0;
 		while (((test_x + temp_w) < (int) workw) && !loc_ok) {
 			loc_ok = true;
-			list<WaWindow *>::iterator it = ws->wawindow_list.begin();
+			list<AegisWindow *>::iterator it = ws->wawindow_list.begin();
 			for (; it != ws->wawindow_list.end() && (loc_ok == True); it++) {
 				if ((*it != this) && ((*it)->wstate & StateTasklistMask) &&
 						(! (*it)->master) &&
@@ -2151,7 +2151,7 @@ void WaWindow::moveWindowToSmartPlace(void) {
 	}
 }
 
-void WaWindow::desktopMask(char *s) {
+void AegisWindow::desktopMask(char *s) {
 	if (! (functions & FunctionDesktopMask)) return;
 
 	if (master) { master->desktopMask(s); return; }
@@ -2183,7 +2183,7 @@ void WaWindow::desktopMask(char *s) {
 	}
 }
 
-void WaWindow::joinDesktop(char *s) {
+void AegisWindow::joinDesktop(char *s) {
 	if (! (functions & FunctionDesktopMask)) return;
 
 	if (master) { master->joinDesktop(s); return; }
@@ -2202,7 +2202,7 @@ void WaWindow::joinDesktop(char *s) {
 	}
 }
 
-void WaWindow::partDesktop(char *s) {
+void AegisWindow::partDesktop(char *s) {
 	if (! (functions & FunctionDesktopMask)) return;
 
 	if (master) { master->partDesktop(s); return; }
@@ -2225,7 +2225,7 @@ void WaWindow::partDesktop(char *s) {
 	}
 }
 
-void WaWindow::partCurrentDesktop(void) {
+void AegisWindow::partCurrentDesktop(void) {
 	if (! (functions & FunctionDesktopMask)) return;
 
 	if (master) { master->partCurrentDesktop(); return; }
@@ -2242,7 +2242,7 @@ void WaWindow::partCurrentDesktop(void) {
 	}
 }
 
-void WaWindow::joinCurrentDesktop(void) {
+void AegisWindow::joinCurrentDesktop(void) {
 	if (! (functions & FunctionDesktopMask)) return;
 
 	if (master) { master->joinCurrentDesktop(); return; }
@@ -2255,7 +2255,7 @@ void WaWindow::joinCurrentDesktop(void) {
 	}
 }
 
-void WaWindow::joinAllDesktops(void) {
+void AegisWindow::joinAllDesktops(void) {
 	if (! (functions & FunctionDesktopMask)) return;
 
 	if (master) { master->joinAllDesktops(); return; }
@@ -2268,7 +2268,7 @@ void WaWindow::joinAllDesktops(void) {
 	}
 }
 
-void WaWindow::partAllDesktopsExceptCurrent(void) {
+void AegisWindow::partAllDesktopsExceptCurrent(void) {
 	if (! (functions & FunctionDesktopMask)) return;
 
 	desktop_mask = (1L << ws->current_desktop->number);
@@ -2280,7 +2280,7 @@ void WaWindow::partAllDesktopsExceptCurrent(void) {
 	}
 }
 
-void WaWindow::partCurrentJoinDesktop(char *s) {
+void AegisWindow::partCurrentJoinDesktop(char *s) {
 	if (! (functions & FunctionDesktopMask)) return;
 
 	if (master) { master->partCurrentJoinDesktop(s); return; }
@@ -2302,7 +2302,7 @@ void WaWindow::partCurrentJoinDesktop(char *s) {
 	}
 }
 
-void WaWindow::merge(WaWindow *child, int mtype) {
+void AegisWindow::merge(AegisWindow *child, int mtype) {
 	if (! (functions & FunctionMergeMask)) return;
 
 	if (mtype != CloneMergeType && mtype != VertMergeType &&
@@ -2314,7 +2314,7 @@ void WaWindow::merge(WaWindow *child, int mtype) {
 
 	bool had_focus = child->has_focus;
 
-	wa_grab_server();
+	ae_grab_server();
 	if (validate_drawable(id)) {
 		XSelectInput(display, child->id, NoEventMask);
 		XReparentWindow(display, child->id, frame->id,
@@ -2323,10 +2323,10 @@ void WaWindow::merge(WaWindow *child, int mtype) {
 				StructureNotifyMask | FocusChangeMask |
 				EnterWindowMask | LeaveWindowMask);
 	} else {
-		wa_ungrab_server();
+		ae_ungrab_server();
 		return;
 	}
-	wa_ungrab_server();
+	ae_ungrab_server();
 
 	merged.push_back(child);
 
@@ -2355,15 +2355,15 @@ void WaWindow::merge(WaWindow *child, int mtype) {
 	}
 }
 
-void WaWindow::unmerge(WaWindow *child) {
-	list<WaWindow *>::iterator it = merged.begin();
+void AegisWindow::unmerge(AegisWindow *child) {
+	list<AegisWindow *>::iterator it = merged.begin();
 	for (; it != merged.end() && *it != child; it++);
 
 	if (it == merged.end()) return;
 
 	bool had_focus = child->has_focus;
 
-	wa_grab_server();
+	ae_grab_server();
 	if (validate_drawable(child->id)) {
 		XSelectInput(display, child->id, NoEventMask);
 		XReparentWindow(display, child->id, child->frame->id, 0,
@@ -2373,7 +2373,7 @@ void WaWindow::unmerge(WaWindow *child) {
 				StructureNotifyMask | FocusChangeMask |
 				EnterWindowMask | LeaveWindowMask);
 	}
-	wa_ungrab_server();
+	ae_ungrab_server();
 
 	merged.remove(child);
 
@@ -2403,12 +2403,12 @@ void WaWindow::unmerge(WaWindow *child) {
 		child->has_focus = false;
 }
 
-void WaWindow::mergeWithWindow(char *s, int mtype) {
+void AegisWindow::mergeWithWindow(char *s, int mtype) {
 	if (! s) return;
 	if (! (functions & FunctionMergeMask)) return;
 
-	char *str = WA_STRDUP(s);
-	WaWindow *mw = NULL;
+	char *str = AE_STRDUP(s);
+	AegisWindow *mw = NULL;
 	list<AWindowObject *> awos;
 	Tst<char *> *attr;
 	Doing *doing = new Doing(ws);
@@ -2421,7 +2421,7 @@ void WaWindow::mergeWithWindow(char *s, int mtype) {
 
 	ws->getRegexTargets(doing->wreg, WindowType, false, &awos);
 	if (! awos.empty()) {
-		mw = (WaWindow *) *awos.begin();
+		mw = (AegisWindow *) *awos.begin();
 		awos.clear();
 	}
 
@@ -2432,12 +2432,12 @@ void WaWindow::mergeWithWindow(char *s, int mtype) {
 		mw->merge(this, mtype);
 }
 
-void WaWindow::explode(void) {
+void AegisWindow::explode(void) {
 	while (! merged.empty())
 		unmerge(merged.back());
 }
 
-void WaWindow::setMergeMode(char *s) {
+void AegisWindow::setMergeMode(char *s) {
 	if (s) {
 		if (! strncasecmp(s, "vert", 4))
 			mergemode = VertMergeType;
@@ -2450,28 +2450,28 @@ void WaWindow::setMergeMode(char *s) {
 	}
 }
 
-void WaWindow::nextMergeMode(void) {
+void AegisWindow::nextMergeMode(void) {
 	if (mergemode == VertMergeType)
 		mergemode = NullMergeType;
 	else mergemode++;
 }
 
-void WaWindow::prevMergeMode(void) {
+void AegisWindow::prevMergeMode(void) {
 	if (mergemode == NullMergeType)
 		mergemode = VertMergeType;
 	else mergemode--;
 }
 
-void WaWindow::mergeTo(XEvent *e, int mtype) {
-	WaWindow *wt = (WaWindow *) aegis->findWin(e->xany.window, WindowType);
+void AegisWindow::mergeTo(XEvent *e, int mtype) {
+	AegisWindow *wt = (AegisWindow *) aegis->findWin(e->xany.window, WindowType);
 	if (wt)
 		merge(wt, mtype);
 }
 
-void WaWindow::toFront(void) {
+void AegisWindow::toFront(void) {
 	if (mergedback) {
-		list<WaWindow *>::iterator it = merged.begin();
-		list<WaWindow *>::iterator it_end = merged.end();
+		list<AegisWindow *>::iterator it = merged.begin();
+		list<AegisWindow *>::iterator it_end = merged.end();
 		if (master) {
 			it = master->merged.begin();
 			it_end = master->merged.end();
@@ -2509,12 +2509,12 @@ void WaWindow::toFront(void) {
 	}
 }
 
-bool WaWindow::checkMoveMerge(int x, int y, int width, int height) {
+bool AegisWindow::checkMoveMerge(int x, int y, int width, int height) {
 	if (! merged.empty()) return false;
 	if (! (functions & FunctionMergeMask)) return false;
 
-	list<WaWindow *> matchlist;
-	WaWindow *bestmatch = NULL;
+	list<AegisWindow *> matchlist;
+	AegisWindow *bestmatch = NULL;
 
 	if (width == 0) width = attrib.width;
 	if (height == 0) height = attrib.height;
@@ -2532,7 +2532,7 @@ bool WaWindow::checkMoveMerge(int x, int y, int width, int height) {
 		return true;
 	}
 
-	list<WaWindow *>::iterator it = ws->wawindow_list.begin();
+	list<AegisWindow *>::iterator it = ws->wawindow_list.begin();
 	for (; it != ws->wawindow_list.end(); it++) {
 		if (*it != this && (! (*it)->master) && (! (*it)->hidden) &&
 				(! ((*it)->wstate & StateShadedMask)) &&
@@ -2614,7 +2614,7 @@ bool WaWindow::checkMoveMerge(int x, int y, int width, int height) {
 	return false;
 }
 
-void WaWindow::windowStateCheck(bool force) {
+void AegisWindow::windowStateCheck(bool force) {
 	if (! init_done) return;
 
 	if (force || wstate != old_wstate) {
@@ -2630,14 +2630,14 @@ void WaWindow::windowStateCheck(bool force) {
 	}
 }
 
-void WaWindow::setWindowState(long int newstate) {
+void AegisWindow::setWindowState(long int newstate) {
 	if (newstate != wstate) {
 		wstate = newstate;
 		windowStateCheck();
 	}
 }
 
-void WaWindow::addMonitor(AWindowObject *monitor, long int type) {
+void AegisWindow::addMonitor(AWindowObject *monitor, long int type) {
 	EventDetail ed;
 	ed.x = ed.y = INT_MAX;
 	ed.x11mod = ed.wamod = 0;
@@ -2652,14 +2652,14 @@ void WaWindow::addMonitor(AWindowObject *monitor, long int type) {
 	}
 }
 
-void WaWindow::removeMonitor(AWindowObject *monitor) {
+void AegisWindow::removeMonitor(AWindowObject *monitor) {
 	list<FlagMonitor *>::iterator it = monitors.begin();
 	for (; it != monitors.end(); it++)
 		if ((*it)->monitor == monitor)
 			it = monitors.erase(it);
 }
 
-void WaWindow::signalMonitors(void) {
+void AegisWindow::signalMonitors(void) {
 	EventDetail ed;
 	ed.x = ed.y = INT_MAX;
 	ed.x11mod = ed.wamod = 0;
@@ -2681,11 +2681,11 @@ void WaWindow::signalMonitors(void) {
 	}
 }
 
-WaFrameWindow::WaFrameWindow(WaWindow *wa_win, WaStringMap *sm) :
-	RootWindowObject(wa_win->ws, 0, WindowFrameType, sm, "frame") {
+AegisFrameWindow::AegisFrameWindow(AegisWindow *ae_win, AegisStringMap *sm) :
+	RootWindowObject(ae_win->ws, 0, WindowFrameType, sm, "frame") {
 		XSetWindowAttributes attrib_set;
 
-		wa = wa_win;
+		aegis = ae_win;
 
 		int create_mask = CWOverrideRedirect | CWEventMask | CWColormap;
 
@@ -2705,10 +2705,10 @@ WaFrameWindow::WaFrameWindow(WaWindow *wa_win, WaStringMap *sm) :
 			StructureNotifyMask | SubstructureNotifyMask |
 			EnterWindowMask | LeaveWindowMask;
 
-		attrib.x = wa->attrib.x;
-		attrib.y = wa->attrib.y;
-		attrib.width = wa->attrib.width;
-		attrib.height = wa->attrib.height;
+		attrib.x = aegis->attrib.x;
+		attrib.y = aegis->attrib.y;
+		attrib.width = aegis->attrib.width;
+		attrib.height = aegis->attrib.height;
 
 		id = XCreateWindow(ws->display, ws->id, attrib.x, attrib.y,
 				attrib.width, attrib.height, 0, ws->screen_depth,
@@ -2726,10 +2726,10 @@ WaFrameWindow::WaFrameWindow(WaWindow *wa_win, WaStringMap *sm) :
 
 #endif // SHAPE
 
-		wa->aegis->window_table.insert(make_pair(id, this));
+		aegis->aegis->window_table.insert(make_pair(id, this));
 	}
 
-WaFrameWindow::~WaFrameWindow(void) {
+AegisFrameWindow::~AegisFrameWindow(void) {
 
 #ifdef    SHAPE
 	while (! shape_infos.empty()) {
@@ -2739,41 +2739,41 @@ WaFrameWindow::~WaFrameWindow(void) {
 	XDestroyWindow(ws->display, apply_shape_buffer);
 #endif // SHAPE
 
-	wa->aegis->window_table.erase(id);
+	aegis->aegis->window_table.erase(id);
 }
 
-void WaFrameWindow::styleUpdate(bool, bool size_change) {
+void AegisFrameWindow::styleUpdate(bool, bool size_change) {
 	if (size_change)
-		wa->updateAllAttributes();
+		aegis->updateAllAttributes();
 	else
-		wa->drawDecor();
+		aegis->drawDecor();
 }
 
 #ifdef    SHAPE
-void WaFrameWindow::startRender(void) {
+void AegisFrameWindow::startRender(void) {
 	apply_shape = false;
 }
 
-void WaFrameWindow::endRender(Pixmap) {
+void AegisFrameWindow::endRender(Pixmap) {
 	apply_shape = true;
 	applyShape();
 }
 
-void WaFrameWindow::addShapeInfo(ShapeInfo *sinfo) {
+void AegisFrameWindow::addShapeInfo(ShapeInfo *sinfo) {
 	shape_infos.push_back(sinfo);
 }
 
-void WaFrameWindow::removeShapeInfo(ShapeInfo *sinfo) {
+void AegisFrameWindow::removeShapeInfo(ShapeInfo *sinfo) {
 	shape_infos.remove(sinfo);
 	shapeUpdateNotify();
 }
 
-void WaFrameWindow::shapeUpdateNotify(void) {
+void AegisFrameWindow::shapeUpdateNotify(void) {
 	shape_count++;
 	applyShape();
 }
 
-void WaFrameWindow::applyShape(void) {
+void AegisFrameWindow::applyShape(void) {
 	if (! apply_shape) return;
 	if (! shape_count) return;
 
