@@ -54,7 +54,7 @@ class WindowRegex {
 		virtual ~WindowRegex(void);
 
 		void addIDRegex(WindowIDType, char *);
-		bool match(WaStringMap *, int, char *);
+		bool match(AegisStringMap *, int, char *);
 
 		int state;
 

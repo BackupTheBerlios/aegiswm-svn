@@ -19,19 +19,12 @@
    Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    02111-1307, USA. */
 
-#ifdef    HAVE_CONFIG_H
-#  include "../config.h"
-#endif // HAVE_CONFIG_H
+#include "../config.h"
 
 #ifdef    PNG
-
-extern "C" {
-#ifdef    STDC_HEADERS
-#  include <stdlib.h>
-#endif // STDC_HEADERS
-
-#include "png.h"
-}
+#include <stdlib.h>
+#include "ae_png.h"
+#include <png.h>
 
 #ifndef png_jmpbuf
 #  define png_jmpbuf(png_ptr) ((png_ptr)->jmpbuf)
@@ -58,13 +51,13 @@ static void premultiply_data(png_structp, png_row_infop row_info,
 		unsigned char green = base[1];
 		unsigned char red = base[2];
 		unsigned char alpha = base[3];
-		WaPixel p;
+		AegisPixel p;
 
 		red = (unsigned) red * (unsigned) alpha / 255;
 		green = (unsigned) green * (unsigned) alpha / 255;
 		blue = (unsigned) blue * (unsigned) alpha / 255;
 		p = (alpha << 24) | (red << 16) | (green << 8) | (blue << 0);
-		memcpy(base, &p, sizeof (WaPixel));
+		memcpy(base, &p, sizeof (AegisPixel));
 	}
 }
 
@@ -154,12 +147,12 @@ unsigned char *read_png_to_rgba(FILE *fp, int *pwidth, int *pheight) {
 		goto bail;
 	}
 
-	data = new unsigned char[sizeof(WaPixel) * width * height];
+	data = new unsigned char[sizeof(AegisPixel) * width * height];
 
 	rows = (png_bytepp) new png_bytep[height];
 
 	for (unsigned int i = 0; i < height; i++)
-		rows[i] = data + i * width * sizeof(WaPixel);
+		rows[i] = data + i * width * sizeof(AegisPixel);
 
 	png_read_image(png_ptr, rows);
 	png_read_end(png_ptr, info_ptr);

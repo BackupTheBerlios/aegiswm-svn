@@ -25,7 +25,7 @@
 
 #include "aegis.h"
 #include <regex.h>
-#include "aegis_regex.h"
+#include "ae_regex.h"
 
 Regex::Regex(char *_pattern) {
 	int status = 0;
@@ -38,7 +38,7 @@ Regex::Regex(char *_pattern) {
 
 	comp_ok = true;
 
-	char *pattern = WA_STRDUP(_pattern);
+	char *pattern = AE_STRDUP(_pattern);
 
 	for (int i = 0; pattern[i] != '\0'; i++) {
 		int n;
@@ -119,7 +119,7 @@ void WindowRegex::addIDRegex(WindowIDType type, char *_regex) {
 	}
 }
 
-bool WindowRegex::match(WaStringMap *ids, int _state, char *window) {
+bool WindowRegex::match(AegisStringMap *ids, int _state, char *window) {
 	if (_state != state) return false;
 	bool ismatching = true;
 	map<WindowIDType, Regex *>::iterator r_it = id_regex_map.begin();
