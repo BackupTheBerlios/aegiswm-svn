@@ -11,6 +11,9 @@
 using std::map;
 using std::vector;
 
+//makes this available to the error handler
+Aegis aegis;
+
 //{{{
 static char * event_names[LASTEvent] = {
 	"None",
@@ -96,6 +99,7 @@ void Aegis::run() {
 
 	log_debug("Running...\n");
 	for(;;) {
+		//XSync(dpy, False);
 		XNextEvent(dpy, &ev);
 		log_debug("%s\n", event_names[ev.type]);
 
@@ -114,11 +118,11 @@ void Aegis::run() {
 			case MapRequest:
 				handleMapRequest(&ev);
 				break;
-			case UnmapNotify:
-				handleUnmapNotify(&ev);
-				break;
 			case EnterNotify:
 				handleEnterNotify(&ev);
+				break;
+			case UnmapNotify:
+				handleUnmapNotify(&ev);
 				break;
 			case LeaveNotify:
 				handleLeaveNotify(&ev);
@@ -280,16 +284,11 @@ void Aegis::handleMapRequest(XEvent * xev) {
 	log_debug("Entering handleMapRequest(Xevent * ev)\n");
 	XMapRequestEvent xmr = xev->xmaprequest;
 	Client * c = new Client(dpy, this, xmr.window);
-	log_debug("here\n");
-	vector<Window> wins = c->getWindowList();
-	log_debug("here\n");
-	vector<Window>::iterator iter, end = wins.end();
-	log_debug("here\n");
 
-	for(iter = wins.begin(); iter != end; iter++)
-		clients[(*iter)] = c;
+	clients.print();
+	clients[xmr.window] = c;
+	clients.print();
 
-	log_debug("here\n");
 	log_debug("Leaving handleMapRequest()\n");
 }
 //}}}
@@ -297,8 +296,17 @@ void Aegis::handleMapRequest(XEvent * xev) {
 void Aegis::handleUnmapNotify(XEvent * xev) {
 	log_debug("Entering handleUnmapNotify(Xevent * ev)\n");
 	XUnmapEvent umap = xev->xunmap;
-	Client * c = clients[umap.window];
-	c->unmap();
+	Client * c = clients.getClient(umap.window);
+
+	if(c) {
+		clients.print();
+		c->unmap();
+		delete c;
+		c = NULL;
+		clients.erase(umap.window);
+		clients.print();
+	}
+
 	log_debug("Leaving handleUnmapNotify()\n");
 }
 //}}}
@@ -328,7 +336,7 @@ void Aegis::handleButtonPress(XEvent * xev) {
 	XButtonPressedEvent xbp = (XButtonPressedEvent)xev->xbutton;
 	//This is unset in handleButtonRelease()
 	aestate.button_down = true;
-	Client * c = clients[xbp.window];
+	Client * c = clients.getClient(xbp.window);
 	log_debug("Entering handleButtonPress(XEvent * xev)\n");
 	log_debug("xev->window == %i\n", (int)xbp.window);
 	log_debug("xev->button == %i\n", (int)xbp.button);
@@ -365,7 +373,7 @@ void Aegis::handleButtonRelease(XEvent * xev) {
 void Aegis::handleMotionNotify(XEvent * ev) {
 	log_debug("Entering handleMotionNotify(Xevent * ev)\n");
 	XMotionEvent xmov = ev->xmotion;
-	Client * c = clients[xmov.window];
+	Client * c = clients.getClient(xmov.window);
 
 	compressEvent(xmov.window, ev->type, ev);
 
@@ -398,12 +406,21 @@ int Aegis::compressEvent(Window win, int event_type, XEvent * ev) {
 //}}}
 
 //{{{
+int error_handler(Display * dpy, XErrorEvent * ev) {
+	char err[300];
+	XGetErrorText(dpy, ev->error_code, err, 300);
+	log_crit(err);
+
+	return 1;
+}
+//}}}
+//{{{
 int main(int argc, char ** argv) {
 	//set up logging
 	openlog("aegiswm", LOG_CONS, LOG_USER);
 	log_info("********** Starting AegisWM **********\n");
 
-	Aegis aegis;
+	XSetErrorHandler(error_handler);
 	aegis.run();
 
 	log_info("********** Shutting Down AegisWM **********\n");

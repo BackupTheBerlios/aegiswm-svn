@@ -7,8 +7,10 @@
 
 #include "clientmap.h"
 #include "client.h"
+#include "aegis.h"
 
 using std::map;
+using std::pair;
 
 //{{{
 ClientMap::~ClientMap() {
@@ -22,11 +24,24 @@ ClientMap::~ClientMap() {
 }
 //}}}
 //{{{
-Client *& ClientMap::operator[](Window key) {
-	if(this->find(key) == this->end())
-		return map<Window, Client *>::operator[](key) = NULL;
-	else
-		return map<Window, Client *>::operator[](key);
+Client * ClientMap::getClient(Window key) {
+	Client * rv = NULL;
+	if(this->find(key) != this->end())
+		rv = map<Window, Client *>::operator[](key);
+
+	return rv;
+}
+//}}}
+
+//{{{
+void ClientMap::print() {
+	ClientMap::iterator iter, end = this->end();
+	log_info("ClientMap = {");
+	for(iter = this->begin(); iter != end; iter++) {
+		pair<Window, Client *> par = (*iter);
+		log_info("\t %i => 0x%X,", (int)par.first, (int)par.second);
+	}
+	log_info("}");
 }
 //}}}
 

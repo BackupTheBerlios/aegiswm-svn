@@ -46,7 +46,6 @@ struct WindowState {
 	/// Destroy this WindowState's resources.
 	//{{{
 	WindowState::~WindowState() {
-		XFree(name);
 	}
 	//}}}
 };

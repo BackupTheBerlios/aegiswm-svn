@@ -29,7 +29,7 @@ Titlebar::Titlebar(Display * dpy, Aegis * aegis, Window pwin, int x, int y, int 
 			DefaultDepth(dpy, aegis->getScreen()),
 			CopyFromParent, 
 			DefaultVisual(dpy, aegis->getScreen()),
-			CWOverrideRedirect | /*CWDontPropagate |*/ CWBackPixel | CWBorderPixel | CWEventMask, 
+			CWOverrideRedirect | CWDontPropagate | CWBackPixel | CWBorderPixel | CWEventMask, 
 			&pattr);
 	XMapRaised(dpy, wid);
 }
@@ -53,10 +53,10 @@ Client::Client(Display * dpy, Aegis * aegis, Window window) : state() {
 	//set some window attributes
 	pattr.do_not_propagate_mask = ButtonPressMask|ButtonReleaseMask|ButtonMotionMask;
 	pattr.override_redirect=False;
-	pattr.event_mask = ButtonMotionMask | SubstructureRedirectMask | 
-		SubstructureNotifyMask          | ButtonPressMask          | 
-		ButtonReleaseMask               | ExposureMask             | 
-		EnterWindowMask                 | LeaveWindowMask;
+	pattr.event_mask = ButtonMotionMask       | SubstructureRedirectMask | 
+		SubstructureNotifyMask | ButtonPressMask          | 
+		ButtonReleaseMask      | ExposureMask             | 
+		EnterWindowMask        | LeaveWindowMask;
 
 	//get the window's name
 	getXWindowName();
@@ -79,9 +79,10 @@ Client::Client(Display * dpy, Aegis * aegis, Window window) : state() {
 	XReparentWindow(dpy, adopted, id, 0, 16);
 	
 	//focus the client windows
-	XSelectInput(dpy, id, ButtonReleaseMask | ButtonPressMask   | 
-                          FocusChangeMask   | EnterWindowMask   | 
-                          LeaveWindowMask);
+	//XSelectInput(dpy, id, ButtonReleaseMask | ButtonPressMask   | 
+                          //FocusChangeMask   | EnterWindowMask   | 
+                          //LeaveWindowMask);
+	XSelectInput(dpy, window, SubstructureNotifyMask|SubstructureRedirectMask);
 
 	//Map them at the top of the stacking order
 	XMapRaised(dpy, adopted);
@@ -164,8 +165,8 @@ void Client::moveTo(int x, int y) {
 //{{{
 void Client::unmap() {
 	log_info("Unmapping the %s windows", state.name);
-	XUnmapSubwindows(dpy, id);
-	delete this;
+	//XUnmapSubwindows(dpy, id);
+	XUnmapWindow(dpy, id);
 	log_info("Done unmapping %s", state.name);
 }
 //}}}

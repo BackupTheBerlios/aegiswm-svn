@@ -21,10 +21,11 @@ class ClientMap : public std::map<Window, Client *> {
 		/// Destroys the ClientMap and all its resources.
 		virtual ~ClientMap();
 
-		/// Change the behavior of std::map<Window, Client *>::operator[](Window) to add a NULL to
-		/// the map if a key is passed in that does not already exist in the map, otherwise, it
-		/// returns a pointer to the Client object that the key maps to.
-		virtual Client *& operator[](Window key);
+		/// This works just like ClientMap::operator[] except that is does not insert anything into
+		/// the map if the key does not exist.
+		virtual Client * getClient(Window key);
+
+		void print();
 };
 #endif
 
