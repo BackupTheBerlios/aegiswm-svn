@@ -1,26 +1,6 @@
-2004-11-04  David Reveman  <c99drn@cs.umu.se>
-
-	* configure.in: Require cairo >= 0.1.23.
-
-	* src/Waimea.cc: 
-	* src/Style.hh: 
-	* src/Render.hh: 
-	* src/Event.cc: Removed ugly xcb.h include hack.
-
-	* src/Render.cc: Tracking changes to cairo.
-
-2004-05-21  David Reveman  <c99drn@cs.umu.se>
-
-	* src/Event.cc: Raise window when going to fullscreen mode.
-
-2004-05-18  David Reveman  <c99drn@cs.umu.se>
-
-	* src/Action.cc: Make sure old_style exists before we unref it.
-
-	* src/Event.cc: Only destroy window if no pending_unmaps.
-
-	* src/Window.cc: Unmap client window.
-	Map client window.
-
-	* src/Window.hh: Added pending_unmaps.
-
+0.0.0 (22 Mar 2004)
+ * Began fork of aewm++
+ * Updated LICENSE and README (and Changelog).
+ * Converted from handwritten Makefiles to autconf/automake.  This will likely
+   later change to a better build system.  (C++ really needs something
+   analagous to ant.)

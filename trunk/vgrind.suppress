@@ -1,0 +1,61 @@
+{
+   invalid_read_system_lib
+   Memcheck:Addr1
+   obj:/lib/ld-*
+}
+{
+   invalid_read_system_lib
+   Memcheck:Addr1
+   obj:/lib/libc-*
+}
+{
+   invalid_read_system_lib
+   Memcheck:Addr1
+   obj:/lib/X11/*
+}
+{
+   uninit_jump_system_lib
+   Memcheck:Cond
+   obj:/lib/ld-*
+}
+{
+   uninit_jump_system_lib
+   Memcheck:Cond
+   obj:/lib/libc-*
+}
+{
+   uninit_jump_system_lib
+   Memcheck:Cond
+   obj:/lib/X11/*
+}
+{
+   mem_leak_X11
+   Memcheck:Leak
+   obj:/lib/X11/*
+}
+{
+   mem_leak_X11
+   Memcheck:Leak
+   obj:/lib/libfont*
+}
+{
+   mem_leak_X11
+   Memcheck:Leak
+   obj:/usr/lib/libxml*
+}
+{
+   alloc_issue
+   Memcheck:Leak
+   fun:*alloc
+}
+{
+   new_issue
+   Memcheck:Leak
+   fun:*new
+}
+{
+   new_issue
+   Memcheck:Leak
+   fun:*libpthread*
+}
+

@@ -1,1 +1,48 @@
-David Reveman <david@waimea.org>
+Aegis authors:
+-------------
+
+All source files are copyright works of the individuals listed as Aegis
+developers.  Insofar as aewm++ code remains in Aegis, it is copyright work
+of Frank Hale.
+
+Michael Brailsford  <brailsmt@yahoo.com>
+- Aegis developer
+
+Hyriand  <hyriand@thegraveyard.org>
+- Aegis developer
+
+Michael Neumann
+- Aegis developer
+
+
+
+Acknowledgements:
+-----------------
+
+Kahakai and Waimea are both considered distant descendants of aegis.  Kahakai,
+because its development goals were the same as the goals that aegis has, and the
+decision to write a new window manager came as a result of our development with
+Kahakai.  Both Hyriand and Michael Brailsford were developers on the Kahakai wm.
+Waimea, it was the predecesor of Kahakai, and is extremely configurable.
+It inspired the development of Kahakai.
+Kahakai:
+  Eugene Pervago
+    - Kahakai developer
+  mackstann
+    - Kahakai developer
+
+Waimea:
+  Dave Raveman
+    - Waimea developer
+
+aewm++, aewm, and 9wm are considered ancestors of aegis because they all share
+source/functionality.  If Waimea and Kahakai are distant relatives of aegis,
+aewm* and 9wm are the parents and grandparents of aegis.  They are listed in
+generational order.
+aewm++:
+  Frank Hale
+aewm:
+  Decklin Foster
+9wm:
+  David Hogan
+

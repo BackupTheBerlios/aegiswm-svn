@@ -1,50 +1,46 @@
-AegisWM - an X11 window manager
+AegisWM - The Scripting Language Agnostic window manager
+======================================================
 
-AegisWM is free software. See the file COPYING for copying permission.
+Why AegisWM (and a little history)?
+-------------------------------
+
+There are already a bzillion and a half window managers, right?  Who needs 
+another one?  Well, 'need' may be too strong.  :)  I mean who needs a wm at all?
+Anyway, I digress, the point is why we chose to do AegisWM, not why there is a
+need for wms in general.  :)  
+
+One of the original devs of AegisWM was also one of the three developers that
+forked Waimea to create Kahakai.  That dev being Michael Brailsford <brailsmt>.
+Well, back then we really liked how configurable Waimea was, and still is.  The
+problem was that Waimea apparently died.  We picked it up and ran with it, and
+extended the configurability a step further by aiming at creating a window
+manager with the ability to be scripted by various scripting languages.  Mainly
+that meant python and ruby (I was the ruby holdout).
+
+To make a long story a little shorter, Kahakai was a great first effort, but
+it suffered a major problem.  It was a prototype/proof-of-concept that then became the finished
+product.  It worked, but it was difficult to maintain.  That is how AegisWM was
+born.  Hyriand encouraged me to take it on, and he volunteered to help.  That
+iced the deal for me.  So I began hacking aewm, then found aewm++ and switched.
+
+That was nearly a year ago.  Since then, I have not done much of anything on AegisWM.  I have
+started over several times, each time to come to some point where I scrapped it and started over.
+This is not the right way to code.  This window manager stuff is complex, more so than I thought at
+the outset.  I have since scaled way back on the rhetoric and I am taking a more wait and see
+approach.  This project has become a learning process for me.  I expect to continue working on it,
+but not as much as I would like.  Family and work are more important.
+
+What does it do?
+----------------
+
+Nothing yet.  However, it will allow scriptable configuration and extension with any scripting
+language that can interface with C/C++.  We also aim to be fully ICCCM and EWMH
+compliant so you can use AegisWM in Gnome, KDE or any other EWMH aware desktop.
 
 
-Compiling
----------
-See the INSTALL document for build instructions.
+How on earth do you plan on doing it?
+-------------------------------------
 
+Stay tuned.  I don't know.
 
-Description
------------
-AegisWM is a highly customizable window manager for the X Window system 
-conforming to the latest EWMH specification. AegisWM supports multiple
-virtual desktops and by using the cairo graphics library for all
-rendering, aegiswm provides a modern vector-based style engine that
-takes advantage of display hardware acceleration when available (through 
-the X Render Extension).
-
-Dependencies
-------------
-AegisWM requires the following libraries:
-
-	expat
-	cairo
-
-If available aegiswm will utilize the following libraries:
-
-	libpng
-	libsvg-cairo
-	xcursor
-
-
-History
--------
-Waimea was developed by David Reveman <davidr@waimea.org>
-Aegis is developed by Michael Brailsford <brailsmt@yahoo.com>
-
-
-Mailing List
-------------
-If you have trouble with aegiswm or you have some ideas for how it could be
-improved, please feel free to send a message to aegiswm@aegiswm.org
-
-AegisWM is still under active development and all discussion happens on
-that list. So if you want to lurk or, (even better), take part in the
-development, take a look. Subscription information and archives are
-available:
-
-to be determined...
+Written by:  Michael Brailsford
