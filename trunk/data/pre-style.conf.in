@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!DOCTYPE waimea SYSTEM "@pkgdatadir@/waimea.dtd">
+
+<waimea version="@pkgversion@">
+
+<!-- This is a good place to overload style constants. e.g:
+
+  <constant name="bg-color" value="#57a26c"/>
+  <constant name="background-image" value="~/.images/nice-bg.png"/>
+
+-->
+
+</waimea>
