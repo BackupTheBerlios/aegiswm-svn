@@ -62,7 +62,7 @@ Aegis::Aegis() : clients(), atoms(), aestate() {
 	dpy = XOpenDisplay(getenv("DISPLAY"));
 	scr = DefaultScreen(dpy);
 	root = RootWindow(dpy, scr);
-	
+
 	arrow_curs = XCreateFontCursor(dpy, XC_left_ptr);
 	XDefineCursor(dpy, root, arrow_curs);
 
@@ -97,6 +97,7 @@ Aegis::~Aegis() {
 //{{{
 void Aegis::run() {
 	XEvent ev;
+	aesig_t * etsig;
 
 	log_debug("Running...\n");
 	for(;;) {
@@ -104,36 +105,73 @@ void Aegis::run() {
 		XNextEvent(dpy, &ev);
 		log_debug("%s\n", event_names[ev.type]);
 
-		//I don't like the switch, but its easy to write.  It will get to be a pain to 
-		//maintain, that is what refactoring is for.  :)
+		//Grab the signal for the XEvent we just recieved
+		etsig = event_type_map[ev.type];
+		//Emit the signal
+		etsig->emit(&ev);
+
+		//{{{
+#if 0
 		switch(ev.type) {
 			case ButtonPress:
-				handleButtonPress(&ev);
-				break;
 			case ButtonRelease:
-				handleButtonRelease(&ev);
-				break;
-			case ConfigureRequest:
-				handleConfigureRequest(&ev);
-				break;
 			case MapRequest:
-				handleMapRequest(&ev);
-				break;
 			case EnterNotify:
-				handleEnterNotify(&ev);
-				break;
 			case UnmapNotify:
-				handleUnmapNotify(&ev);
-				break;
 			case LeaveNotify:
-				handleLeaveNotify(&ev);
-				break;
 			case MotionNotify:
-				if(aestate.button_down)
-					handleMotionNotify(&ev);
+			case ConfigureRequest:
+				win = ev.window;
 				break;
+//			//{{{
+//			case ButtonPress:
+//				handleButtonPress(&ev);
+//				break;
+//			case ButtonRelease:
+//				handleButtonRelease(&ev);
+//				break;
+//			case ConfigureRequest:
+//				handleConfigureRequest(&ev);
+//				break;
+//			case MapRequest:
+//				handleMapRequest(&ev);
+//				break;
+//			case EnterNotify:
+//				handleEnterNotify(&ev);
+//				break;
+//			case UnmapNotify:
+//				handleUnmapNotify(&ev);
+//				break;
+//			case LeaveNotify:
+//				handleLeaveNotify(&ev);
+//				break;
+//			case MotionNotify:
+//				if(aestate.button_down)
+//					handleMotionNotify(&ev);
+//				break;
+//				//}}}
 		}
+
+		//For the window in which the event occurred, emit() its signal.
+		mgmr[win].emit(*ev);
+#endif
+		//}}}
 	}
+}
+//}}}
+//{{{
+void Aegis::registerEventTypeDispatcher(ev_t event_type, aesig_t * event_type_dispatcher) {
+	log_info("Entering Aegis::registerEventTypeDispatcher(event_type, event_type_dispatcher)");
+
+	if(event_type_map.find(event_type) == event_type_map.end()) {
+		event_type_map[event_type] = event_type_dispatcher;
+	}
+	else {
+		log_info("Aegis already has an event type dispatcher for the %s event type",
+				event_names[event_type]);
+	}
+
+	log_info("Leaving Aegis::registerEventTypeDispatcher()");
 }
 //}}}
 //{{{

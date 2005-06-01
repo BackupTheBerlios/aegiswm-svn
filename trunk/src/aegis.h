@@ -17,9 +17,17 @@
 #include <map>
 #include <vector>
 #include "clientmap.h"
+#include <sigc++/sigc++.h>
 
 /// @mainpage
 /// This is the documentation for AegisWM.
+
+/// This is an event type.
+typedef int ev_t;
+/// This is the type of event signals in AegisWM.
+typedef sigc::signal<void, XEvent *> aesig_t;
+/// This is a map of aesig_t signals
+typedef std::map<ev_t, aesig_t *> sigmap_t;
 
 /// This struct represents a single (x,y) point.
 //{{{
@@ -54,6 +62,7 @@ struct AegisState {
 	point ppos;  ///< This is pointer position as of the last XButtonPressEvent.
 };
 
+//// Simple logging stuff {{{
 #ifdef __GNUC__
 //This stuff will need to be replaced for any preprocessor other than the GNU preproccessor.  The
 //__VA_ARGS__ is a GNU cpp extension, as is the ##.  The ## gets rid of any extra ',' if there are
@@ -150,6 +159,7 @@ void log_emerg(char * fmt, ...) {
 }
 //}}}
 #endif
+//}}}
 
 //forward declaration
 class Client;
@@ -174,11 +184,14 @@ enum AtomIDs {
 //{{{
 class Aegis {
 	protected:
-		Display * dpy;     ///< Our Display.
-		int scr;           ///< Our screen.
-		Window root;       ///< The root window ID.
-		Cursor arrow_curs; ///< The ubiquitous arrow pointer.
-		ClientMap clients; ///< This is our list of clients.
+		Display * dpy;            ///< Our Display.
+		int scr;                  ///< Our screen.
+		Window root;              ///< The root window ID.
+		Cursor arrow_curs;        ///< The ubiquitous arrow pointer.
+		ClientMap clients;        ///< This is our list of clients.
+
+		/// This is the map of XEvent types to signals.
+		sigmap_t event_type_map;
 
 		/// This contains all the Atoms we have interned (In the future would should probably
 		/// subclass std::map<> so we can specify how to intern an Atom if one is requested that is
@@ -237,6 +250,9 @@ class Aegis {
 
 		/// Returns the Screen.
 		inline int getScreen() { return scr; }
+
+		/// This registers an event type dispatch signal with Aegis.
+		void registerEventTypeDispatcher(int event_type, aesig_t * event_type_dispatcher);
 };
 //}}}
 #endif

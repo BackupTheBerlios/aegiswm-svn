@@ -11,6 +11,7 @@ opts.Add(BoolOption('RELEASE', 'Build for release', ''))
 
 env = Environment(
 	options = opts,
+	CPPPATH = ['#', '#/handlers'],
 	#CPPPATH = ['#'],
 	#LIBPATH = ['#'],
 	#CPPPATH = ['#', '#/handlers', '#/widgets'],
@@ -101,18 +102,18 @@ sys_h.close()
 	#Exit(1)
 #sys.stdout.write('yes\n')
 
-#sys.stdout.write('Checking for sigc++-2.0... ')
-#sys.stdout.flush()
-#
-#env.ParseConfig('pkg-config sigc++-2.0 --libs --cflags')
-#
-#if not conf.TryCompile("""
-##include <sigc++/sigc++.h>
-#int main() {}
-#""", ".cpp"):
-#	sys.stderr.write('no\n\nCouldn\'t find sigc++-2.0 (http://libsigc.sourceforge.net/).\n')
-#	Exit(1)
-#sys.stdout.write('yes\n')
+sys.stdout.write('Checking for sigc++-2.0... ')
+sys.stdout.flush()
+
+env.ParseConfig('pkg-config sigc++-2.0 --libs --cflags')
+
+if not conf.TryCompile("""
+#include <sigc++/sigc++.h>
+int main() {}
+""", ".cpp"):
+	sys.stderr.write('no\n\nCouldn\'t find sigc++-2.0 (http://libsigc.sourceforge.net/).\n')
+	Exit(1)
+sys.stdout.write('yes\n')
 
 #sys.stdout.write('Checking for fontconfig... ')
 #sys.stdout.flush()
@@ -143,15 +144,14 @@ sys_h.close()
 
 env = conf.Finish()
 
-#Export('env')
-#
-#subdirs = ['handlers', 'widgets']
-#for dir in subdirs:
-#    if buildDir is None:
-#        bd = None
-#    else:
-#        bd = os.path.join(buildDir, dir)
-#    SConscript(os.path.join(dir, 'SConscript'), build_dir = bd)
+Export('env')
+subdirs = ['handlers']
+for dir in subdirs:
+    if buildDir is None:
+        bd = None
+    else:
+        bd = os.path.join(buildDir, dir)
+    SConscript(os.path.join(dir, 'SConscript'), build_dir = bd)
 
 # Save the options we want to have saved (basically, everything but DESTDIR)
 f = open("mulocal.py", "w")

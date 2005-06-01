@@ -24,3 +24,5 @@ yes
 Checking for main() in C library Xext... scons: `.sconf_temp/conftest_8.c' is up to date.
 scons: `.sconf_temp/conftest_8' is up to date.
 yes
+scons: `.sconf_temp/conftest_9.cpp' is up to date.
+scons: `.sconf_temp/conftest_9.o' is up to date.
