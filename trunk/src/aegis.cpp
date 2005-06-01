@@ -74,11 +74,11 @@ Aegis::Aegis() : clients(), atoms(), aestate() {
 
 	//let X know which events we want to be notified of
 	sattr.event_mask = SubstructureRedirectMask | SubstructureNotifyMask | 
-		               ColormapChangeMask       | ButtonPressMask        | 
-		               ButtonReleaseMask        | FocusChangeMask        | 
-		               EnterWindowMask          | LeaveWindowMask        | 
-		               PropertyChangeMask       | ButtonMotionMask       ;
-			   
+		ColormapChangeMask       | ButtonPressMask        | 
+		ButtonReleaseMask        | FocusChangeMask        | 
+		EnterWindowMask          | LeaveWindowMask        | 
+		PropertyChangeMask       | ButtonMotionMask       ;
+
 	XChangeWindowAttributes(dpy, root, CWEventMask, &sattr);
 }
 //}}}
@@ -101,7 +101,6 @@ void Aegis::run() {
 
 	log_debug("Running...\n");
 	for(;;) {
-		//XSync(dpy, False);
 		XNextEvent(dpy, &ev);
 		log_debug("%s\n", event_names[ev.type]);
 
@@ -109,53 +108,6 @@ void Aegis::run() {
 		etsig = event_type_map[ev.type];
 		//Emit the signal
 		etsig->emit(&ev);
-
-		//{{{
-#if 0
-		switch(ev.type) {
-			case ButtonPress:
-			case ButtonRelease:
-			case MapRequest:
-			case EnterNotify:
-			case UnmapNotify:
-			case LeaveNotify:
-			case MotionNotify:
-			case ConfigureRequest:
-				win = ev.window;
-				break;
-//			//{{{
-//			case ButtonPress:
-//				handleButtonPress(&ev);
-//				break;
-//			case ButtonRelease:
-//				handleButtonRelease(&ev);
-//				break;
-//			case ConfigureRequest:
-//				handleConfigureRequest(&ev);
-//				break;
-//			case MapRequest:
-//				handleMapRequest(&ev);
-//				break;
-//			case EnterNotify:
-//				handleEnterNotify(&ev);
-//				break;
-//			case UnmapNotify:
-//				handleUnmapNotify(&ev);
-//				break;
-//			case LeaveNotify:
-//				handleLeaveNotify(&ev);
-//				break;
-//			case MotionNotify:
-//				if(aestate.button_down)
-//					handleMotionNotify(&ev);
-//				break;
-//				//}}}
-		}
-
-		//For the window in which the event occurred, emit() its signal.
-		mgmr[win].emit(*ev);
-#endif
-		//}}}
 	}
 }
 //}}}
@@ -313,7 +265,65 @@ void Aegis::reparentExistingWindows() {
 	XFree(wins);
 }
 //}}}
+//{{{
+void Aegis::create_handlers() {
+	for(int eid = KeyRelease; eid < LASTEvent; eid++) {
+		switch(eid) {
+			case MotionNotify:
+				break;
+			case ButtonRelease:
+				break;
+			case ButtonPress:
+				break;
+			case LeaveNotify:
+				break;
+			case EnterNotify:
+				break;
+			case UnmapNotify:
+				break;
+			case MapRequest:
+				break;
+			case ConfigureRequest:
+				break;
+			default:
+				break; //This isn't technically needed, but for consisteny's sake...
+		}
+	}
+}
+//}}}
 
+//{{{
+int error_handler(Display * dpy, XErrorEvent * ev) {
+	char err[300];
+	XGetErrorText(dpy, ev->error_code, err, 300);
+	log_crit(err);
+
+	return 1;
+}
+//}}}
+//{{{
+int main(int argc, char ** argv) {
+	//set up logging
+	openlog("aegiswm", LOG_CONS, LOG_USER);
+	log_info("********** Starting AegisWM **********\n");
+
+	aegis.create_handlers();
+	XSetErrorHandler(error_handler);
+	aegis.run();
+
+	log_info("********** Shutting Down AegisWM **********\n");
+	closelog();
+}
+//}}}
+
+/*
+ * change log
+ *
+ * $Log$
+ */
+
+//{{{
+#if 0
 //{{{
 void Aegis::handleConfigureRequest(XEvent * xev) {
 	log_debug("Entering handleConfigureRequest(Xevent * ev)\n");
@@ -477,34 +487,5 @@ int Aegis::compressEvent(Window win, int event_type, XEvent * ev) {
 	return rv;
 }
 //}}}
-
-//{{{
-int error_handler(Display * dpy, XErrorEvent * ev) {
-	char err[300];
-	XGetErrorText(dpy, ev->error_code, err, 300);
-	log_crit(err);
-
-	return 1;
-}
+#endif
 //}}}
-//{{{
-int main(int argc, char ** argv) {
-	//set up logging
-	openlog("aegiswm", LOG_CONS, LOG_USER);
-	log_info("********** Starting AegisWM **********\n");
-
-	XSetErrorHandler(error_handler);
-	aegis.run();
-
-	log_info("********** Shutting Down AegisWM **********\n");
-	closelog();
-}
-//}}}
-
-/*
- * change log
- *
- * $Log$
- */
-
-

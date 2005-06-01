@@ -57,10 +57,12 @@ struct point {
 /// window.  This allows us to enforce a state machine view of certain events.  For example, we
 /// cannot move a window unless a button is currently pressed, we move that window until the button
 /// is unpressed.  That fits well into a state transition model.
+//{{{
 struct AegisState {
 	bool button_down; ///< Is a button currently pressed?
 	point ppos;  ///< This is pointer position as of the last XButtonPressEvent.
 };
+//}}}
 
 //// Simple logging stuff {{{
 #ifdef __GNUC__
@@ -225,22 +227,6 @@ class Aegis {
 		void reparentExistingWindows();
 
 
-		/// Handle an XConfigureRequestEvent.
-		void handleConfigureRequest(XEvent * xev);
-		/// Handle an XMapRequestEvent.
-		void handleMapRequest(XEvent * xev);
-		/// Handle an XEnterNotifyEvent.
-		void handleEnterNotify(XEvent * xev);
-		/// Handle an XLeaveNotifyEvent.
-		void handleLeaveNotify(XEvent * xev);
-		/// Handle an XButtonPressedEvent.
-		void handleButtonPress(XEvent * xev);
-		/// Handle an XButtonReleasedEvent.
-		void handleButtonRelease(XEvent * xev);
-		/// Handle an XMotionEvent
-		void handleMotionNotify(XEvent * ev);
-		/// Handle an XUnmapNotifyEvent.
-		void handleUnmapNotify(XEvent * xev);
 
 		/// Returns the Window ID of the root window.
 		inline Window rootWindow() { return root; }
@@ -252,7 +238,14 @@ class Aegis {
 		inline int getScreen() { return scr; }
 
 		/// This registers an event type dispatch signal with Aegis.
+		/// @param event_type		This is the XEvent type for which are registering the
+		/// 						dispatcher.
+		/// @param event_type_dispatcher	This is another sigc::signal that will map the event to a
+		/// 						particular window.
 		void registerEventTypeDispatcher(int event_type, aesig_t * event_type_dispatcher);
+
+		/// This registers all of the core event dispatchers.
+		void create_dispatchers();
 };
 //}}}
 #endif
