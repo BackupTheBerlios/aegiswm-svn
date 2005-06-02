@@ -8,9 +8,7 @@
 #include "aegis.h"
 #include "client.h"
 
-using std::map;
 using std::pair;
-using std::vector;
 
 //makes this available to the error handler
 Aegis aegis;
@@ -97,7 +95,7 @@ Aegis::~Aegis() {
 //{{{
 void Aegis::run() {
 	XEvent ev;
-	aesig_t * etsig;
+	EventDispatcher * dispatcher;
 
 	log_debug("Running...\n");
 	for(;;) {
@@ -105,21 +103,21 @@ void Aegis::run() {
 		log_debug("%s\n", event_names[ev.type]);
 
 		//Grab the signal for the XEvent we just recieved
-		etsig = event_type_map[ev.type];
-		//Emit the signal
-		etsig->emit(&ev);
+		dispatcher = event_registry[ev.type];
+		//dispatch the event
+		dispatcher->emit(&ev);
 	}
 }
 //}}}
 //{{{
-void Aegis::registerEventTypeDispatcher(ev_t event_type, aesig_t * event_type_dispatcher) {
+void Aegis::registerEventDispatcher(ev_t event_type, EventDispatcher dispatcher) {
 	log_info("Entering Aegis::registerEventTypeDispatcher(event_type, event_type_dispatcher)");
 
-	if(event_type_map.find(event_type) == event_type_map.end()) {
-		event_type_map[event_type] = event_type_dispatcher;
+	if(event_registry.find(event_type) == event_registry.end()) {
+		event_registry[event_type] = dispatcher;
 	}
 	else {
-		log_info("Aegis already has an event type dispatcher for the %s event type",
+		log_info("AegisWM already has an event type dispatcher for the %s event type",
 				event_names[event_type]);
 	}
 

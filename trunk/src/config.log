@@ -19,3 +19,10 @@ Checking for C function setenv()... scons: `.sconf_temp/conftest_6.c' is up to d
 scons: `.sconf_temp/conftest_6' is up to date.
 yes
 Checking for main() in C library X11... scons: `.sconf_temp/conftest_7.c' is up to date.
+scons: `.sconf_temp/conftest_7' is up to date.
+yes
+Checking for main() in C library Xext... scons: `.sconf_temp/conftest_8.c' is up to date.
+scons: `.sconf_temp/conftest_8' is up to date.
+yes
+scons: `.sconf_temp/conftest_9.cpp' is up to date.
+scons: `.sconf_temp/conftest_9.o' is up to date.

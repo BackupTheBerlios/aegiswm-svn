@@ -26,8 +26,10 @@
 typedef int ev_t;
 /// This is the type of event signals in AegisWM.
 typedef sigc::signal<void, XEvent *> aesig_t;
-/// This is a map of aesig_t signals
-typedef std::map<ev_t, aesig_t *> sigmap_t;
+/// This is a map of sigc::signals, which will have connected to them the EventDispatcher::dispatch()
+/// member function.  So when the signal is emitted it causes the EventDispatcher::dispatch() method
+/// to be called.
+typedef std::map<ev_t, aesig_t *> dispatch_map_t;
 
 /// This struct represents a single (x,y) point.
 //{{{
@@ -59,8 +61,10 @@ struct point {
 /// is unpressed.  That fits well into a state transition model.
 //{{{
 struct AegisState {
-	bool button_down; ///< Is a button currently pressed?
-	point ppos;  ///< This is pointer position as of the last XButtonPressEvent.
+	/// Is a button currently pressed?
+	bool button_down;
+	/// This is pointer position as of the last XButtonPressEvent.
+	point ppos; 
 };
 //}}}
 
@@ -193,7 +197,7 @@ class Aegis {
 		ClientMap clients;        ///< This is our list of clients.
 
 		/// This is the map of XEvent types to signals.
-		sigmap_t event_type_map;
+		dispatch_map_t event_registry;
 
 		/// This contains all the Atoms we have interned (In the future would should probably
 		/// subclass std::map<> so we can specify how to intern an Atom if one is requested that is

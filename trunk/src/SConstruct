@@ -145,13 +145,13 @@ sys.stdout.write('yes\n')
 env = conf.Finish()
 
 Export('env')
-subdirs = ['handlers']
-for dir in subdirs:
-    if buildDir is None:
-        bd = None
-    else:
-        bd = os.path.join(buildDir, dir)
-    SConscript(os.path.join(dir, 'SConscript'), build_dir = bd)
+#subdirs = ['handlers']
+#for dir in subdirs:
+    #if buildDir is None:
+        #bd = None
+    #else:
+        #bd = os.path.join(buildDir, dir)
+    #SConscript(os.path.join(dir, 'SConscript'), build_dir = bd)
 
 # Save the options we want to have saved (basically, everything but DESTDIR)
 f = open("mulocal.py", "w")
