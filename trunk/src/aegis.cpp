@@ -7,7 +7,7 @@
 
 #include "aegis.h"
 #include "client.h"
-#include "event_dispatcher.h"
+#include "dispatch/event_dispatcher.h"
 
 using std::pair;
 
@@ -270,26 +270,7 @@ void Aegis::reparentExistingWindows() {
 //{{{
 void Aegis::create_dispatchers() {
 	for(int eid = KeyRelease; eid < LASTEvent; eid++) {
-		switch(eid) {
-			case MotionNotify:
-				break;
-			case ButtonRelease:
-				break;
-			case ButtonPress:
-				break;
-			case LeaveNotify:
-				break;
-			case EnterNotify:
-				break;
-			case UnmapNotify:
-				break;
-			case MapRequest:
-				break;
-			case ConfigureRequest:
-				break;
-			default:
-				break; //This isn't technically needed, but for consisteny's sake...
-		}
+		event_registry[eid] = new EventDispatcher;
 	}
 }
 //}}}

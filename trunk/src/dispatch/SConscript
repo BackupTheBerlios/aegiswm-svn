@@ -1,0 +1,8 @@
+Import('env')
+
+sources = Split("""
+event_dispatcher.cpp
+dispatcher_factory.cpp
+""")
+
+env.StaticLibrary(target = 'dispatch', source = sources)

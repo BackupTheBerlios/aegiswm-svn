@@ -11,11 +11,8 @@ opts.Add(BoolOption('RELEASE', 'Build for release', ''))
 
 env = Environment(
 	options = opts,
-	CPPPATH = ['#', '#/handlers'],
-	#CPPPATH = ['#'],
-	#LIBPATH = ['#'],
-	#CPPPATH = ['#', '#/handlers', '#/widgets'],
-	#LIBPATH = ['#', '#/handlers', '#/widgets'],
+	CPPPATH = ['#'],
+	LIBPATH = ['#/dispatch']
 )
 
 buildDir = None
@@ -144,14 +141,15 @@ sys.stdout.write('yes\n')
 
 env = conf.Finish()
 
+#build subdirectories
 Export('env')
-#subdirs = ['handlers']
-#for dir in subdirs:
-    #if buildDir is None:
-        #bd = None
-    #else:
-        #bd = os.path.join(buildDir, dir)
-    #SConscript(os.path.join(dir, 'SConscript'), build_dir = bd)
+subdirs = ['dispatch']
+for dir in subdirs:
+	if buildDir is None:
+		bd = None
+	else:
+		bd = os.path.join(buildDir, dir)
+	SConscript(os.path.join(dir, 'SConscript'), build_dir = bd)
 
 # Save the options we want to have saved (basically, everything but DESTDIR)
 f = open("mulocal.py", "w")
@@ -166,9 +164,9 @@ sources = Split("""
 aegis.cpp
 client.cpp
 clientmap.cpp
-event_dispatcher.cpp
 """)
 
+env.Append(LIBS = ['dispatch'])
 aegiswm = env.Program(target = 'aegiswm', source = sources)
 
 # vim: ft=python
