@@ -7,6 +7,7 @@
 
 #include "aegis.h"
 #include "client.h"
+#include "event_dispatcher.h"
 
 using std::pair;
 
@@ -67,6 +68,9 @@ Aegis::Aegis() : clients(), atoms(), aestate() {
 	//define all our atoms
 	internAtoms();
 
+	//create all the EventDispatcher objects
+	create_dispatchers();
+
 	//loop through all windows already opened in the X display and wrap them in a new Client object.
 	reparentExistingWindows();
 
@@ -105,20 +109,20 @@ void Aegis::run() {
 		//Grab the signal for the XEvent we just recieved
 		dispatcher = event_registry[ev.type];
 		//dispatch the event
-		dispatcher->emit(&ev);
+		dispatcher->dispatch(&ev);
 	}
 }
 //}}}
 //{{{
-void Aegis::registerEventDispatcher(ev_t event_type, EventDispatcher dispatcher) {
-	log_info("Entering Aegis::registerEventTypeDispatcher(event_type, event_type_dispatcher)");
+void Aegis::registerEventHandler(Window w, ev_t event_type, aeslot_t handler) {
+	log_info("Entering Aegis::registerEventHandler(w, event_type, handler)");
 
 	if(event_registry.find(event_type) == event_registry.end()) {
-		event_registry[event_type] = dispatcher;
+		event_registry[event_type]->registerHandler(w, handler);
 	}
 	else {
-		log_info("AegisWM already has an event type dispatcher for the %s event type",
-				event_names[event_type]);
+		log_err("AegisWM does not have an EventDispatcher object "
+				"for the %s event type.  Ignoring register request.", event_names[event_type]);
 	}
 
 	log_info("Leaving Aegis::registerEventTypeDispatcher()");
@@ -264,7 +268,7 @@ void Aegis::reparentExistingWindows() {
 }
 //}}}
 //{{{
-void Aegis::create_handlers() {
+void Aegis::create_dispatchers() {
 	for(int eid = KeyRelease; eid < LASTEvent; eid++) {
 		switch(eid) {
 			case MotionNotify:
@@ -305,7 +309,6 @@ int main(int argc, char ** argv) {
 	openlog("aegiswm", LOG_CONS, LOG_USER);
 	log_info("********** Starting AegisWM **********\n");
 
-	aegis.create_handlers();
 	XSetErrorHandler(error_handler);
 	aegis.run();
 

@@ -166,6 +166,7 @@ sources = Split("""
 aegis.cpp
 client.cpp
 clientmap.cpp
+event_dispatcher.cpp
 """)
 
 aegiswm = env.Program(target = 'aegiswm', source = sources)

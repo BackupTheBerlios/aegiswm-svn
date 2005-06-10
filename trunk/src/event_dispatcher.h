@@ -12,7 +12,9 @@
 #include <X11/X.h>
 #include <sigc++/sigc++.h>
 
-/// Instances of this class will dispatch events to specific Client of event handlers.  Objects of this
+#include "aegis.h"
+
+/// Instances of this class will dispatch events to specific Client event handlers.  Objects of this
 /// class are signalled when a given XEvent type has occurred.  Then, based on the window id,
 /// objects of this class will signal the appropriate Clients to handle the event.  Objects of this
 /// class maintain a mapping of sigc::signals.  The lifespan of an EventDispatcher is:
@@ -38,12 +40,12 @@ class EventDispatcher : public sigc::trackable {
 		//none
 	public:
 		EventDispatcher();
-		~EventDispatcher();
+		virtual ~EventDispatcher();
 
-		/// This registers a signal to the key passed in.
+		/// This registers a handler to the window ID passed in.
 		/// @param w The window ID of the window for which this signal is registered.
 		/// @param signal The signal that is associated with the Window ID parameter.
-		void registerHandler(Window w, aesig_t * signal);
+		void registerHandler(Window w, aeslot_t handler);
 
 		/// This signals the event handler for the key, k, passed in.
 		/// @param event The event that triggered this event to be sent to this EventDispatcher.
@@ -53,7 +55,7 @@ class EventDispatcher : public sigc::trackable {
 		/// overridden by sublasses to provide the correct window id for the XEvent type.
 		/// @param event The XEvent for which we will determine the window ID.
 		/// @return The window to which this event applies.
-		Window determineWindowId(XEvent * event);
+		virtual Window determineWindowId(XEvent * event);
 };
 //}}}
 #endif

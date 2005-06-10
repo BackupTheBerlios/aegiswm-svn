@@ -19,6 +19,7 @@
 #include "clientmap.h"
 #include <sigc++/sigc++.h>
 
+class EventDispatcher;
 /// @mainpage
 /// This is the documentation for AegisWM.
 
@@ -29,7 +30,12 @@ typedef sigc::signal<void, XEvent *> aesig_t;
 /// This is a map of sigc::signals, which will have connected to them the EventDispatcher::dispatch()
 /// member function.  So when the signal is emitted it causes the EventDispatcher::dispatch() method
 /// to be called.
-typedef std::map<ev_t, aesig_t *> dispatch_map_t;
+typedef std::map<ev_t, EventDispatcher *> dispatch_map_t;
+
+/// This is the type of a handler that can be registered as an event handler.  A sigc::slot<void,
+/// XEvent> can be created via the sigc::mem_fun(object, object_method) or
+/// sigc::ptr_fun(function_ptr).
+typedef sigc::slot<void, XEvent *> aeslot_t;
 
 /// This struct represents a single (x,y) point.
 //{{{
@@ -190,11 +196,16 @@ enum AtomIDs {
 //{{{
 class Aegis {
 	protected:
-		Display * dpy;            ///< Our Display.
-		int scr;                  ///< Our screen.
-		Window root;              ///< The root window ID.
-		Cursor arrow_curs;        ///< The ubiquitous arrow pointer.
-		ClientMap clients;        ///< This is our list of clients.
+		/// Our Display.
+		Display * dpy;
+		/// Our screen.
+		int scr;            
+		/// The root window ID.
+		Window root;  
+		/// The ubiquitous arrow pointer.
+		Cursor arrow_curs;      
+		/// This is our list of clients.
+		ClientMap clients;       
 
 		/// This is the map of XEvent types to signals.
 		dispatch_map_t event_registry;
@@ -241,12 +252,17 @@ class Aegis {
 		/// Returns the Screen.
 		inline int getScreen() { return scr; }
 
-		/// This registers an event type dispatch signal with Aegis.
-		/// @param event_type		This is the XEvent type for which are registering the
-		/// 						dispatcher.
-		/// @param event_type_dispatcher	This is another sigc::signal that will map the event to a
-		/// 						particular window.
-		void registerEventTypeDispatcher(int event_type, aesig_t * event_type_dispatcher);
+		/// This registers an event handler to an EventDispatcher in Aegis.  Calls
+		/// to this method will look  something like:   
+		/// <div><code>aegis->registerEventHandler(window_id, KeyPress,
+		/// sigc::mem_fun(client_object, handle_key_press)<code></div>
+		/// @param w		  This is the window ID of the window for which we are
+		///                   registering.
+		/// @param event_type This is the XEvent type for which are registering the
+		///                   dispatcher.
+		/// @param handler    This is an aeslot_t created with sigc::mem_fun() or
+		///                   sigc::ptr_fun().
+		void registerEventHandler(Window w, ev_t event_type, aeslot_t handler);
 
 		/// This registers all of the core event dispatchers.
 		void create_dispatchers();

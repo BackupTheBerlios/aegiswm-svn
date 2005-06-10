@@ -5,7 +5,8 @@
  * version    : $Revision$
  */
 
-#include "eventdispatcher.h"
+#include <map>
+#include "event_dispatcher.h"
 
 using std::map;
 
@@ -18,12 +19,9 @@ EventDispatcher::~EventDispatcher() {
 }
 //}}}
 
-///TODO  Determine how to best register event handlers.
 //{{{
-void EventDispatcher::registerHandler(Window w, aesig_t * signal) {
-	if(sig_map.find(w) != sig_map.end()) {
-		sig_map[w] = signal;
-	}
+void EventDispatcher::registerHandler(Window w, aeslot_t handler) {
+	sig_map[w]->connect(handler);
 }
 //}}}
 //{{{
@@ -33,13 +31,13 @@ void EventDispatcher::dispatch(XEvent * event) {
 		sig_map[w]->emit(event);
 	}
 	else {
-		log_info("No handlers registered for Window = %i", k);
+		log_info("No handlers registered for Window = %i", (int)w);
 	}
 }
 //}}}
 //{{{
 Window EventDispatcher::determineWindowId(XEvent * event) {
-	return event->window;
+	return event->xany.window;
 }
 //}}}
 
