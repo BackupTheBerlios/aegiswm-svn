@@ -6,7 +6,9 @@
  */
 
 #include "dispatcher_factory.h"
+#include "event_dispatcher.h"
 ////** BEGIN GENERATED INCLUDES **////
+
 ////**  END GENERATED INCLUDES  **////
 
 //{{{
