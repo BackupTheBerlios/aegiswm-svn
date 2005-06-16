@@ -12,7 +12,7 @@ opts.Add(BoolOption('RELEASE', 'Build for release', ''))
 env = Environment(
 	options = opts,
 	CPPPATH = ['#'],
-	LIBPATH = ['#/dispatch']
+	LIBPATH = ['#/dispatch', '#']
 )
 
 buildDir = None

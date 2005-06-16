@@ -19,7 +19,8 @@ DispatcherFactory::DispatcherFactory() {
 DispatcherFactory::~DispatcherFactory() {
 }
 //}}}
-EventDispatcher * EventDispatcher::build_dispatcher(ev_t event_type) {
+//{{{
+EventDispatcher * DispatcherFactory::build_dispatcher(ev_t event_type) {
 	EventDispatcher * rv;
 	switch(event_type) {
 		////** BEGIN GENERATED FACTORY CODE **////
@@ -31,6 +32,7 @@ EventDispatcher * EventDispatcher::build_dispatcher(ev_t event_type) {
 
 	return rv;
 }
+//}}}
 
 /*
  * change log

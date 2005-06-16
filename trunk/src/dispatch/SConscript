@@ -6,11 +6,10 @@ sources = Split("""
 dispatcher_factory.cpp
 """)
 
-sources.extend(glob.glob('*_dispatcher.h'))
-
+sources.extend(glob.glob('*_dispatcher.cpp'))
 os.popen("./gen_factory.pl")
 
-#env.GenerateDispatchFactory('', '')
+print sources
 env.StaticLibrary(target = 'dispatch', source = sources)
 
 # vim: ft=python

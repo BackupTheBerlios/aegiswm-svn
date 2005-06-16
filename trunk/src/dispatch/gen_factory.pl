@@ -29,7 +29,7 @@ sub generate_forward_decls {
 	close FACTORY;
 
 	$at_class_section = 0;
-	open FACTORY, ">$$src_file.h" or die "Double Whoops";
+	open FACTORY, ">$src_file.h" or die "Double Whoops";
 	foreach $line (@lines) {
 		#print "$at_class_section -- $line";
 		if($line =~ qr{^////\*\* BEGIN GENERATED CODE \*\*////$}) {
