@@ -54,11 +54,16 @@ static char * event_names[LASTEvent] = {
 };
 //}}}
 
+void test(XEvent * ev) {
+	printf("This worked!\n");
+}
+
 //{{{
 Aegis::Aegis() : clients(), atoms(), aestate() {
 	XSetWindowAttributes sattr;
 
 	dpy = XOpenDisplay(getenv("DISPLAY"));
+
 	scr = DefaultScreen(dpy);
 	root = RootWindow(dpy, scr);
 
@@ -70,6 +75,8 @@ Aegis::Aegis() : clients(), atoms(), aestate() {
 
 	//create all the EventDispatcher objects
 	create_dispatchers();
+
+	registerEventHandler(root, ButtonPress, sigc::ptr_fun(test));
 
 	//loop through all windows already opened in the X display and wrap them in a new Client object.
 	reparentExistingWindows();
@@ -117,7 +124,7 @@ void Aegis::run() {
 void Aegis::registerEventHandler(Window w, ev_t event_type, aeslot_t handler) {
 	log_info("Entering Aegis::registerEventHandler(w, event_type, handler)");
 
-	if(event_registry.find(event_type) == event_registry.end()) {
+	if(event_registry.find(event_type) != event_registry.end()) {
 		event_registry[event_type]->registerHandler(w, handler);
 	}
 	else {

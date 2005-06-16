@@ -27,6 +27,7 @@ void EventDispatcher::registerHandler(Window w, aeslot_t handler) {
 //{{{
 void EventDispatcher::dispatch(XEvent * event) {
 	Window w = determineWindowId(event);
+
 	if(sig_map.find(w) != sig_map.end()) {
 		sig_map[w]->emit(event);
 	}
