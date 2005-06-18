@@ -34,7 +34,7 @@
 class EventDispatcher : public sigc::trackable {
 	private:
 		/// Maps the window number to the signal that a Client has registered.
-		std::map<Window, aesig_t *> sig_map;
+		std::map<Window, aesig_t> sig_map;
 
 	protected:
 		//none

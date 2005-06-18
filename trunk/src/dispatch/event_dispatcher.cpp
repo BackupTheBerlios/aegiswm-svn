@@ -21,7 +21,7 @@ EventDispatcher::~EventDispatcher() {
 
 //{{{
 void EventDispatcher::registerHandler(Window w, aeslot_t handler) {
-	sig_map[w]->connect(handler);
+	sig_map[w].connect(handler);
 }
 //}}}
 //{{{
@@ -29,7 +29,7 @@ void EventDispatcher::dispatch(XEvent * event) {
 	Window w = determineWindowId(event);
 
 	if(sig_map.find(w) != sig_map.end()) {
-		sig_map[w]->emit(event);
+		sig_map[w].emit(event);
 	}
 	else {
 		log_info("No handlers registered for Window = %i", (int)w);
