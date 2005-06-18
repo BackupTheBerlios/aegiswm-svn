@@ -12,7 +12,7 @@ opts.Add(BoolOption('RELEASE', 'Build for release', ''))
 env = Environment(
 	options = opts,
 	CPPPATH = ['#'],
-	LIBPATH = ['#/dispatch', '#']
+	LIBPATH = ['#/dispatch', '#/action']
 )
 
 buildDir = None
@@ -143,7 +143,7 @@ env = conf.Finish()
 
 #build subdirectories
 Export('env')
-subdirs = ['dispatch']
+subdirs = ['dispatch', 'action']
 for dir in subdirs:
 	if buildDir is None:
 		bd = None
@@ -166,7 +166,7 @@ client.cpp
 clientmap.cpp
 """)
 
-env.Append(LIBS = ['dispatch'])
+env.Append(LIBS = ['dispatch', 'action'])
 aegiswm = env.Program(target = 'aegiswm', source = sources)
 
 # vim: ft=python

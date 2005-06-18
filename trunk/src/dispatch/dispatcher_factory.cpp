@@ -26,7 +26,7 @@ EventDispatcher * DispatcherFactory::build_dispatcher(ev_t event_type) {
 		////** BEGIN GENERATED FACTORY CODE **////
 		////**  END GENERATED FACTORY CODE  **////
 		default:
-			rv = new EventDispatcher;
+			rv = new EventDispatcher(event_type);
 			break;
 	}
 

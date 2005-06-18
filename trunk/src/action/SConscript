@@ -1,0 +1,12 @@
+import os, glob
+
+Import('env')
+
+sources = Split("""
+""")
+
+sources.extend(glob.glob('*action.cpp'))
+
+env.StaticLibrary(target = 'action', source = sources)
+
+# vim: ft=python

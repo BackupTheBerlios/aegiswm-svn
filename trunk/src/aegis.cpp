@@ -8,6 +8,8 @@
 #include "aegis.h"
 #include "client.h"
 #include "dispatch/event_dispatcher.h"
+#include "dispatch/dispatcher_factory.h"
+#include "action/action.h"
 
 using std::pair;
 
@@ -55,7 +57,7 @@ static char * event_names[LASTEvent] = {
 //}}}
 
 void test(XEvent * ev) {
-	printf("This worked!\n");
+	printf("Responding to a %s\n", event_names[ev->type]);
 }
 
 //{{{
@@ -76,7 +78,8 @@ Aegis::Aegis() : clients(), atoms(), aestate() {
 	//create all the EventDispatcher objects
 	create_dispatchers();
 
-	registerEventHandler(root, ButtonPress, sigc::ptr_fun(test));
+	Action * action = new Action;
+	registerEventHandler(root, ButtonPress, sigc::mem_fun(action, &Action::run));
 
 	//loop through all windows already opened in the X display and wrap them in a new Client object.
 	reparentExistingWindows();
@@ -276,8 +279,9 @@ void Aegis::reparentExistingWindows() {
 //}}}
 //{{{
 void Aegis::create_dispatchers() {
+	DispatcherFactory factory;
 	for(int eid = KeyRelease; eid < LASTEvent; eid++) {
-		event_registry[eid] = new EventDispatcher;
+		event_registry[eid] = factory.build_dispatcher(eid);
 	}
 }
 //}}}

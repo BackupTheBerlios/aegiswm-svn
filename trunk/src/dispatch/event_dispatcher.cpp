@@ -11,7 +11,8 @@
 using std::map;
 
 //{{{
-EventDispatcher::EventDispatcher() : sig_map() {
+EventDispatcher::EventDispatcher(ev_t event_type) : sig_map() {
+	this->event_type = event_type;
 }
 //}}}
 //{{{

@@ -33,13 +33,17 @@
 //{{{
 class EventDispatcher : public sigc::trackable {
 	private:
+		/// This is the type of event that this EventDispatcher dispatches.
+		ev_t event_type;
 		/// Maps the window number to the signal that a Client has registered.
 		std::map<Window, aesig_t> sig_map;
 
 	protected:
 		//none
 	public:
-		EventDispatcher();
+		/// Constructs a new EventDispatcher.
+		/// @param event_type This is the type of event that this object will be dispatching.
+		EventDispatcher(ev_t event_type);
 		virtual ~EventDispatcher();
 
 		/// This registers a handler to the window ID passed in.
