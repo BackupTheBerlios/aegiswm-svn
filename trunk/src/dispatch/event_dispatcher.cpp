@@ -22,6 +22,7 @@ EventDispatcher::~EventDispatcher() {
 
 //{{{
 void EventDispatcher::registerHandler(Window w, aeslot_t handler) {
+	///@todo  Provide a way to unregister handlers
 	sig_map[w].connect(handler);
 }
 //}}}

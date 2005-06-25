@@ -77,19 +77,18 @@ Aegis::Aegis() : clients(), atoms(), aestate() {
 
 	//create all the EventDispatcher objects
 	create_dispatchers();
-
-	Action * action = new Action;
-	registerEventHandler(root, ButtonPress, sigc::mem_fun(action, &Action::run));
+	//This needs to be called after create_dispatchers()
+	setupDefaultHandlers();
 
 	//loop through all windows already opened in the X display and wrap them in a new Client object.
 	reparentExistingWindows();
 
 	//let X know which events we want to be notified of
 	sattr.event_mask = SubstructureRedirectMask | SubstructureNotifyMask | 
-		ColormapChangeMask       | ButtonPressMask        | 
-		ButtonReleaseMask        | FocusChangeMask        | 
-		EnterWindowMask          | LeaveWindowMask        | 
-		PropertyChangeMask       | ButtonMotionMask       ;
+	                   ColormapChangeMask       | ButtonPressMask        | 
+	                   ButtonReleaseMask        | FocusChangeMask        | 
+	                   EnterWindowMask          | LeaveWindowMask        | 
+	                   PropertyChangeMask       | ButtonMotionMask       ;
 
 	XChangeWindowAttributes(dpy, root, CWEventMask, &sattr);
 }
@@ -125,7 +124,7 @@ void Aegis::run() {
 //}}}
 //{{{
 void Aegis::registerEventHandler(Window w, ev_t event_type, aeslot_t handler) {
-	log_info("Entering Aegis::registerEventHandler(w, event_type, handler)");
+	log_info("Entering Aegis::registerEventHandler(w, event_type, aeslot_t handler)");
 
 	if(event_registry.find(event_type) != event_registry.end()) {
 		event_registry[event_type]->registerHandler(w, handler);
@@ -135,11 +134,21 @@ void Aegis::registerEventHandler(Window w, ev_t event_type, aeslot_t handler) {
 				"for the %s event type.  Ignoring register request.", event_names[event_type]);
 	}
 
-	log_info("Leaving Aegis::registerEventTypeDispatcher()");
+	log_info("Leaving Aegis::registerEventHandler(aeslot_t handler)");
+}
+//}}}
+//{{{
+void Aegis::registerEventHandler(Window w, ev_t event_type, Action * handler) {
+	log_info("Entering Aegis::registerEventHandler(w, event_type, Action * handler)");
+
+	registerEventHandler(w, event_type, sigc::mem_fun(handler, &Action::execute));
+
+	log_info("Leaving Aegis::registerEventHandler(Action * handler)");
 }
 //}}}
 //{{{
 void Aegis::quit() {
+	log_info("Quitting");
 	ClientMap::iterator iter, end = clients.end();
 
 	for(iter = clients.begin(); iter != end; iter++) {
@@ -148,6 +157,7 @@ void Aegis::quit() {
 		XMapWindow(dpy, win);
 	}
 	XCloseDisplay(dpy);
+	exit(EXIT_SUCCESS);
 }
 //}}}
 //{{{
@@ -285,6 +295,28 @@ void Aegis::create_dispatchers() {
 	}
 }
 //}}}
+//{{{
+void Aegis::setupDefaultHandlers() {
+	registerEventHandler(root, ButtonPress, sigc::ptr_fun(test));
+}
+//}}}
+
+////////////////////////////////////////////////////////////////////////////////
+// XEvent handlers
+////////////////////////////////////////////////////////////////////////////////
+//{{{
+void Aegis::handleExposeEvent(Window w, XEvent * ev) {
+	XExposeEvent * xev = ev->xexpose;
+
+	//Expose the client window
+}
+//}}}
+//{{{
+void AegisRoot::handleMapRequestEvent(Window w, XEvent * aev) {
+    log->info("In AegisRoot::handleMapRequestEvent()");
+    XMapWindow(dpy, win);
+}
+//}}}
 
 //{{{
 int error_handler(Display * dpy, XErrorEvent * ev) {
@@ -292,7 +324,7 @@ int error_handler(Display * dpy, XErrorEvent * ev) {
 	XGetErrorText(dpy, ev->error_code, err, 300);
 	log_crit(err);
 
-	return 1;
+	return EXIT_FAILURE;
 }
 //}}}
 //{{{

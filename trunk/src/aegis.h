@@ -19,7 +19,10 @@
 #include "clientmap.h"
 #include <sigc++/sigc++.h>
 
+//Forward declarations
 class EventDispatcher;
+class Action;
+
 /// @mainpage
 /// This is the documentation for AegisWM.
 
@@ -36,6 +39,11 @@ typedef std::map<ev_t, EventDispatcher *> dispatch_map_t;
 /// XEvent> can be created via the sigc::mem_fun(object, object_method) or
 /// sigc::ptr_fun(function_ptr).
 typedef sigc::slot<void, XEvent *> aeslot_t;
+
+///// This is a map of the core AegisWM actions.  There are the actions which are the most fundamental
+///// for a window manager.  They deal with Atoms, and are generally so intimately coupled with the
+///// Aegis object itself that it is a strain to make them full fledged Action objects.
+//typedef std::map<ev_t, aeslot_t> core_actions_t;
 
 /// This struct represents a single (x,y) point.
 //{{{
@@ -242,7 +250,6 @@ class Aegis {
 		void reparentExistingWindows();
 
 
-
 		/// Returns the Window ID of the root window.
 		inline Window rootWindow() { return root; }
 
@@ -264,8 +271,22 @@ class Aegis {
 		///                   sigc::ptr_fun().
 		void registerEventHandler(Window w, ev_t event_type, aeslot_t handler);
 
+		/// This registers an event handler to an EventDispatcher in Aegis.  Calls
+		/// to this method will look something like:   
+		/// <div><code>aegis->registerEventHandler(window_id, KeyPress, action_obj)<code></div>
+		/// @param w		  This is the window ID of the window for which we are
+		///                   registering.
+		/// @param event_type This is the XEvent type for which are registering the
+		///                   dispatcher.
+		/// @param handler    This is an Action object that will have its Action::execute() method
+		///                   called to handle the XEvent.
+		void registerEventHandler(Window w, ev_t event_type, Action * handler);
+
 		/// This registers all of the core event dispatchers.
 		void create_dispatchers();
+
+		/// Sets up the default set of handlers.
+		void setupDefaultHandlers();
 };
 //}}}
 #endif
