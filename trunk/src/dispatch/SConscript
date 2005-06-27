@@ -4,6 +4,7 @@ Import('env')
 
 sources = Split("""
 dispatcher_factory.cpp
+event_state.cpp
 """)
 
 sources.extend(glob.glob('*_dispatcher.cpp'))

@@ -305,14 +305,14 @@ void Aegis::setupDefaultHandlers() {
 // XEvent handlers
 ////////////////////////////////////////////////////////////////////////////////
 //{{{
-void Aegis::handleExposeEvent(Window w, XEvent * ev) {
-	XExposeEvent * xev = ev->xexpose;
-
-	//Expose the client window
-}
+//void Aegis::handleExposeEvent(Window w, XEvent * ev) {
+//	XExposeEvent * xev = ev->xexpose;
+//
+//	//Expose the client window
+//}
 //}}}
 //{{{
-void AegisRoot::handleMapRequestEvent(Window w, XEvent * aev) {
+void Aegis::handleMapRequestEvent(Window w, XEvent * aev) {
     log->info("In AegisRoot::handleMapRequestEvent()");
     XMapWindow(dpy, win);
 }

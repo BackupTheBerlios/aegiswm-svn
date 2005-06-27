@@ -11,8 +11,11 @@
 #include <map>
 #include <X11/X.h>
 #include <sigc++/sigc++.h>
+#include "event_state.h"
 
 #include "aegis.h"
+
+typedef std::map<EventState *, aesig_t, EventStateLess()> ev_state_sigmap;
 
 /// Instances of this class will dispatch events to specific Client event handlers.  Objects of this
 /// class are signalled when a given XEvent type has occurred.  Then, based on the window id,
@@ -36,7 +39,7 @@ class EventDispatcher : public sigc::trackable {
 		/// This is the type of event that this EventDispatcher dispatches.
 		ev_t event_type;
 		/// Maps the window number to the signal that a Client has registered.
-		std::map<Window, aesig_t> sig_map;
+		std::map<Window, ev_state_sigmap> sig_map;
 
 	protected:
 		//none
@@ -49,7 +52,12 @@ class EventDispatcher : public sigc::trackable {
 		/// This registers a handler to the window ID passed in.
 		/// @param w The window ID of the window for which this signal is registered.
 		/// @param signal The signal that is associated with the Window ID parameter.
-		void registerHandler(Window w, aeslot_t handler);
+		/// @param ev_state This is the state that the event must have for this handler to apply.  A
+		///        handler will not be called if the ev_state and the state of the event do not
+		///        match.  The event state is determined by the type of the event.  In the case of
+		///        KeyPress events it will be things such as which key, which meta keys, etc...  If
+		///        ev_state is NULL, the handler will be issued for all events on the window.
+		virtual void registerHandler(Window w, aeslot_t handler, EventState * ev_state = NULL);
 
 		/// This signals the event handler for the key, k, passed in.
 		/// @param event The event that triggered this event to be sent to this EventDispatcher.
