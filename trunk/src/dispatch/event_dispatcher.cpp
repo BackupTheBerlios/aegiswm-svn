@@ -7,10 +7,12 @@
 
 #include <map>
 #include "event_dispatcher.h"
+#include "event_state.h"
 
 using std::map;
 
 //{{{
+
 EventDispatcher::EventDispatcher(ev_t event_type) : sig_map() {
 	this->event_type = event_type;
 }
@@ -42,15 +44,16 @@ void EventDispatcher::dispatch(XEvent * event) {
 		end = state_signal_map.end();
 
 		for(iter = state_signal_map.begin(); iter != end; iter++) {
-			if(iter->first == event) {
+			///@todo Fix the EventState::operator==(XEvent*) to actually compare the equality of an
+			//XEvent and an EventState object.  This might require beefing up EventState objects.
+			if((*iter->first) == event) {
 				iter->second.emit(event);
-				iter = end;
 				signalled = true;
 			}
 		}
 		
 		if(!signalled) {
-			log_info("No handlers registered for this Window = %i and Event", (int)w);
+			log_info("No handlers registered for this Window = %i and Event %i", (int)w, event->type);
 		}
 	}
 	else {

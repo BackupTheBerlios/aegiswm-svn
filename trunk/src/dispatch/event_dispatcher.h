@@ -11,11 +11,13 @@
 #include <map>
 #include <X11/X.h>
 #include <sigc++/sigc++.h>
-#include "event_state.h"
+
+class EventState;
+struct EventStateLess;
 
 #include "aegis.h"
 
-typedef std::map<EventState *, aesig_t, EventStateLess()> ev_state_sigmap;
+typedef std::map<EventState *, aesig_t, EventStateLess> ev_state_sigmap;
 
 /// Instances of this class will dispatch events to specific Client event handlers.  Objects of this
 /// class are signalled when a given XEvent type has occurred.  Then, based on the window id,

@@ -37,14 +37,14 @@ Titlebar::Titlebar(Display * dpy, Aegis * aegis, Window pwin, int x, int y, int 
 
 //{{{
 Client::Client(Display * dpy, Aegis * aegis, Window window) : state() {
-	syslog(LOG_DEBUG, "Creating a new Client\n");
+	log_debug("Creating a new Client\n");
 	//set initial window state
 	state.x = state.y = 0;
 	state.w = 200;
 	state.h = 200;
 	state.name = NULL;
 	XSetWindowAttributes pattr;
-	syslog(LOG_DEBUG, "here\n");
+	log_debug("here\n");
 
 	this->dpy = dpy;
 	wm = aegis;
@@ -77,6 +77,7 @@ Client::Client(Display * dpy, Aegis * aegis, Window window) : state() {
 
 	//reparent client into toplevel window
 	XReparentWindow(dpy, adopted, id, 0, 16);
+	XAddToSaveSet(dpy, adopted);
 	
 	//focus the client windows
 	//XSelectInput(dpy, id, ButtonReleaseMask | ButtonPressMask   | 
@@ -87,7 +88,7 @@ Client::Client(Display * dpy, Aegis * aegis, Window window) : state() {
 	//Map them at the top of the stacking order
 	XMapRaised(dpy, adopted);
 	XMapRaised(dpy, id);
-	syslog(LOG_DEBUG, "Done creating new Client\n");
+	log_debug("Done creating new Client\n");
 }
 //}}}
 //{{{

@@ -5,12 +5,18 @@
  * version    : $Revision$
  */
 
-#include "eventstate.h"
+#include "event_state.h"
 
 //{{{
+EventState::EventState() {
+	keycode_button = 0;
+	mask = 0;
+}
+//}}}
+//{{{
 EventState::EventState(unsigned int korb, unsigned int mask) {
-	int keycode_button = korb;
-	int mask = mask;
+	keycode_button = korb;
+	this->mask = mask;
 }
 //}}}
 //{{{
@@ -33,7 +39,8 @@ bool EventState::operator==(XEvent * ev) {
 			rv = ev->xbutton.state == mask;
 			rv &= ev->xbutton.button == keycode_button;
 			break;
-			break;
+		default:
+			rv = true;
 	}
 
 	return rv;

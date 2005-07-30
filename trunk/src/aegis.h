@@ -287,6 +287,14 @@ class Aegis {
 
 		/// Sets up the default set of handlers.
 		void setupDefaultHandlers();
+
+		/// This handles an XMapRequest event.
+		/// @param ev This is XEvent union with all the details about the MapRequest.
+		void handleMapRequestEvent(XEvent * ev);
+
+		/// This handles (re)drawing all of our decorations when a window is exposed.
+		/// @param ev This is XEvent union with all the details about the ExposeEvent.
+		void handleExposeEvent(XEvent * ev);
 };
 //}}}
 #endif

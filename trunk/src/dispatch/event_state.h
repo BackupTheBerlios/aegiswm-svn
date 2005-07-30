@@ -9,6 +9,7 @@
 #define EVENT_STATE_H
 
 #include <X11/Xlib.h>
+#include <functional>
 
 /// This is to determine the "state" of an event.  That is the keycodes, key masks, and/or buttons
 /// of the event, It may also encapsulate any other things that may be pertinent to determine
@@ -51,7 +52,7 @@ class EventState {
 ///     b < a = false
 //{{{
 struct EventStateLess : public std::binary_function<EventState *, EventState *, bool> {
-	bool operator()(EventState * first, EventState * second) {
+	bool operator()(const EventState * first, const EventState * second) const {
 		if(first->keycode_button == second->keycode_button)
 			return first->mask < second->mask;
 		else

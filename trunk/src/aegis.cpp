@@ -56,9 +56,11 @@ static char * event_names[LASTEvent] = {
 };
 //}}}
 
+//{{{
 void test(XEvent * ev) {
 	printf("Responding to a %s\n", event_names[ev->type]);
 }
+//}}}
 
 //{{{
 Aegis::Aegis() : clients(), atoms(), aestate() {
@@ -68,6 +70,7 @@ Aegis::Aegis() : clients(), atoms(), aestate() {
 
 	scr = DefaultScreen(dpy);
 	root = RootWindow(dpy, scr);
+	//log_info("root = %i", (int)root);
 
 	arrow_curs = XCreateFontCursor(dpy, XC_left_ptr);
 	XDefineCursor(dpy, root, arrow_curs);
@@ -124,9 +127,11 @@ void Aegis::run() {
 //}}}
 //{{{
 void Aegis::registerEventHandler(Window w, ev_t event_type, aeslot_t handler) {
-	log_info("Entering Aegis::registerEventHandler(w, event_type, aeslot_t handler)");
+	log_info("Entering Aegis::registerEventHandler(Window %i, event_type %i, aeslot_t handler)",
+			(int)w, (int)event_type);
 
 	if(event_registry.find(event_type) != event_registry.end()) {
+		log_info("Registering EventHandler");
 		event_registry[event_type]->registerHandler(w, handler);
 	}
 	else {
@@ -151,26 +156,26 @@ void Aegis::quit() {
 	log_info("Quitting");
 	ClientMap::iterator iter, end = clients.end();
 
-	for(iter = clients.begin(); iter != end; iter++) {
-		std::pair<Window, Client *> par = (*iter);
-		Window win = (par.second)->unparent();
-		XMapWindow(dpy, win);
-	}
+	//for(iter = clients.begin(); iter != end; iter++) {
+		//std::pair<Window, Client *> par = (*iter);
+		//Window win = (par.second)->unparent();
+		//XMapWindow(dpy, win);
+	//}
 	XCloseDisplay(dpy);
 	exit(EXIT_SUCCESS);
 }
 //}}}
 //{{{
 void Aegis::internAtoms() {
-	atoms[XA_WM_CLASS]                        = XInternAtom(dpy, "XA_WM_CLASS", false);
-	atoms[XA_WM_HINTS]                        = XInternAtom(dpy, "XA_WM_HINTS", false);
-	atoms[XA_WM_ICON_NAME]                    = XInternAtom(dpy, "XA_WM_ICON_NAME", false);
-	atoms[XA_WM_NAME]                         = XInternAtom(dpy, "XA_WM_NAME", false);
-	atoms[XA_WM_NORMAL_HINTS]                 = XInternAtom(dpy, "XA_WM_NORMAL_HINTS", false);
-	atoms[XA_WM_TRANSIENT_FOR_HINT]           = XInternAtom(dpy, "XA_WM_TRANSIENT_FOR_HINT", false);
-	atoms[XA_WM_ZOOM_HINTS]                   = XInternAtom(dpy, "XA_WM_ZOOM_HINTS", false);
-	atoms[WM_CLIENT_MACHINE]                  = XInternAtom(dpy, "WM_CLIENT_MACHINE", false);
-	atoms[XA_WM_COMMAND]                      = XInternAtom(dpy, "XA_WM_COMMAND", false);
+	atoms[XA_WM_CLASS]              = XInternAtom(dpy, "XA_WM_CLASS"             , false);
+	atoms[XA_WM_HINTS]              = XInternAtom(dpy, "XA_WM_HINTS"             , false);
+	atoms[XA_WM_ICON_NAME]          = XInternAtom(dpy, "XA_WM_ICON_NAME"         , false);
+	atoms[XA_WM_NAME]               = XInternAtom(dpy, "XA_WM_NAME"              , false);
+	atoms[XA_WM_NORMAL_HINTS]       = XInternAtom(dpy, "XA_WM_NORMAL_HINTS"      , false);
+	atoms[XA_WM_TRANSIENT_FOR_HINT] = XInternAtom(dpy, "XA_WM_TRANSIENT_FOR_HINT", false);
+	atoms[XA_WM_ZOOM_HINTS]         = XInternAtom(dpy, "XA_WM_ZOOM_HINTS"        , false);
+	atoms[WM_CLIENT_MACHINE]        = XInternAtom(dpy, "WM_CLIENT_MACHINE"       , false);
+	atoms[XA_WM_COMMAND]            = XInternAtom(dpy, "XA_WM_COMMAND"           , false);
 
 	//These are the rest of the atoms that we will eventually support  {{{
 #if 0
@@ -297,7 +302,9 @@ void Aegis::create_dispatchers() {
 //}}}
 //{{{
 void Aegis::setupDefaultHandlers() {
-	registerEventHandler(root, ButtonPress, sigc::ptr_fun(test));
+	registerEventHandler(root , ButtonPress , sigc::ptr_fun(test));
+	registerEventHandler(root , MapRequest  , sigc::mem_fun(this    , &Aegis::handleMapRequestEvent));
+	//registerEventHandler(root , Expose      , sigc::mem_fun(this    , &Aegis::handleExposeEvent));
 }
 //}}}
 
@@ -305,16 +312,20 @@ void Aegis::setupDefaultHandlers() {
 // XEvent handlers
 ////////////////////////////////////////////////////////////////////////////////
 //{{{
-//void Aegis::handleExposeEvent(Window w, XEvent * ev) {
-//	XExposeEvent * xev = ev->xexpose;
-//
-//	//Expose the client window
-//}
+void Aegis::handleExposeEvent(XEvent * ev) {
+	XExposeEvent xev = ev->xexpose;
+
+	//(Re)Draw the client window decorations
+	XClearWindow(dpy, xev.window);
+}
 //}}}
 //{{{
-void Aegis::handleMapRequestEvent(Window w, XEvent * aev) {
-    log->info("In AegisRoot::handleMapRequestEvent()");
-    XMapWindow(dpy, win);
+void Aegis::handleMapRequestEvent(XEvent * aev) {
+	Window w = aev->xmaprequest.window;
+	log_info("In AegisRoot::handleMapRequestEvent()");
+	
+	//We create a new Client object here...
+	clients[w] = new Client(dpy, this, w);
 }
 //}}}
 
