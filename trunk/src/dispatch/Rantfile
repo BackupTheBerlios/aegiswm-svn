@@ -1,0 +1,20 @@
+import "md5"
+import "autoclean"
+
+SRC  = Rant::FileList[ '*.cpp' ] 
+
+OBJS = SRC.ext( 'o' )
+INC_DIRS = Rant::FileList[ '..', "." ] 
+
+gen AutoClean
+
+#default rule for .o files
+gen Rule, :o => :cpp do |task_info|
+     sys "#{var['CC']} -I#{INC_DIRS.join(' -I')} #{var['SIGCPP_INFO']} -c -o #{task_info.name} #{task_info.source}"
+end
+
+#make the static library
+desc "Make the action library"
+file "dispatch.a" => OBJS do |task_info|
+    sys "ar rcs #{task_info.name} #{task_info.prerequisites}"
+end
