@@ -15,7 +15,7 @@ using std::vector;
 Titlebar::Titlebar(Display * dpy, Aegis * aegis, Window pwin, int x, int y, int w, int h) {
 	XSetWindowAttributes pattr;
 
-	this->dpy = dpy;
+	this->dpy   = dpy;
 	this->aegis = aegis;
 
 	//pattr.do_not_propagate_mask = ButtonMotionMask;
@@ -79,6 +79,9 @@ Client::Client(Display * dpy, Aegis * aegis, Window window) : state() {
 	XReparentWindow(dpy, adopted, id, 0, 16);
 	XAddToSaveSet(dpy, adopted);
 	
+    //Add the default event handlers for new clients
+    setupDefaultEventHandlers();
+
 	//focus the client windows
 	//XSelectInput(dpy, id, ButtonReleaseMask | ButtonPressMask   | 
                           //FocusChangeMask   | EnterWindowMask   | 
@@ -97,6 +100,12 @@ Client::~Client() {
 	title = NULL;
 	dpy = NULL;
 	wm = NULL;
+}
+//}}}
+//{{{
+void Client::setupDefaultEventHandlers() {
+	wm->registerEventHandler(id, MotionNotify, sigc::mem_fun(this, &Client::move ));
+	wm->registerEventHandler(id, UnmapNotify , sigc::mem_fun(this, &Client::unmap));
 }
 //}}}
 
@@ -135,36 +144,42 @@ vector<Window> Client::getWindowList() {
 }
 //}}}
 //{{{
-void Client::moveTo(int x, int y) {
-	log_debug("Entering Client::moveTo(%i, %i)", x, y);
-	int curx, cury;
+void Client::move(XEvent * xev) {
+	XMotionEvent xmov = xev->xmotion;
+	log_debug("Entering Client::move(XEvent *)");
+    int x = xmov.x;
+    int y = xmov.y;
+	int cursor_root_x = xmov.x_root;
+    int cursor_root_y = xmov.y_root;
 	int dx, dy;
 	AegisState * wmstate = wm->getState();
 
 	//get the current x and y coordinates of the top left corner of the window relative to the root
 	//window
-	curx = state.x;
-	cury = state.y;
+	//curx = state.x;
+	//cury = state.y;
 	//get the number of pixels to move.  This is the difference between the x,y passed in and the
 	//previous known position of the cursor
-	dx = x - wmstate->ppos.x;
-	dy = y - wmstate->ppos.y;
+	dx = x - state.x;
+	dy = y - state.y;
 
-	log_info("curx = %i, cury = %i", curx, cury);
-	log_info("dx = %i, dy = %i", dx, dy);
+	log_info("x      = %i, y      = %i" , x           , y);
+	log_info("x_root = %i, y_root = %i" , cursor_root_x , cursor_root_y);
+	//log_info("curx   = %i, cury   = %i" , curx        , cury);
+	log_info("dx     = %i, dy     = %i" , dx          , dy);
 
 	//move the window
-	XMoveWindow(dpy, id, curx + dx, cury + dy);
+	XMoveWindow(dpy, id, dx, dy);
 
 	//update our window state
 	state.x += dx;;
 	state.y += dy;;
 
-	log_debug("Leaving Client::moveTo()");
+	log_debug("Leaving Client::move()");
 }
 //}}}
 //{{{
-void Client::unmap() {
+void Client::unmap(XEvent * xev) {
 	log_info("Unmapping the %s windows", state.name);
 	//XUnmapSubwindows(dpy, id);
 	XUnmapWindow(dpy, id);
@@ -186,3 +201,4 @@ Window Client::unparent() {
 	return adopted;
 }
 //}}}
+//foo

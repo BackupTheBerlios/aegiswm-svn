@@ -341,7 +341,8 @@ int error_handler(Display * dpy, XErrorEvent * ev) {
 //{{{
 int main(int argc, char ** argv) {
 	//set up logging
-	openlog("aegiswm", LOG_CONS, LOG_USER);
+	//openlog("aegiswm", LOG_CONS, LOG_USER);
+	openlog("aegiswm", LOG_CONS, LOG_INFO);
 	log_info("********** Starting AegisWM **********\n");
 
 	XSetErrorHandler(error_handler);

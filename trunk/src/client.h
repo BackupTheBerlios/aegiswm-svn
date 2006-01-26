@@ -154,14 +154,14 @@ class Client {
 		/// object.
 		std::vector<Window> getWindowList();
 
-		/// Move a Client object.
-		void moveTo(int x, int y);
+		/// Move the Client object.
+		void move(XEvent * xev);
 
 		/// Raise this client to the top of te stacking order and set input focus.
 		void raise();
 		
 		/// Unmap this client and all its subwindows.
-		void unmap();
+		void unmap(XEvent * xev);
 
 		/// Take the child window that was passed in the constructor and reparent to the root
 		/// window.  This undoes that portion of the constructor.  This does not deallocate any
@@ -178,6 +178,9 @@ class Client {
 		inline Window window() { return id; }
 		/// Returns the name of the Window.
 		inline char * getName() { return state.name; }
+
+        /// Set up the default event handlers for this client.
+        void setupDefaultEventHandlers();
 };
 //}}}
 #endif
@@ -187,3 +190,4 @@ class Client {
  *
  * $Log$
  */
+//foo
