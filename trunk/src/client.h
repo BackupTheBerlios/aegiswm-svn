@@ -168,6 +168,11 @@ class Client {
 		/// memory.
 		Window unparent();
 
+        /// This maps a window.
+        void map(XEvent * xev);
+
+        /// Handles the XConfigureRequestEvent.
+        void handleConfigureRequest(XEvent * xev);
 		////////////////////////////////////////////////////////////////////////////////////
 		////                These are the trivial accessor functions                    ////
 		////////////////////////////////////////////////////////////////////////////////////

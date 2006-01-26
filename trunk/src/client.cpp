@@ -65,6 +65,8 @@ Client::Client(Display * dpy, Aegis * aegis, Window window) : state() {
 	///determine the requested size and location fo the window that we are adopting
 	///and set the dimensions of window accordingly.
 	getAdoptedWindowSize();
+
+    log_info("state = { x=%i, y=%i, w=%i, h=%i }\n", state.x, state.y, state.w, state.h);
 	
 	//make an outer frame big enough for the titlebar and the window we will reparent.
 	id = XCreateWindow(dpy, aegis->rootWindow(), state.x, state.y, state.w, state.h + 15, 0,
@@ -104,8 +106,10 @@ Client::~Client() {
 //}}}
 //{{{
 void Client::setupDefaultEventHandlers() {
-	wm->registerEventHandler(id, MotionNotify, sigc::mem_fun(this, &Client::move ));
-	wm->registerEventHandler(id, UnmapNotify , sigc::mem_fun(this, &Client::unmap));
+	wm->registerEventHandler(id, MotionNotify    , sigc::mem_fun(this, &Client::move ));
+	wm->registerEventHandler(id, UnmapNotify     , sigc::mem_fun(this, &Client::unmap));
+	//wm->registerEventHandler(id, MapNotify       , sigc::mem_fun(this, &Client::map));
+	wm->registerEventHandler(id, ConfigureRequest, sigc::mem_fun(this, &Client::handleConfigureRequest));
 }
 //}}}
 
@@ -123,6 +127,7 @@ void Client::getXWindowName() {
 //}}}
 //{{{
 void Client::getAdoptedWindowSize() {
+/// @TODO:  Rename this Client::getAdoptedWindowSize() to something which depicts what is actually does.
 	XWindowAttributes wattr;
 
 	XGetWindowAttributes(dpy, adopted, &wattr);
@@ -184,6 +189,37 @@ void Client::unmap(XEvent * xev) {
 	//XUnmapSubwindows(dpy, id);
 	XUnmapWindow(dpy, id);
 	log_info("Done unmapping %s", state.name);
+}
+//}}}
+//{{{
+void Client::map(XEvent * xev) {
+	log_info("Mapping the %s windows", state.name);
+
+    //This poorly named function sets state to the windows requested size
+    getAdoptedWindowSize();
+
+	XResizeWindow(dpy, id, state.w, state.h);
+	XMapRaised(dpy, id);
+
+	log_info("Done Mapping %s", state.name);
+}
+//}}}
+//{{{
+void Client::handleConfigureRequest(XEvent * xev) {
+    XConfigureRequestEvent xcre = xev->xconfigurerequest;
+    XWindowChanges wc;
+    log_info("Configuring the %s window", state.name);
+
+    wc.x          = xcre.x;
+    wc.y          = xcre.y;
+    wc.width      = xcre.width;
+    wc.height     = xcre.height;
+    wc.sibling    = xcre.above;
+    wc.stack_mode = xcre.detail;
+
+    XConfigureWindow(dpy, id, xcre.value_mask, &wc);
+
+    log_info("Done configuring %s", state.name);
 }
 //}}}
 //{{{
