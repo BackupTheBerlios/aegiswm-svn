@@ -28,8 +28,10 @@ class Action;
 
 /// This is an event type.
 typedef int ev_t;
+
 /// This is the type of event signals in AegisWM.
 typedef sigc::signal<void, XEvent *> aesig_t;
+
 /// This is a map of sigc::signals, which will have connected to them the EventDispatcher::dispatch()
 /// member function.  So when the signal is emitted it causes the EventDispatcher::dispatch() method
 /// to be called.

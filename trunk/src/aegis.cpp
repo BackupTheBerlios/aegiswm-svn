@@ -10,6 +10,8 @@
 #include "dispatch/event_dispatcher.h"
 #include "dispatch/dispatcher_factory.h"
 #include "action/action.h"
+#include <cairo.h>
+#include <svg-cairo.h>
 
 using std::pair;
 
@@ -94,6 +96,20 @@ Aegis::Aegis() : clients(), atoms(), aestate() {
 	                   PropertyChangeMask       | ButtonMotionMask       ;
 
 	XChangeWindowAttributes(dpy, root, CWEventMask, &sattr);
+
+	XWindowAttributes wattr;
+    svg_cairo_t * sct;
+    int width, height;
+    svg_cairo_create(&sct);
+    svg_cairo_parse(sct, "~/Orc.svg");
+    svg_cairo_get_size(sct, &width, &height);
+
+    Window w = XCreateSimpleWindow(win->dpy, root, 0, 0, width, height, 0, BlackPixel(dpy, scr), BlackPixel(dpy, scr));
+	XGetWindowAttributes(dpy, w, &wattr);
+    Visual * v = DefaultVisual(dpy, scr);
+    cairo_surface_t * surface = cairo_xlib_surface_create (dpy, w, v, wattr.width, wattr.height);
+    cr = cairo_create(surface);
+    svg_cairo_render(sct, cr);
 }
 //}}}
 //{{{

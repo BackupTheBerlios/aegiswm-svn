@@ -1,0 +1,66 @@
+require 'rant/filelist'
+require 'build.rb'
+
+import "md5"
+import %w(autoclean)
+
+SUBDIRS = %w(action dispatch)
+subdirs SUBDIRS
+
+cconf = CompilerConfig.new
+cconf.cc  = `which gcc`.strip
+cconf.cxx = `which g++`.strip
+
+#Add our compiler flags
+cconf.add_incdirs( 'foo' )
+cconf.add_incdirs( '-Ibar' )
+cconf.add_incdirs( Rant::FileList['/usr/X11R6/include'] ) 
+cconf.add_incdirs( [ ".", '/usr/X11R6/include' ] )
+cconf.add_incdirs( `pkg-config sigc++-2.0 --cflags` ) 
+cconf.add_incdirs( `pkg-config cairo --cflags` ) 
+cconf.add_incdirs( `pkg-config libsvg-cairo --cflags` ) 
+
+cconf.add_libs( SUBDIRS )
+cconf.add_libs( `pkg-config sigc++-2.0 --libs` ) 
+cconf.add_libs( `pkg-config cairo --libs` ) 
+cconf.add_libs( `pkg-config libsvg-cairo --libs` ) 
+
+cconf.add_libdirs( SUBDIRS )
+cconf.add_libdirs( Rant::FileList['/usr/X11R6/lib'] )
+
+var['cconf'] = cconf
+
+src  = Rant::FileList[ '*.cpp' ] 
+objs = src.ext( 'o' )
+
+desc "build all"
+task :all => [ "aegiswm", "cscope.out" ].flatten
+
+desc "Clean up .o and binary files"
+gen AutoClean
+
+desc "Build the cscope database"
+file "cscope.out" => Rant::FileList[ '**/*.cpp', '**/*.h' ] do |task_info|
+    sys "cscope -bR *.{cpp,h}"
+end
+
+desc "Build AegisWM documentation"
+file :dox => Rant::FileList[ "**/*.h" ] do |task_info|
+    sys "doxygen > doxygen.log"
+end
+
+desc "Run the test environment for AegisWM (Xnest)"
+task :test => "aegiswm" do |task_info|
+    sys "Xnest :1 &"
+    sys "DISPLAY=:1 ./aegiswm &"
+end
+
+desc "Build the AegisWM window manager"
+file "aegiswm" => [ SUBDIRS.map { |sd| "#{sd}/lib#{sd}.a" }, objs ].flatten do |task_info|
+    sys "#{cconf.cxx} -o #{task_info.name} #{objs.join(' ')} #{cconf.libdirs} #{cconf.libs}"
+end
+
+#default rule for .o files
+gen Rule, :o => :cpp do |task_info|
+    sys "#{cconf.cxx} #{cconf.incdirs} #{cconf.cflags} -c -o #{task_info.name} #{task_info.source}"
+end

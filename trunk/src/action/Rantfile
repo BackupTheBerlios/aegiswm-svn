@@ -3,9 +3,9 @@ import "md5"
 import "autoclean"
 
 src  = Rant::FileList[ '*.cpp' ] 
+src.exclude("*actions.cpp")
 
 objs = src.ext( 'o' )
-
 mycconf = CompilerConfig.new
 mycconf.add_incdirs( Rant::FileList[ '..', "." ] )
 
@@ -19,6 +19,6 @@ end
 
 #make the static library
 desc "Make the action library"
-file "libdispatch.a" => objs do |task_info|
+file "libaction.a" => objs do |task_info|
     sys "ar rcs #{task_info.name} #{task_info.prerequisites}"
 end
