@@ -10,13 +10,11 @@
 #include "dispatch/event_dispatcher.h"
 #include "dispatch/dispatcher_factory.h"
 #include "action/action.h"
+#include "action/test_action.h"
 #include <cairo.h>
 #include <svg-cairo.h>
 
 using std::pair;
-
-//makes this available to the error handler
-Aegis aegis;
 
 //{{{
 static char * event_names[LASTEvent] = {
@@ -98,18 +96,6 @@ Aegis::Aegis() : clients(), atoms(), aestate() {
 	XChangeWindowAttributes(dpy, root, CWEventMask, &sattr);
 
 	XWindowAttributes wattr;
-    svg_cairo_t * sct;
-    int width, height;
-    svg_cairo_create(&sct);
-    svg_cairo_parse(sct, "~/Orc.svg");
-    svg_cairo_get_size(sct, &width, &height);
-
-    Window w = XCreateSimpleWindow(win->dpy, root, 0, 0, width, height, 0, BlackPixel(dpy, scr), BlackPixel(dpy, scr));
-	XGetWindowAttributes(dpy, w, &wattr);
-    Visual * v = DefaultVisual(dpy, scr);
-    cairo_surface_t * surface = cairo_xlib_surface_create (dpy, w, v, wattr.width, wattr.height);
-    cr = cairo_create(surface);
-    svg_cairo_render(sct, cr);
 }
 //}}}
 //{{{
@@ -159,10 +145,10 @@ void Aegis::registerEventHandler(Window w, ev_t event_type, aeslot_t handler) {
 }
 //}}}
 //{{{
-void Aegis::registerEventHandler(Window w, ev_t event_type, Action * handler) {
-	log_info("Entering Aegis::registerEventHandler(w, event_type, Action * handler)");
+void Aegis::registerEventHandler(Window w, Action * handler) {
+	log_info("Entering Aegis::registerEventHandler(w, Action * handler)");
 
-	registerEventHandler(w, event_type, sigc::mem_fun(handler, &Action::execute));
+	registerEventHandler(w, handler->getTriggerEvent(), sigc::mem_fun(handler, &Action::execute));
 
 	log_info("Leaving Aegis::registerEventHandler(Action * handler)");
 }
@@ -318,9 +304,9 @@ void Aegis::create_dispatchers() {
 //}}}
 //{{{
 void Aegis::setupDefaultHandlers() {
-	registerEventHandler(root , ButtonPress , sigc::ptr_fun(test));
+    TestAction * ta = new TestAction(ButtonPress);
+	registerEventHandler(root , (Action *)ta);
 	registerEventHandler(root , MapRequest  , sigc::mem_fun(this    , &Aegis::handleMapRequestEvent));
-	//registerEventHandler(root , Expose      , sigc::mem_fun(this    , &Aegis::handleExposeEvent));
 }
 //}}}
 
@@ -356,12 +342,12 @@ int error_handler(Display * dpy, XErrorEvent * ev) {
 //}}}
 //{{{
 int main(int argc, char ** argv) {
-	//set up logging
-	//openlog("aegiswm", LOG_CONS, LOG_USER);
+    //start logging
 	openlog("aegiswm", LOG_CONS, LOG_INFO);
 	log_info("********** Starting AegisWM **********\n");
-
 	XSetErrorHandler(error_handler);
+
+    Aegis aegis;
 	aegis.run();
 
 	log_info("********** Shutting Down AegisWM **********\n");

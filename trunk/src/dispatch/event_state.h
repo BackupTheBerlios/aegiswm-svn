@@ -33,6 +33,15 @@ class EventState {
 		~EventState();
 
 		/// This determines if the XEvent passed in matches this EventState.
+        /// An EventState object is equal (matches) an XEvent under the
+        /// following conditions:
+        ///   keycode_button == ev->xkey.keycode AND mask == ev->xkey.state
+        ///    --OR--
+        ///   keycode_button == ev->xkey.keycode AND mask == UINT_MAX
+        ///    --OR--
+        ///   keycode_button == UINT_MAX         AND mask == ev->xkey.state
+        ///    --OR--
+        ///   keycode_button == UINT_MAX         AND mask == UINT_MAX
 		bool operator==(XEvent * ev);
 };
 

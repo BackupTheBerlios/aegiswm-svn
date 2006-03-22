@@ -28,6 +28,8 @@ cconf.add_libs( `pkg-config libsvg-cairo --libs` )
 cconf.add_libdirs( SUBDIRS )
 cconf.add_libdirs( Rant::FileList['/usr/X11R6/lib'] )
 
+cconf.add_cflags( "-g" )
+
 var['cconf'] = cconf
 
 src  = Rant::FileList[ '*.cpp' ] 
@@ -41,7 +43,8 @@ gen AutoClean
 
 desc "Build the cscope database"
 file "cscope.out" => Rant::FileList[ '**/*.cpp', '**/*.h' ] do |task_info|
-    sys "cscope -bR *.{cpp,h}"
+    sys "cscope -b `find . ! -name *svn* -type d | grep '\.cpp\|\.h'`"
+
 end
 
 desc "Build AegisWM documentation"
@@ -57,7 +60,7 @@ end
 
 desc "Build the AegisWM window manager"
 file "aegiswm" => [ SUBDIRS.map { |sd| "#{sd}/lib#{sd}.a" }, objs ].flatten do |task_info|
-    sys "#{cconf.cxx} -o #{task_info.name} #{objs.join(' ')} #{cconf.libdirs} #{cconf.libs}"
+    sys "#{cconf.cxx} #{cconf.cflags} -o #{task_info.name} #{objs.join(' ')} #{cconf.libdirs} #{cconf.libs}"
 end
 
 #default rule for .o files

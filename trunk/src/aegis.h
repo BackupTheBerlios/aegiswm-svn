@@ -278,11 +278,9 @@ class Aegis {
 		/// <div><code>aegis->registerEventHandler(window_id, KeyPress, action_obj)<code></div>
 		/// @param w		  This is the window ID of the window for which we are
 		///                   registering.
-		/// @param event_type This is the XEvent type for which are registering the
-		///                   dispatcher.
 		/// @param handler    This is an Action object that will have its Action::execute() method
 		///                   called to handle the XEvent.
-		void registerEventHandler(Window w, ev_t event_type, Action * handler);
+		void registerEventHandler(Window w, Action * handler);
 
 		/// This registers all of the core event dispatchers.
 		void create_dispatchers();

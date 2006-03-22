@@ -12,7 +12,6 @@
 using std::map;
 
 //{{{
-
 EventDispatcher::EventDispatcher(ev_t event_type) : sig_map() {
 	this->event_type = event_type;
 }
@@ -24,6 +23,7 @@ EventDispatcher::~EventDispatcher() {
 
 //{{{
 void EventDispatcher::registerHandler(Window w, aeslot_t handler, EventState * ev_state) {
+	log_info("Entering EventDispatcher::registerHandler(Window %i, handler, ev_state)", (int)w);
 	///@todo  Provide a way to unregister handlers
 	if(ev_state == NULL) {
 		sig_map[w][new EventState].connect(handler);
@@ -31,6 +31,7 @@ void EventDispatcher::registerHandler(Window w, aeslot_t handler, EventState * e
 	else {
 		sig_map[w][ev_state].connect(handler);
 	}
+	log_info("Leaving EventDispatcher::registerHandler(Window %i, handler, ev_state)", (int)w);
 }
 //}}}
 //{{{

@@ -7,7 +7,7 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include "aegis.h"
+#include "../aegis.h"
 
 /// This class represents some type of action that can be triggered by an event
 /// in Aegis.  It provides the main abstraction for executing commands via fork/exec,
@@ -34,7 +34,7 @@ class Action {
 		/// Perform the action specified.  All Actions will probably not need
 		/// the XEvent param, but including it here, makes an Action eligble
 		/// to be added as the function pointer in a sigc::signal that is
-		/// suitable for evsubsys.
+		/// suitable for the dispatcher.
 		virtual void execute(XEvent * ev) = 0;
 
 		/// Returns the event id of the event that triggers this action.

@@ -14,7 +14,7 @@ gen AutoClean
 #default rule for .o files
 gen Rule, :o => :cpp do |task_info|
     cconf = var['cconf']
-    sys "#{cconf.cxx} #{mycconf.incdirs} #{cconf.incdirs} -c -o #{task_info.name} #{task_info.source}"
+    sys "#{cconf.cxx} #{cconf.cflags} #{mycconf.incdirs} #{cconf.incdirs} -c -o #{task_info.name} #{task_info.source}"
 end
 
 #make the static library

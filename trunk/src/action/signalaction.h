@@ -10,7 +10,7 @@
 #include "action.h"
 #include <sigc++/sigc++.h>
 
-/// This action occurs has a member which is a sigc::signal that is emitted when
+/// This action has a member which is a sigc::signal that is emitted when
 /// execute() is called.
 class SignalAction : public Action {
 	protected:
