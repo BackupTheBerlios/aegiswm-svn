@@ -1,0 +1,17 @@
+require '../build.rb'
+import "md5"
+import "autoclean"
+
+src  = Rant::FileList[ '*.cpp' ] 
+objs = src.ext( 'o' )
+
+mycconf = CompilerConfig.new
+mycconf.add_incdirs( Rant::FileList[ '..', "." ] )
+
+gen AutoClean
+
+#default rule for .o files
+gen Rule, :o => :cpp do |task_info|
+    cconf = var['cconf']
+    sys "#{cconf.cxx} #{mycconf.incdirs} #{cconf.incdirs} -c -o #{task_info.name} #{task_info.source}"
+end
