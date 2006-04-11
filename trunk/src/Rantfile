@@ -4,7 +4,7 @@ require 'build.rb'
 import "md5"
 import %w(autoclean)
 
-SUBDIRS = %w(action dispatch)
+SUBDIRS = %w( action dispatch )
 subdirs SUBDIRS
 
 cconf = CompilerConfig.new

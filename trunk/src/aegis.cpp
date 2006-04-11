@@ -305,8 +305,8 @@ void Aegis::create_dispatchers() {
 //{{{
 void Aegis::setupDefaultHandlers() {
     TestAction * ta = new TestAction(ButtonPress);
-	registerEventHandler(root , (Action *)ta);
-	registerEventHandler(root , MapRequest  , sigc::mem_fun(this    , &Aegis::handleMapRequestEvent));
+	registerEventHandler(root, (Action *)ta);
+	registerEventHandler(root, MapRequest, new BuiltinAction(MapRequest, this));
 }
 //}}}
 
@@ -314,20 +314,11 @@ void Aegis::setupDefaultHandlers() {
 // XEvent handlers
 ////////////////////////////////////////////////////////////////////////////////
 //{{{
-void Aegis::handleExposeEvent(XEvent * ev) {
-	XExposeEvent xev = ev->xexpose;
-
-	//(Re)Draw the client window decorations
-	XClearWindow(dpy, xev.window);
-}
-//}}}
-//{{{
-void Aegis::handleMapRequestEvent(XEvent * aev) {
-	Window w = aev->xmaprequest.window;
-	log_info("In AegisRoot::handleMapRequestEvent()");
-	
+Client * Aegis::makeNewClient(Window w) {
 	//We create a new Client object here...
 	clients[w] = new Client(dpy, this, w);
+
+    return clients[w];
 }
 //}}}
 

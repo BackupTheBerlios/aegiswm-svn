@@ -261,6 +261,9 @@ class Aegis {
 		/// Returns the Screen.
 		inline int getScreen() { return scr; }
 
+        /// Returns the Display.
+        inline Display * getDisplay() { return dpy; }
+
 		/// This registers an event handler to an EventDispatcher in Aegis.  Calls
 		/// to this method will look  something like:   
 		/// <div><code>aegis->registerEventHandler(window_id, KeyPress,
@@ -295,6 +298,10 @@ class Aegis {
 		/// This handles (re)drawing all of our decorations when a window is exposed.
 		/// @param ev This is XEvent union with all the details about the ExposeEvent.
 		void handleExposeEvent(XEvent * ev);
+
+        /// This creates a new Client object and adds it to the internal data
+        /// structures required to properly manage the new Client window.
+        Client * makeNewClient(Window w);
 };
 //}}}
 #endif

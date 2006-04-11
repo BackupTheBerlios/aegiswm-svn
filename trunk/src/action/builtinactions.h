@@ -16,7 +16,7 @@
 /// This encapsulates all the builtin actions for Aegis.  It is essentially a
 /// map of Action pointers. It is highly coupled with the Aegis class.  This
 /// is how it has to be since builtin actions take action on the window manager
-/// itself.
+/// itself or on behalf of the window manager.
 class BuiltinActions {
 	protected:
 		/// Our lifeline to the Aegis object.
@@ -32,6 +32,10 @@ class BuiltinActions {
 		/// actions to quit, restart, and whatever else might cause Aegis to
 		/// alter its running state.
 		void makeRunStateActions();
+
+        /// This method creates all the builtins to deal with window mapping
+        /// an drawing.
+        void makeWindowMappingActions();
 
 	public:
 		/// Create all the Aegis builtin actions, and store them in a way that

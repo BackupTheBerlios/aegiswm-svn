@@ -12,6 +12,10 @@ enum builtin_ids {
 	AEGIS_QUIT = 0,
 	AEGIS_RESTART,
 
+    //Window management builtin ids are provided below
+    AEGIS_EXPOSE_EVENT,
+    AEGIS_MAP_REQUEST_EVENT,
+
 	/// this is the last member of the builtins enum.
 	AEGIS_LAST_BUILTIN
 };

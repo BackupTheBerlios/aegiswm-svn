@@ -14,6 +14,7 @@ BuiltinActions::BuiltinActions(Aegis * aegis) : builtins() {
 	this->aegis = aegis;
 
 	makeRunStateActions();
+    makeWindowMappingActions();
 
 	//add additional methods that make builtins below here, keep the specific
 	//code of making the actions out of the constructor.  If everyone just added
@@ -38,5 +39,12 @@ BuiltinActions::~BuiltinActions() {
 void BuiltinActions::makeRunStateActions() {
 	//Add the quit action
 	builtins[AEGIS_QUIT] = new SignalAction(sigc::mem_fun(*aegis, &Aegis::quit));
+}
+//}}}
+
+//{{{
+void BuiltinActions::makeWindowMappingActions() {
+	builtins[AEGIS_EXPOSE_EVENT]      = new ExposeEventAction(Expose, aegis);
+	builtins[AEGIS_MAP_REQUEST_EVENT] = new MapRequestAction(MapRequest, aegis);
 }
 //}}}
